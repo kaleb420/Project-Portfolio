@@ -5,9 +5,8 @@ import math
 # Problem 1
 #input radius r, height h
 #return volume
-def c(r,h):
-    pass
-   
+def c(r,h): 
+   pass
     
 # Problem 2
 #input t days
@@ -125,8 +124,10 @@ def fact_est(n):
 #problem 18
 #input sphere volune
 #output radius of the sphere
-def volume_to_radius(v):
-   pass
+def volume_to_radius(v): 1
+r = math.sqrt(2) s
+volume= (4/3) * math.pi * r ** 3
+print(volume_to_radius(volume))
 
 def side_max_square(v):
    pass
