@@ -124,19 +124,24 @@ def fact_est(n):
 #problem 18
 #input sphere volune
 #output radius of the sphere
-def volume_to_radius(v): 1
-r = math.sqrt(2) s
-volume= (4/3) * math.pi * r ** 3
-print(volume_to_radius(volume))
+def volume_to_radius(v):
+    radius= ((3*v)/(4*math.pi))**(1/3)
+    rounded_radius=round(radius, 2)
+    return rounded_radius
+
+
 
 def side_max_square(v):
-   pass
+    radius= volume_to_radius(v)
+    diameter= radius * 2
+    rounded_side_max_square=round(diameter/math.sqrt(3),2)
+    return rounded_side_max_square
 
 #problem 19
 #input list of market prices per share
 #output a tuple containing average price and the last price
 def app(market):
-    pass
+    
 
 # problem 20
 #input n
@@ -271,8 +276,8 @@ if __name__ == "__main__":
     # print(math.factorial(n0_16),fact_est(n0_16))
     
     #problem 18
-    # v = 268.08
-    # print(volume_to_radius(v), side_max_square(v))
+    v = 268.08
+    print(volume_to_radius(v), side_max_square(v))
     
     #problem 19
     # market = [40 ,35 ,34 ,38 ,50]
