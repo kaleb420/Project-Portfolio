@@ -5,128 +5,197 @@ import math
 # Problem 1
 #input radius r, height h
 #return volume
-def c(r,h):
-    pass
-   
-    
+def c(r,h): (2,5)
+r = 2 
+h = 5
+volume=(1/3) * math.pi * r ** 2 * h
+roundedvolume=round(volume,2)
+print(roundedvolume)
+pass
+
+
 # Problem 2
 #input t days
 #output oxygen conten percent of it normal level
-def f(t):
-    pass
+def f(t): (0)
+t=10
+Oxygen_Content_10= 100 * ((t ** 2 + 10 * t + 100) / ( t ** 2 + 20 * t + 100))
+print(Oxygen_Content_10)
 
 # Problem 3
 #input t hours
 #return percent watching tv
-def P(t):
-   pass
+def P(t): (8)
+t=8
+People_Watching_TV=.01354 * t ** 4 - .49375 * t ** 3 + 2.58333 * t ** 2 + 3.8 * t + 31.60704
+Rounded_Peole_Watching_TV=round(People_Watching_TV, 2)
+print(Rounded_Peole_Watching_TV)
 
 # problem 4
 #input x percent
 #return millions of dollars
-def cost(x):
-    pass
+def cost(x): (70)
+x=70
+Removed_Waste= (0.5 * x) / (100 - x)
+print(Removed_Waste)
+Rounded_Removed_Waste= round(Removed_Waste,2)
+print("$",Rounded_Removed_Waste,"million")
 
 # Problem 5
 #input dosage a mg and years t
 #return child dosage mg
-def D(t,a):
-    pass
+def D(t,a): (500,4)
+t,a= 4,500
+Dosage= ((t + 1) / 24 ) * a 
+Rounded_Dosage= round(Dosage,2)
+print(Rounded_Dosage)
 
 # Problem 6
 #input number of susceptible, but healthy children
 #output number of the infected children
 # use math.ceil() before returning your final answer.
-def I(S):
-   pass
+def I(S): 100
+S= 100
+Infected_Children= (192 * math.log((S/762),2) - S + 763)
+Rounded_Infected_Children= math.ceil(Infected_Children)
+print(Rounded_Infected_Children)
 
 # Problem 7
 #input number of items 
 #output total cost 
 # q > 0
-def C(q):
-    pass
+def C(q): 10
+q= 10
+Cost= .01 * q ** 3 - .6 * q ** 2 + 13 * q + 1000
+print(Cost)
 
 #input number of items
 #output average cost
-def A(q):
-    pass
+def A(q): 5
+Average_Cost= Cost/q
+print(Average_Cost)
 
 # Problem 8
 #input months t=0,...,11
 #output items sold x 1000
-def hh(t):
-   pass
+def hh(t): 5
+t = 5
+Sales_Model= (532/(1+869 * math.e ** (-1.33 * t)))
+Rounded_Sales_Model= math.floor(Sales_Model)
+print(Rounded_Sales_Model)
 
 # Problem 9
 #input time seconds
 #output feet
-def height(t):
-    pass
+def height(t): 5
+t = 5
+height= -16 * t ** 2 + 64 * t + 80
+print(height)
 
 # Problem 10
 #input t hours
 #output percent treatment
-def B(t):
-    pass
+def B(t): 10
+t = 10 
+Treatment= (.44 * t ** 4 + 700) / (.1 * t ** 4 + 7)
+Rounded_Treatment= round(Treatment,2)
+print(Rounded_Treatment)
 
 # Problem 11
 #input coefficients for quadratic and value
 #output True if value is root, False otherwise
-def quad(a,b,c,x):
-    pass
-
+def quad(a,b,c,x): 5
+a=2
+b=5
+c=-12
+x=-4
+quad1 = a * x ** 2 + b * x + c
+print(quad1 == 0)
+x=3/2
+quad2 = a * x ** 2 + b * x + c
+print(quad2 == 0)
+x=1
+quad3 = a * x ** 2 + b * x + c
+print(quad3 == 0)
 
 # Problem 12 
 #input P principle, n times per year, t years, r rate
 #output dollars
-def R(P,r,n,t):
-    pass
+def R(P,r,n,t): (22000,.06,1,7)
+P= 22000
+t= 7
+n= 1
+r= .06
+Sinking_Fund= P * ((1+ (r/n)) ** (n * t) - 1) / (r/n)
+Rounded_Sinking_Fund=round(Sinking_Fund,2)
+print(Rounded_Sinking_Fund)
 
 #Problem 13
 #input dimensions w,l,h for width, length, height of a 
 # rectangular solid
 #output total surface area
-def S(w,l,h):
-    pass
+def S(w,l,h): (2,4,6)
+l=2
+w=4
+h=6
+Surface_Area= 2 * (w * l + h * l + h * w)
+print(Surface_Area)
 
 #Problem 14
 #input side s of a square
 #output diagonal length 
-def square_diagonal(s):
-   pass
+def square_diagonal(s): 10
+s=10 
+diagonal_length = math.sqrt(s ** 2 + s ** 2)
+print(diagonal_length)
+
 
 #input diagonal of a square
 #output area of largest circle inscribed in square
-def circle_area(d):
-   pass
+def circle_area(d): 10
+a = circle_area(square_diagonal(s))
+print(a)
+
 
 #Problem 15
 #input earned runs e, innings pitched i, total innings t
 #output earned runs average
-def ERA(e,i,t):
-  pass
+def ERA(e,i,t): (4,6,9)
+e = 4
+i = 6
+t = 9
+ERA= (e/i)*t
+RoundedERA = round(ERA,2)
+print(RoundedERA)
 
 
 #problem 16
 #input temperature (F), wind speed (mph)
 #output wind chill
-def T_wc(temp,wind_speed):
-   pass
+def T_wc(temp,wind_speed): T_wc
+WindChill= 35.74 + .6215 * 2 -35.75 * 5 ** .16 + .4275 * 2 * 5 ** .16
+Rounded_Wind_Chill=math.floor(WindChill)
+print(Rounded_Wind_Chill)
 
 
 #problem 17
 #input n
 #output approximate to n!
-def fact_est(n):
-   pass
+def fact_est(n): 10
+n= 10
+print(math.factorial(n),fact_est(n))
+n= n * 10
+n=(math.factorial(n),fact_est(n))
+print(n)
 
 
 #problem 18
 #input sphere volune
 #output radius of the sphere
-def volume_to_radius(v):
-   pass
+def volume_to_radius(v): 10
+r=math.sqrt(2) * s
+volume_to_radius(r)
+print(volume_to_radius)
 
 def side_max_square(v):
    pass
