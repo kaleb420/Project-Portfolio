@@ -18,8 +18,8 @@ def g(x):
 #is outside range (note that there is a single space after the colon in "error: year")
 def f(t):
     if 1977<=t<=1997:
-        j=t-1977 
-        if 0<j<=7:
+        j=t-1977
+        if 0<=j<=7:
             cost=(2/7)*j+12
             return cost
         elif 7<j<=10:
@@ -29,7 +29,7 @@ def f(t):
             cost=(3/5)*j+11
             return cost
     else:
-        print("YearError: ", t )
+        return "YearError: " + str(t)
 
 #problem 3
 #input t in the range [0, 2]
@@ -71,17 +71,11 @@ def eq(lst):
 #output 'very likely', 'likely', 'somewhat likely' based on severity
 def covid(symptoms):
     A,B,C = symptoms
-    A="A"
-    B="B"
-    C="C"
-    symptoms=[A,B,C]
-    for i in range(3):
-        print (rn.choice(symptoms**3))
-    if "ABC" or "ACB":
+    if A=="A":
         return("very likely")
-    elif "BAC" or "BCA":
+    elif A=="B":
         return("likely")
-    elif "CAB" or "CBA":
+    elif A=="C":
         return("somewhat likely")
 
 #problem 7
@@ -94,13 +88,17 @@ def max2d(x,y):
         return x
     elif y>x:
         return y
+    else:
+        return x
 
 #INPUT 3 numbers
 #RETURN maximum of the three
 #You must use your max2D function
 def max3d(x,y,z):
-    max3d=max(x,y,z)
-    return(max3d)
+    if max2d(x,y)>z:
+        return max2d(x,y)
+    else:
+        return z
 
 #problem 8
 #INPUT [name0, name1, votes] where votes is a non-empty list of 0,1
@@ -270,9 +268,9 @@ if __name__ == "__main__":
     # print(covid('CAB'),covid('CBA'))
 
     #problem 7
-    # print(max3d(1,2,3))
-    # print(max3d(1,3,2))
-    # print(max3d(3,2,1))
+    print(max3d(1,2,3))
+    print(max3d(1,3,2))
+    print(max3d(3,2,1))
 
     #problem 8
     # data0 = ['B','Z',[0,1,1,0,1,0,0]]
@@ -312,7 +310,7 @@ if __name__ == "__main__":
     # print(f"Time = {train_type2(s1_12,s2_12,d_12)} hr")
 
     #problem 13
-    print(C(8,3))
+    # print(C(8,3))
 
     #problem 14
     # x_14 = 14*math.sqrt(3)
