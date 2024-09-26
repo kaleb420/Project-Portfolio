@@ -6,22 +6,42 @@ import random as rn
 #input real number
 #return real number
 def g(x):
-    pass
+    if x!=0:
+        g=x+2
+    else:
+        g=x+1
+    return g
 
 #problem 2
 #input year 1977-1997
 #return percent income or "error: year" if year 
 #is outside range (note that there is a single space after the colon in "error: year")
 def f(t):
-    pass
-
+    if 1977<=t<=1997:
+        j=t-1977 
+        if 0<j<=7:
+            cost=(2/7)*j+12
+            return cost
+        elif 7<j<=10:
+            cost=j+7
+            return cost
+        elif 10<j<=20:
+            cost=(3/5)*j+11
+            return cost
+    else:
+        print("YearError: ", t )
 
 #problem 3
 #input t in the range [0, 2]
 #output dollars (round to 2 decimal places)
 def h(t):
-    pass
-
+    h0=110/((1/2)*t+1)
+    h1=26*((1/4)*t**2-1)**2+52
+    h= round(h0-h1,2)
+    if 0<=t<=2:
+        return h
+    else:
+        print("YearError: ",t)
 
 #problem 4
 #input tuple (a,b,c) coefficients
@@ -33,16 +53,36 @@ def q(coefficients):
 #input [arg1,op,arg2,ans]
 #output arg1 op arg2 == ans
 def eq(lst):
+    #op= ("*"+"**"+"+"+"-"+"/")
+    for i in op:
+        rn.choice(op)
+    arg1=float
+    arg2=[float]
+    #ans= arg1 str(op) arg2
+    if ans:= (op) :
+        if ans==ans:
+            return(ans)
+    else:
+        return(ans)
     pass
-
 
 #problem 6
 #input string of COVID symptoms "ABC", "ACB",...,"CBA"
 #output 'very likely', 'likely', 'somewhat likely' based on severity
 def covid(symptoms):
     A,B,C = symptoms
-    pass
-
+    A="A"
+    B="B"
+    C="C"
+    symptoms=[A,B,C]
+    for i in range(3):
+        print (rn.choice(symptoms**3))
+    if "ABC" or "ACB":
+        return("very likely")
+    elif "BAC" or "BCA":
+        return("likely")
+    elif "CAB" or "CBA":
+        return("somewhat likely")
 
 #problem 7
 #INPUT two numbers
@@ -50,21 +90,36 @@ def covid(symptoms):
 #You cannot use Python's max function
 #You must use if, elif, else (or some combination)
 def max2d(x,y):
-    pass
+    if x>y:
+        return x
+    elif y>x:
+        return y
 
 #INPUT 3 numbers
 #RETURN maximum of the three
 #You must use your max2D function
 def max3d(x,y,z):
-    pass
+    max3d=max(x,y,z)
+    return(max3d)
 
 #problem 8
 #INPUT [name0, name1, votes] where votes is a non-empty list of 0,1
 #RETURN a tuple (name, c, t) where name is the winner, c is the number of winning votes
 #t is the total votes cast 
 def decision(data):
-    pass
-
+    votes=(0,1)
+    for i in votes:
+        rn.choice(votes)
+    votes0= votes[0]
+    votes1= votes[1]
+    if votes1>votes0:
+        name=("name1_wins")
+    elif votes0>votes1:
+        name=("name0_wins")
+    else:
+        name=("tie")
+    data= name, print(len(votes)), print(sum(votes))
+    return(data)
 
 #problem 9 
 #INPUT three values: all have values or two have values and the remain has None
@@ -79,14 +134,22 @@ def solve(theta,opposite,adjacent):
 #input home price and interest rate
 #output payment
 def future(A, r):
-    pass
-
+    home_price=25000
+    rate=6/100
+    n=12
+    t=2
+    minimum_down_payment= round(home_price*((1+(r/n)**(n*t)-1)/(r/n)))
+    return(minimum_down_payment)
 
 #problem 11
 #input coefficients ax + by > c and a point
 #output return True if equation true, false otherwise
 def linear_query(a,b,c,point):
-    pass
+    x,y=point
+    if a*x+b*y>c:
+        return("True")
+    else:
+        return("False")
 
 
 
@@ -249,7 +312,7 @@ if __name__ == "__main__":
     # print(f"Time = {train_type2(s1_12,s2_12,d_12)} hr")
 
     #problem 13
-    # print(C(8,3))
+    print(C(8,3))
 
     #problem 14
     # x_14 = 14*math.sqrt(3)
