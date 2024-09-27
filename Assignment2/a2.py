@@ -59,10 +59,10 @@ def q(coefficients):
 #input [arg1,op,arg2,ans]
 #output arg1 op arg2 == ans
 def eq(lst):
-    [arg1,op,arg2,ans]=lst
-    if ans==arg1, op, arg2
-    
-    
+    # arg1,op,arg2,ans=lst
+    # for i in op:
+        # if arg1, i, arg2==ans
+    pass
 
 #problem 6
 #input string of COVID symptoms "ABC", "ACB",...,"CBA"
@@ -133,7 +133,6 @@ def solve(theta,opposite,adjacent):
         d=math.degrees(math.atan(opposite/adjacent))
         j=math.isclose(theta,d,abs_tol=.001)
         return j
-
     else:
         return "Multiple variables unaccounted for"
 
@@ -142,12 +141,8 @@ def solve(theta,opposite,adjacent):
 #input home price and interest rate
 #output payment
 def future(A, r):
-    down_payment=250000*(.2)
-    n=12
-    t=2
-    rate=6/100
-    House_cost= round(down_payment*((1+(rate/n))**(n*t)-1)/(rate/n),2)
-    return(House_cost)
+    A=round((home_price*.2)*((1+(r/n))**(n*t)-1)/(r/n),2)
+    return A
 
 #problem 11
 #input coefficients ax + by > c and a point
@@ -190,8 +185,10 @@ def C(n,k):
 #output area of largest circle inscribes
 #use solve from problem 9
 def circle(x):
-    pass
+    # side_length=solve[theta=opposite=adjacent=]
 
+    # circle_area=math.pi*r**2
+    pass
 
 # problem 15
 #input time elapsed on earth
@@ -199,10 +196,8 @@ def circle(x):
 def time_contract(earth_time):
     c = 186000 #speed of light in mi/sec
     v = .9 * c
-    time_contract=[earth_time,v]
-    for earth_time in time_contract:
-        earth_time=time_contract*(1-(v/c)**2)**(1/2)
-    return earth_time
+    dilated_time=round(earth_time*(1-(v/c)**2)**(1/2),2)
+    return dilated_time
 
 
 # problem 16
@@ -210,25 +205,87 @@ def time_contract(earth_time):
 #(a1x + b1y + c1 = 0), (a2x + b2y + c2 = 0)
 #output tuple (x,y) the solution
 def linear_solver(eq1, eq2):
-    pass
+    a1,x,b1,y,c1=eq1
+    a2,x,b2,y,c2=eq2
+    if a1*x+b1*y+c1==0:
+        if a2*x+b2*y+c2==0:
+            if a1-a2==0:
+                j=b1-b2
+                k=c1-c2
+                y=-k/j
+                x=(-c1-b1*y)/a1
+                return (x,y)
+            elif a1+a2==0:
+                j=b1+b2
+                k=c1+c2
+                y=-k/j
+                x=(-c1-b1*y)/a1
+                return (x,y)
+            elif b1-b2==0:
+                j=a1-a2
+                k=c1-c2
+                x=-k/j
+                y=(-c1-b1*x)/a1
+                return (x,y)
+            elif b1+b2==0:
+                j=a1+a2
+                k=c1+c2
+                x=-k/j
+                y=(-c1-b1*x)/a1
+                return (x,y)
+        else:
+            return "eq2 does not equal 0"
+    else: 
+        return "eq1 does not equal 0"
 
 #input coefficients of the two linear equations of two variables, and the proposed solution to the equations
 #(a1x + b1y + c1 = 0), (a2x + b2y + c2 = 0)
 # and tuple (x,y) the solution
 #output True if solution works, False otherwise
 def confirm(eq1, eq2, solution):
-    pass
+    solution=linear_solver(eq1,eq2)
+    if eq1==solution:
+        return "True"
+    elif eq2==solution:
+        return "True"
+    else:
+        return "False"
 
 
 #problem 17
 #input Booleans representing signal
 #output tuple (f,g) 
 def circuit(A,B,X,Y):
-   pass
-#green one and gates
-#blue one or gates
-#orange one not gates, 
-
+    input=[0,1]
+    for A in input:
+        for B in input:
+            for X in input:
+                for Y in input:
+                    if X==1: #start of f formula
+                        orange1=0
+                    else:
+                        orange1=1
+                    if B==1 or orange1==1:
+                        blue1=1
+                    else:
+                        blue1=0
+                    if X==1 and Y==1: #start of g formula
+                        green2=1
+                    else:
+                        green2=0
+                    if green2==1:
+                        orange2=0
+                    else: 
+                        orange2=1
+                        if blue1==1 and A==1: 
+                            f=1
+                        else:
+                            f=0
+                            if orange2==1 or A==1:
+                                g=1
+                            else:
+                                g=0
+                            return f,g
 
 #problem 18
 #input three tuples (n1, lst1),...,(n3, lst3) where n is name, 
@@ -237,8 +294,10 @@ def circuit(A,B,X,Y):
 # use sum(), but nothing else
 # have only one return
 def accident_ordering(c1, c2, c3):
+    a,alst=c1
+    b,blst=c2
+    c,clst=c3
     pass
-
 
 
 if __name__ == "__main__":
@@ -274,11 +333,11 @@ if __name__ == "__main__":
     # print(q((1,-7,-7)))
 
     #problem 5
-    print(eq([14, "/",2, 7]))
-    print(eq([20, "*",19, 381]))
-    print(eq([20, "*",19, 380]))
-    print(eq([2,"**",3,8]))
-    print(eq([1.1,'-',1,.1])) #saw in class this doesn't work! (will return False)
+    # print(eq([14, "/",2, 7]))
+    # print(eq([20, "*",19, 381]))
+    # print(eq([20, "*",19, 380]))
+    # print(eq([2,"**",3,8]))
+    # print(eq([1.1,'-',1,.1])) #saw in class this doesn't work! (will return False)
 
     #problem 6
     # print(covid('ABC'),covid('ACB'))
@@ -311,7 +370,7 @@ if __name__ == "__main__":
     # t,n = 2,12                         #years, monthly
     # payment = future(home_price,rate)
     # print(f"{n} payments yearly for {t} years requires ${payment}")
-    # #confirm this achieves 50000
+    # confirm this achieves 50000
     # A = round(payment*((1 + rate/n)**(t*n)-1)/(rate/n), 2)
     # print(A)
 
@@ -338,27 +397,27 @@ if __name__ == "__main__":
     # earth_time = [1,25,50,75] #years that elapsed
 
     # for et in earth_time:
-    #     print(time_contract(et))
+        # print(time_contract(et))
 
     #problem 16
     # data_16 = [((1,1,-5),(3,-1,-3)), ((-1,-1,5),(2,-1,-4))]
 
     # for d in data_16:
-    #     print(linear_solver(*d))
-    #     print(confirm(*d, linear_solver(*d)))
+    # print(linear_solver(*d))
+    # print(confirm(*d, linear_solver(*d)))
 
     #problem 17
-    # input_17 = [0,1]
-    # for A in input_17:
-    #     for B in input_17:
-    #         for X in input_17:
-    #             for Y in input_17:
-    #                 print(f"{A} {B} {X} {Y} {circuit(A,B,X,Y)}")
+    input_17 = [0,1]
+    for A in input_17:
+        for B in input_17:
+            for X in input_17:
+                for Y in input_17:
+                    print(f"{A} {B} {X} {Y} {circuit(A,B,X,Y)}")
 
     #problem 18
     # data_18 = [(('a',(1,2)),('b',(1,3)),('c',(1,4))),(('a',(1,2)),('b',(1,4)),('c',(1,3))),
-    #     (('a',(1,3)),('b',(1,2)),('c',(1,4))),(('a',(1,4)),('b',(1,2)),('c',(1,3))),
-    #     (('a',(1,3)),('b',(1,4)),('c',(1,2))),(('a',(1,4)),('b',(1,3)),('c',(1,2)))]
+        # (('a',(1,3)),('b',(1,2)),('c',(1,4))),(('a',(1,4)),('b',(1,2)),('c',(1,3))),
+        # (('a',(1,3)),('b',(1,4)),('c',(1,2))),(('a',(1,4)),('b',(1,3)),('c',(1,2)))]
 
     # for d in data_18:
-    #     print(accident_ordering(*d))
+    # print(accident_ordering(*d))

@@ -103,7 +103,7 @@ def quad(a,b,c,x):
 def R(P,r,n,t):
     Sinking_Fund=P*((1+(r/n))**(n*t)-1)/(r/n)
     Rounded_Sinking_Fund=round(Sinking_Fund,2)
-    return Rounded_Sinking_Fund
+    return Rounded_Sinking_Fund 
 
 #Problem 13
 #input dimensions w,l,h for width, length, height of a 
