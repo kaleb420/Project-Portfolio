@@ -37,34 +37,32 @@ def f(t):
 def h(t):
     h0=110/((1/2)*t+1)
     h1=26*((1/4)*t**2-1)**2+52
-    h= round(h0-h1,2)
+    p= round(h0-h1,2)
     if 0<=t<=2:
-        return h
+        return p
     else:
-        print("YearError: ",t)
+        return("YearError: " +str(t))
 
 #problem 4
 #input tuple (a,b,c) coefficients
 #output tuple roots (x_1, x_2) where x_1 >= x_2
 def q(coefficients):
-    pass
+    a,b,c=coefficients
+    x1=((-b)+(b**2-4*a*c)**(1/2))/(2*a)
+    x2=((-b)-(b**2-4*a*c)**(1/2))/(2*a)
+    if x1>=x2:
+        return(x1,x2)
+    else:
+        return(x2,x1)
 
 #problem 5
 #input [arg1,op,arg2,ans]
 #output arg1 op arg2 == ans
 def eq(lst):
-    #op= ("*"+"**"+"+"+"-"+"/")
-    for i in op:
-        rn.choice(op)
-    arg1=float
-    arg2=[float]
-    #ans= arg1 str(op) arg2
-    if ans:= (op) :
-        if ans==ans:
-            return(ans)
-    else:
-        return(ans)
-    pass
+    [arg1,op,arg2,ans]=lst
+    if ans==arg1, op, arg2
+    
+    
 
 #problem 6
 #input string of COVID symptoms "ABC", "ACB",...,"CBA"
@@ -105,19 +103,16 @@ def max3d(x,y,z):
 #RETURN a tuple (name, c, t) where name is the winner, c is the number of winning votes
 #t is the total votes cast 
 def decision(data):
-    votes=(0,1)
-    for i in votes:
-        rn.choice(votes)
-    votes0= votes[0]
-    votes1= votes[1]
-    if votes1>votes0:
-        name=("name1_wins")
-    elif votes0>votes1:
-        name=("name0_wins")
+    name0,name1,votes=data
+    vote_total=sum(votes)/len(votes)
+    if vote_total<.5:
+        return name0, len(votes)-sum(votes), len(votes)
+    elif vote_total>.5:
+        return name1, sum(votes), len(votes)
     else:
-        name=("tie")
-    data= name, print(len(votes)), print(sum(votes))
-    return(data)
+        return "tie", sum(votes), len(votes)-sum(votes)
+
+    
 
 #problem 9 
 #INPUT three values: all have values or two have values and the remain has None
@@ -125,29 +120,42 @@ def decision(data):
 #for three values return True or False using isclose(x,y,abs_tol = 0.001)
 #remember to convert degrees to radians
 def solve(theta,opposite,adjacent):
-    pass
+    if theta==None:
+        d=math.degrees(math.atan(opposite/adjacent))
+        return d
+    elif opposite==None:
+        d=math.tan(math.radians(theta))
+        return d*adjacent
+    elif adjacent==None:
+        d=math.tan(math.radians(theta))
+        return opposite/d
+    elif (theta,opposite,adjacent):
+        d=math.degrees(math.atan(opposite/adjacent))
+        j=math.isclose(theta,d,abs_tol=.001)
+        return j
+
+    else:
+        return "Multiple variables unaccounted for"
 
 
 #problem 10
 #input home price and interest rate
 #output payment
 def future(A, r):
-    home_price=25000
-    rate=6/100
+    down_payment=250000*(.2)
     n=12
     t=2
-    minimum_down_payment= round(home_price*((1+(r/n)**(n*t)-1)/(r/n)))
-    return(minimum_down_payment)
+    rate=6/100
+    House_cost= round(down_payment*((1+(rate/n))**(n*t)-1)/(rate/n),2)
+    return(House_cost)
 
 #problem 11
 #input coefficients ax + by > c and a point
 #output return True if equation true, false otherwise
 def linear_query(a,b,c,point):
     x,y=point
-    if a*x+b*y>c:
-        return("True")
-    else:
-        return("False")
+    d=a*x+b*y>=c
+    return d
 
 
 
@@ -155,14 +163,16 @@ def linear_query(a,b,c,point):
 #input time, speed1, speed2 both heading in same direction
 #output time train 2 reaches train 1
 def train_type1(t0, s1, s2):
-    pass
+    t=round((t0*s1)/(s2-s1),2)
+    return t
 
 
 
 #input speed 1, speed 2, distance heading towards each other
 #output time to reach each other
 def train_type2(s1, s2, d):
-    pass
+    t=round(d/(s1+s2),2)
+    return t
 
 
 
@@ -170,7 +180,9 @@ def train_type2(s1, s2, d):
 #input n >= k, use math module
 #output nCr
 def C(n,k):
-   pass
+   C=math.factorial(n)/(math.factorial(n-k)*math.factorial(k))
+   if n>k:
+       return(C)
 
 
 #problem 14
@@ -187,7 +199,10 @@ def circle(x):
 def time_contract(earth_time):
     c = 186000 #speed of light in mi/sec
     v = .9 * c
-    pass
+    time_contract=[earth_time,v]
+    for earth_time in time_contract:
+        earth_time=time_contract*(1-(v/c)**2)**(1/2)
+    return earth_time
 
 
 # problem 16
@@ -210,6 +225,9 @@ def confirm(eq1, eq2, solution):
 #output tuple (f,g) 
 def circuit(A,B,X,Y):
    pass
+#green one and gates
+#blue one or gates
+#orange one not gates, 
 
 
 #problem 18
@@ -256,11 +274,11 @@ if __name__ == "__main__":
     # print(q((1,-7,-7)))
 
     #problem 5
-    # print(eq([14, "/",2, 7]))
-    # print(eq([20, "*",19, 381]))
-    # print(eq([20, "*",19, 380]))
-    # print(eq([2,"**",3,8]))
-    # print(eq([1.1,'-',1,.1])) #saw in class this doesn't work! (will return False)
+    print(eq([14, "/",2, 7]))
+    print(eq([20, "*",19, 381]))
+    print(eq([20, "*",19, 380]))
+    print(eq([2,"**",3,8]))
+    print(eq([1.1,'-',1,.1])) #saw in class this doesn't work! (will return False)
 
     #problem 6
     # print(covid('ABC'),covid('ACB'))
@@ -268,9 +286,9 @@ if __name__ == "__main__":
     # print(covid('CAB'),covid('CBA'))
 
     #problem 7
-    print(max3d(1,2,3))
-    print(max3d(1,3,2))
-    print(max3d(3,2,1))
+    # print(max3d(1,2,3))
+    # print(max3d(1,3,2))
+    # print(max3d(3,2,1))
 
     #problem 8
     # data0 = ['B','Z',[0,1,1,0,1,0,0]]
