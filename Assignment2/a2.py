@@ -59,10 +59,21 @@ def q(coefficients):
 #input [arg1,op,arg2,ans]
 #output arg1 op arg2 == ans
 def eq(lst):
-    # arg1,op,arg2,ans=lst
-    # for i in op:
-        # if arg1, i, arg2==ans
-    pass
+    arg1,op,arg2,ans=lst
+    if op=="**":
+        d=arg1**arg2
+    elif op=="*":
+        d=arg1*arg2
+    elif op=="+":
+        d=arg1+arg2
+    elif op=="-":
+        d=arg1-arg2
+    elif op=="/":
+        d=arg1/arg2
+    if d==ans:
+        return "True"
+    else:
+        return "False"
 
 #problem 6
 #input string of COVID symptoms "ABC", "ACB",...,"CBA"
@@ -141,8 +152,10 @@ def solve(theta,opposite,adjacent):
 #input home price and interest rate
 #output payment
 def future(A, r):
-    A=round((home_price*.2)*((1+(r/n))**(n*t)-1)/(r/n),2)
-    return A
+    n=12
+    t=2
+    payment=round((A*(r/n))/((1+(r/n))**(n*t)-1),2)
+    return round(payment*.2,2)
 
 #problem 11
 #input coefficients ax + by > c and a point
@@ -185,10 +198,11 @@ def C(n,k):
 #output area of largest circle inscribes
 #use solve from problem 9
 def circle(x):
-    # side_length=solve[theta=opposite=adjacent=]
-
-    # circle_area=math.pi*r**2
-    pass
+    theta=math.radians(30)
+    tan_of_theta=math.tan(theta)
+    radius=tan_of_theta*x/2
+    area_of_circle=round(math.pi*radius**2,2)
+    return area_of_circle
 
 # problem 15
 #input time elapsed on earth
@@ -366,13 +380,13 @@ if __name__ == "__main__":
     # print(solve(5,9100,105600))
 
     #problem 10
-    # home_price, rate = 250000, 6/100
-    # t,n = 2,12                         #years, monthly
-    # payment = future(home_price,rate)
-    # print(f"{n} payments yearly for {t} years requires ${payment}")
-    # confirm this achieves 50000
-    # A = round(payment*((1 + rate/n)**(t*n)-1)/(rate/n), 2)
-    # print(A)
+    home_price, rate = 250000, 6/100
+    t,n = 2,12                         #years, monthly
+    payment = future(home_price,rate)
+    print(f"{n} payments yearly for {t} years requires ${payment}")
+    #confirm this achieves 50000
+    A = round(payment*((1 + rate/n)**(t*n)-1)/(rate/n), 2)
+    print(A)
 
     #problem 11
     # point1 = (-6,0)
@@ -407,12 +421,12 @@ if __name__ == "__main__":
     # print(confirm(*d, linear_solver(*d)))
 
     #problem 17
-    input_17 = [0,1]
-    for A in input_17:
-        for B in input_17:
-            for X in input_17:
-                for Y in input_17:
-                    print(f"{A} {B} {X} {Y} {circuit(A,B,X,Y)}")
+    # input_17 = [0,1]
+    # for A in input_17:
+    #     for B in input_17:
+    #         for X in input_17:
+    #             for Y in input_17:
+    #                 print(f"{A} {B} {X} {Y} {circuit(A,B,X,Y)}")
 
     #problem 18
     # data_18 = [(('a',(1,2)),('b',(1,3)),('c',(1,4))),(('a',(1,2)),('b',(1,4)),('c',(1,3))),
