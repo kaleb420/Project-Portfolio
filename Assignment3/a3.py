@@ -5,25 +5,26 @@ import math
 #INPUT n0 start colony size, m growth rate, t time
 #RETURN final colony size
 def N(n_0, m, t):
-    pass
+    final_colony_size=n_0*math.exp(m*t)
+    return final_colony_size
 
 #INPUT t days
 #RETURN number of teeth
 def N_t(t):
-    pass
+    number_of_teeth=71.8*math.exp(-8.96*math.exp(-.0685*t))
+    return math.ceil(number_of_teeth)
 
 #INPUT pressures Pi, Pf 
 #RETURN work joules
 def W(P_i, P_f):
-    pass
-
+    work_joules=8.314*300*math.log(P_i/P_f)
+    return math.ceil(work_joules)
 
 #INPUT V miles per hour, A area, C_l lift coefficient
 #RETURN lbs 
 def L(V,A,C_l):
-    pass
-
-
+    lbs=.0033*V**2*A*C_l
+    return math.ceil(lbs)
 
 ###########################################################################
 # Functions for Problem 2
@@ -32,10 +33,14 @@ def L(V,A,C_l):
 #RETURN tuple ('up'|'down', (vertex, y-value of vertex) )
 ###########################################################################
 def q(coef):
-    pass
-
-
-
+    a,b,c=coef
+    x=-b/(2*a)
+    if a>0:
+        s="up"
+    elif a<0:
+        s="down"
+    y=a*x**2+b*x+c
+    return s, round(x,2), round(y,2)
 
 ###########################################################################
 # Functions for Problem 3
@@ -44,7 +49,11 @@ def q(coef):
 #RETURN True if object occurs in the list
 #CONSTRAINT You cannot use 'x in y' -- must use bounded looping
 def m(x,lst):
-    pass
+    for i in lst:
+        if x in i:
+            return "True"
+        else:
+            return "False"
 
 #INPUT receipt= [[x0,y0],[x1,y1],...,[xn,yn]]
 # x is item, y is cost
@@ -52,7 +61,15 @@ def m(x,lst):
 # no_tax is a list of items not taxable
 #RETURN total amount owed (round values to 2 nearest decimal places)
 def amt(receipt, tax_rate, no_tax):
+    # tax_rate=7/100
+    # for x in receipt:
+    #         if x!=no_tax:
+    #             cost=(y*tax_rate)+y
+    #             return round(cost,2)
+    #         else:
+    #             return round(cost,2)
     pass
+    
 
 
 
@@ -72,8 +89,22 @@ def make_line(p0,p1):
 #RETURN a point (x,y) of intersection: "same line", "parallel lines" (x,y) 
 #rounded to two places
 def intersection(l0,l1): 
-    pass
-
+    p0,p1,x=l0
+    p2,p3=l1
+    x0,y0=p0
+    x1,y1=p1
+    x2,y2=p2
+    x3,y3=p3
+    m0 = round((y1 - y0)/(x1 - x0),2)
+    b0 = round(y0 - (m*x0),2)
+    m1 = round((y3 - y2)/(x3 - x2),2)
+    b1 = round(y2 - (m*x2),2)
+    y_intersect1=m1*x+b0
+    y_intersect2=m1*x+b0
+    if y_intersect1==y_intersect2:
+        return "same line"
+    else:
+        return "parallel line"
 
 
 ###########################################################################
@@ -85,19 +116,33 @@ def intersection(l0,l1):
 err_msg = ["Data Error: 0 values", "Data Error: 0 in data"]
 
 def arithmetic_mean(nlst):
-    pass
+    if nlst==[]:
+        return err_msg
+    else:
+        return sum(nlst)/len(nlst)
 
 
 def geo_mean(nlst):
-    pass
+    if nlst==[]:
+        return err_msg
+    else:
+        sum=sum(math.log(nlst))
+        return nlst**(sum/len(nlst))
 
 
 def har_mean(nlst):
-    pass
+    if nlst==[]:
+        return err_msg
+    else: 
+        return len(nlst)/(1/(sum(nlst)))
 
 
 def RMS_mean(nlst):
-    pass
+    if nlst==[]:
+        return err_msg
+    else: 
+        sum=(sum(nlst)**2)
+        return (sum/len(nlst))**(1/2)
 
 
 
@@ -107,7 +152,11 @@ def RMS_mean(nlst):
 #INPUT x object, integer y, list of objects
 #RETURN true if x occurs at least y times, false otherwise
 def occur_at_least(x,y,lst):
-    pass
+    for i in lst:
+        if x>= y:
+            return "True"
+        else: 
+            return "False"
 
 
 
@@ -316,12 +365,12 @@ if __name__ == "__main__":
     # print(amt(receipt,10/100,[]))
 
     # #problem 4
-    # p0 = (32,32)
-    # p1 = (29,5)
-    # p2 = (15,10)
-    # p3 = (49,25)
-    # p4 = (15,30)
-    # p5 = (50,15)
+    p0 = (32,32)
+    p1 = (29,5)
+    p2 = (15,10)
+    p3 = (49,25)
+    p4 = (15,30)
+    p5 = (50,15)
  
     # l0,l1 = make_line(p0,p1),make_line(p2,p3)
     # print(intersection(l0,l1))
@@ -334,14 +383,14 @@ if __name__ == "__main__":
     # print(intersection(make_line(p6,p7),make_line(p9,p10))) # parallel lines
 
     #problem 5
-    # print(arithmetic_mean([]))
-    # print(arithmetic_mean([1,2,3]))
-    # print(geo_mean([]))
-    # print(geo_mean([2,4,8]))
-    # print(har_mean([]))
-    # print(har_mean([1,2,3]))
-    # print(har_mean([1,2,0]))
-    # print(RMS_mean([1,3,4,5,7]))
+    print(arithmetic_mean([]))
+    print(arithmetic_mean([1,2,3]))
+    print(geo_mean([]))
+    print(geo_mean([2,4,8]))
+    print(har_mean([]))
+    print(har_mean([1,2,3]))
+    print(har_mean([1,2,0]))
+    print(RMS_mean([1,3,4,5,7]))
 
     #problem 6
     # data6 = [[1,4,[1,2,1,2,1,1]], [1,3,[1,2,1,2,1,1]],
