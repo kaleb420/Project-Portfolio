@@ -61,16 +61,13 @@ def m(x,lst):
 # no_tax is a list of items not taxable
 #RETURN total amount owed (round values to 2 nearest decimal places)
 def amt(receipt, tax_rate, no_tax):
-    # tax_rate=7/100
-    # for x in receipt:
-    #         if x!=no_tax:
-    #             cost=(y*tax_rate)+y
-    #             return round(cost,2)
-    #         else:
-    #             return round(cost,2)
-    pass
-    
-
+    tax_rate=7/100
+    for x in receipt:
+            if x!=no_tax:
+                cost=(y*tax_rate)+y
+                return round(cost,2)
+            else:
+                return round(cost,2)
 
 
 ###########################################################################
@@ -211,15 +208,27 @@ def is_geo(xlst):
 #INPUT pair of points in 2D
 #RETURN distance round to two decimal places
 def net_displacement(p0,p1):
-        pass
+    x0,y0=p0
+    x1,y1=p1
+    distance=round(((x0-x1)**2+(y0-y1)**2)**(1/2),2)
+    return distance
 
 #INPUT starting position (x,y) and list of one step directions w,e,s,n that move the positon
 #of x,y
 #RETURN a tuple final destination, distance, distance from start
 def track(start_pos, movement):
-    pass
-
-
+    x,y=start_pos
+    for i in movement:
+        if i=='e':
+            x=x+1
+        elif i=='w':
+            x=x-1
+        elif i=='s':
+            y=y-1
+        elif i=='n':
+            y=y+1
+    distance=round(((start_pos[0]-x)**2+(start_pos[0]-y)**2)**(1/2),2)
+    return (x,y), , distance
 
 ###########################################################################
 # Functions for Problem 10
@@ -227,8 +236,10 @@ def track(start_pos, movement):
 #INPUT pair of tuples from tracking
 #RETURN distance betweem two ending places 
 def final_distance(m0, m1):
-    pass
-
+    x0,y0=m0
+    x1,y1=m1
+    distance=round(((x0-x1)**2+(y0-y1)**2)**(1/2),2)
+    return round(distance,2)
 
 
 ###########################################################################
@@ -237,9 +248,12 @@ def final_distance(m0, m1):
 #INPUT presidential percentage
 #RETURN house seats needed
 def h_p(pres_per_11):
-    pass
-
-
+    h=pres_per_11**3/((pres_per_11)**3+(1-pres_per_11)**3)
+    if h==0:
+        return "0"
+    else:
+        pres_per_11=-1/(h)**(1/3)
+    return pres_per_11
 
 
 ###########################################################################
@@ -273,14 +287,17 @@ def time(T_t, T_e, T_0):
 # A tuple containing Input height, gravity, initial velocity
 # Output (t0,t1) that rocket is at that height (round both values to 2 decimal places)
 def rocket(data):
+    g,v,t=data
+    rocket_height=-g*t**2+v*t
     pass
-
 
 #problem 16
 #input signals A,B
 #output signals X,Y
 def ad(A,B):
-    pass
+    for i in A:
+        for j in B:
+            if 
 
 
 #problem 17
@@ -365,12 +382,12 @@ if __name__ == "__main__":
     # print(amt(receipt,10/100,[]))
 
     # #problem 4
-    p0 = (32,32)
-    p1 = (29,5)
-    p2 = (15,10)
-    p3 = (49,25)
-    p4 = (15,30)
-    p5 = (50,15)
+    # p0 = (32,32)
+    # p1 = (29,5)
+    # p2 = (15,10)
+    # p3 = (49,25)
+    # p4 = (15,30)
+    # p5 = (50,15)
  
     # l0,l1 = make_line(p0,p1),make_line(p2,p3)
     # print(intersection(l0,l1))
@@ -383,14 +400,14 @@ if __name__ == "__main__":
     # print(intersection(make_line(p6,p7),make_line(p9,p10))) # parallel lines
 
     #problem 5
-    print(arithmetic_mean([]))
-    print(arithmetic_mean([1,2,3]))
-    print(geo_mean([]))
-    print(geo_mean([2,4,8]))
-    print(har_mean([]))
-    print(har_mean([1,2,3]))
-    print(har_mean([1,2,0]))
-    print(RMS_mean([1,3,4,5,7]))
+    # print(arithmetic_mean([]))
+    # print(arithmetic_mean([1,2,3]))
+    # print(geo_mean([]))
+    # print(geo_mean([2,4,8]))
+    # print(har_mean([]))
+    # print(har_mean([1,2,3]))
+    # print(har_mean([1,2,0]))
+    # print(RMS_mean([1,3,4,5,7]))
 
     #problem 6
     # data6 = [[1,4,[1,2,1,2,1,1]], [1,3,[1,2,1,2,1,1]],
