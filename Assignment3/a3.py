@@ -228,7 +228,8 @@ def track(start_pos, movement):
         elif i=='n':
             y=y+1
     distance=round(((start_pos[0]-x)**2+(start_pos[0]-y)**2)**(1/2),2)
-    return (x,y), , distance
+    number_of_movements=len('e')+len('w')+len('s')+len('n')
+    return (x,y), number_of_movements, distance
 
 ###########################################################################
 # Functions for Problem 10
@@ -248,11 +249,7 @@ def final_distance(m0, m1):
 #INPUT presidential percentage
 #RETURN house seats needed
 def h_p(pres_per_11):
-    h=pres_per_11**3/((pres_per_11)**3+(1-pres_per_11)**3)
-    if h==0:
-        return "0"
-    else:
-        pres_per_11=-1/(h)**(1/3)
+    #1/(-1+3*h-3*h**2+h**3)=pres_per_11
     return pres_per_11
 
 
@@ -263,6 +260,7 @@ def h_p(pres_per_11):
 #RETURN tuple: amt, donations left, the amount of the goal left
 def go_fund_me(amt,donations):
     pass
+    
 
 
 ###########################################################################
@@ -271,7 +269,19 @@ def go_fund_me(amt,donations):
 #INPUT credit score cs and list of potential clients [[n0,cd0],[n1,cd1],...,[nm,cdm]] where n is name, cd is a dictionary of unweighted credit values
 #RETURN list of people and their score that is strictly greater than cs; if nobody qualifies, then return empty list
 def loan(cr, lst):
-    pass
+    for i in lst:
+        if i=='P':
+            P=i*.35
+        elif i=='A':
+            A=i*.30
+        elif i=='L':
+            L=i*.15
+        elif i=='N':
+            N=i*.10
+        elif i=='C':
+            C=i*.10
+            cr=P+A+L+N+C
+    return cr
 
 
 #Problem 14
@@ -280,8 +290,9 @@ def loan(cr, lst):
 #Use the temperatures given in problem description and equation 46 to find k, then use k, and solve for t.
 def time(T_t, T_e, T_0):
     # k = ???? #you have to determine this
+    # T_t=T_e+(T_0-T_e)*math.e(.223144*t) or 
+    # T_t=T_e+(T_0-T_e)*math.e(.255413*t)
     pass
-
 
 #Problem 15
 # A tuple containing Input height, gravity, initial velocity
@@ -295,9 +306,10 @@ def rocket(data):
 #input signals A,B
 #output signals X,Y
 def ad(A,B):
-    for i in A:
-        for j in B:
-            if 
+    # for i in A:
+    #     for j in B:
+    #         if 
+    pass
 
 
 #problem 17
@@ -475,13 +487,13 @@ if __name__ == "__main__":
     # print(go_fund_me(50, [45,47,78]))
 
     #Problem 13
-    # data = [['x',{'P':600, 'L':700,'A': 500, 'N': 170, 'C': 250}],
-    #     ['y',{'P':550, 'L':720,'A': 500, 'N': 230, 'C': 250}],
-    #     ['b',{'P':560, 'L':710,'A': 500, 'N': 221, 'C': 250}],
-    #     ['c',{'P':800, 'L':700,'A': 200, 'N': 100, 'C': 150}],
-    #     ['a',{'P':800, 'L':800,'A': 600, 'N': 250, 'C': 150}],
-    #     ['z',{'P':800, 'L':800,'A': 500, 'N': 250, 'C': 150}]]
-    # print(loan(550,data))
+    data = [['x',{'P':600, 'L':700,'A': 500, 'N': 170, 'C': 250}],
+        ['y',{'P':550, 'L':720,'A': 500, 'N': 230, 'C': 250}],
+        ['b',{'P':560, 'L':710,'A': 500, 'N': 221, 'C': 250}],
+        ['c',{'P':800, 'L':700,'A': 200, 'N': 100, 'C': 150}],
+        ['a',{'P':800, 'L':800,'A': 600, 'N': 250, 'C': 150}],
+        ['z',{'P':800, 'L':800,'A': 500, 'N': 250, 'C': 150}]]
+    print(loan(550,data))
 
     #problem 14
     #initial scene of the crime data
