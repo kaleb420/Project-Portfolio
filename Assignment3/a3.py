@@ -40,7 +40,7 @@ def q(coef):
     elif a<0:
         s="down"
     y=a*x**2+b*x+c
-    return s, round(x,2), round(y,2)
+    return s, [round(x,2), round(y,2)]
 
 ###########################################################################
 # Functions for Problem 3
@@ -50,10 +50,9 @@ def q(coef):
 #CONSTRAINT You cannot use 'x in y' -- must use bounded looping
 def m(x,lst):
     for i in lst:
-        if x in i:
-            return "True"
-        else:
-            return "False"
+        if i==x: 
+            return True
+    return False
 
 #INPUT receipt= [[x0,y0],[x1,y1],...,[xn,yn]]
 # x is item, y is cost
@@ -61,13 +60,12 @@ def m(x,lst):
 # no_tax is a list of items not taxable
 #RETURN total amount owed (round values to 2 nearest decimal places)
 def amt(receipt, tax_rate, no_tax):
-    tax_rate=7/100
-    for x in receipt:
-            if x!=no_tax:
-                cost=(y*tax_rate)+y
-                return round(cost,2)
-            else:
-                return round(cost,2)
+    for i in receipt:
+        if i==no_tax:
+            return (no_tax)
+        elif i==float:
+            y=(i*tax_rate)+i
+            return round(y,2)
 
 
 ###########################################################################
@@ -86,23 +84,18 @@ def make_line(p0,p1):
 #RETURN a point (x,y) of intersection: "same line", "parallel lines" (x,y) 
 #rounded to two places
 def intersection(l0,l1): 
-    p0,p1,x=l0
+    p0,p1=l0
+    m = round((p1[1] - p0[1])/(x1 - x0),2)
+    b = round(y0 - (m*x0),2)
     p2,p3=l1
-    x0,y0=p0
-    x1,y1=p1
-    x2,y2=p2
-    x3,y3=p3
-    m0 = round((y1 - y0)/(x1 - x0),2)
-    b0 = round(y0 - (m*x0),2)
-    m1 = round((y3 - y2)/(x3 - x2),2)
-    b1 = round(y2 - (m*x2),2)
-    y_intersect1=m1*x+b0
-    y_intersect2=m1*x+b0
-    if y_intersect1==y_intersect2:
+    for x in l0:
+        y_line0=m*x+b
+    for x in l1:
+        y_line1=m*x+b
+    if y_line0==y_line1:
         return "same line"
     else:
         return "parallel line"
-
 
 ###########################################################################
 # Functions for Problem 5
@@ -113,33 +106,40 @@ def intersection(l0,l1):
 err_msg = ["Data Error: 0 values", "Data Error: 0 in data"]
 
 def arithmetic_mean(nlst):
-    if nlst==[]:
+    if nlst==[] or 0 in nlst:
         return err_msg
     else:
         return sum(nlst)/len(nlst)
 
 
 def geo_mean(nlst):
-    if nlst==[]:
+    sum_of=0
+    if nlst==[] or 0 in nlst:
         return err_msg
     else:
-        sum=sum(math.log(nlst))
-        return nlst**(sum/len(nlst))
+        for i in nlst:
+            sum_of+=math.log10(i)
+        return 10**(sum_of/len(nlst))
 
 
 def har_mean(nlst):
-    if nlst==[]:
+    sum_of=0
+    if nlst==[] or 0 in nlst:
         return err_msg
     else: 
-        return len(nlst)/(1/(sum(nlst)))
+        for i in nlst:
+            sum_of+=1/i
+        return len(nlst)/sum_of
 
 
 def RMS_mean(nlst):
-    if nlst==[]:
+    sum_of=0
+    if nlst==[] or 0 in nlst:
         return err_msg
     else: 
-        sum=(sum(nlst)**2)
-        return (sum/len(nlst))**(1/2)
+        for i in nlst:
+            sum_of+=i**2
+        return math.sqrt(sum_of/len(nlst))
 
 
 
@@ -149,13 +149,14 @@ def RMS_mean(nlst):
 #INPUT x object, integer y, list of objects
 #RETURN true if x occurs at least y times, false otherwise
 def occur_at_least(x,y,lst):
+    d=0
     for i in lst:
-        if x>= y:
-            return "True"
-        else: 
-            return "False"
-
-
+        if i==x:
+            d+=1
+    if d>=y:
+        return True
+    else: 
+        return False
 
 ###########################################################################
 # Functions for Problem 7
@@ -163,9 +164,14 @@ def occur_at_least(x,y,lst):
 #input two objects x,y and list
 #returns True if x occurs strictly more than y in lst, False otherwise
 def occurs_more(x,y,lst):
-    pass
-
-
+    d=0
+    for i in lst:
+        if i==x:
+            d+=1
+    if d>y:
+        return True
+    else: 
+        return False
 
 
 #input two objects x, y and list
@@ -176,13 +182,29 @@ def occurs_more(x,y,lst):
 def equal_remove(x,y,lst):
     tmp = lst
     def cnt_occurs(x,lst):
-        pass
+        x_occur=0
+        y_occur=0
+        for i in lst:
+            if i==x:
+                x_occur+=0
+            elif i==y:
+                y_occur+=0
+        if x_occur==y_occur:
+            return True
+        elif lst==[]:
+            return True
     
     x_c,y_c = cnt_occurs(x,lst),cnt_occurs(y,lst)
 
     def re_k(x,cnt,lst):
         tmp,nr = [],0
-        pass
+        for i in lst:
+            if x_c<y_c:
+                del lst[i]
+            if x_c>y_c:
+                del lst[i]
+        return lst
+
     
     if x_c < y_c:
         tmp = re_k(y,y_c-x_c,tmp)
@@ -198,9 +220,15 @@ def equal_remove(x,y,lst):
 #INPUT list of numbers
 #RETURN True if geometric series, False otherwise
 def is_geo(xlst):
-    pass
-
-
+    ratio=xlst[1]/xlst[0]
+    if len(xlst)>2:
+        for i in xlst:
+            if xlst[i]/i==ratio:
+                return 1
+            else:
+                return 0
+    else:
+        return 0
 
 ###########################################################################
 # Functions for Problem 9
@@ -218,17 +246,29 @@ def net_displacement(p0,p1):
 #RETURN a tuple final destination, distance, distance from start
 def track(start_pos, movement):
     x,y=start_pos
+    e=0
+    w=0
+    s=0
+    n=0
     for i in movement:
         if i=='e':
-            x=x+1
+            x=x+1 
         elif i=='w':
             x=x-1
         elif i=='s':
             y=y-1
         elif i=='n':
             y=y+1
-    distance=round(((start_pos[0]-x)**2+(start_pos[0]-y)**2)**(1/2),2)
-    number_of_movements=len('e')+len('w')+len('s')+len('n')
+        if i=='e':
+            e+=1
+        elif i=='w':
+            w+=1
+        elif i=='s':
+            s+=1
+        elif i=='n':
+            n+=1
+    distance=round(((start_pos[0]-x)**2+(start_pos[1]-y)**2)**(1/2),2)
+    number_of_movements=e+w+s+n
     return (x,y), number_of_movements, distance
 
 ###########################################################################
@@ -237,9 +277,13 @@ def track(start_pos, movement):
 #INPUT pair of tuples from tracking
 #RETURN distance betweem two ending places 
 def final_distance(m0, m1):
-    x0,y0=m0
-    x1,y1=m1
-    distance=round(((x0-x1)**2+(y0-y1)**2)**(1/2),2)
+    for i in m0:
+        m0_x=i[0]
+        m0_y=i[1]
+        for j in m1:
+            m1_x=i[0]
+            m1_y=i[1]
+    distance=round(((m0_x-m1_x)**2+(mx_-j[1])**2)**(1/2),2)
     return round(distance,2)
 
 
@@ -249,7 +293,8 @@ def final_distance(m0, m1):
 #INPUT presidential percentage
 #RETURN house seats needed
 def h_p(pres_per_11):
-    #1/(-1+3*h-3*h**2+h**3)=pres_per_11
+    h=1/(1-pres_per_11)**3
+    pres_per_11=1/(-h**3-h**2-3*h+1)
     return pres_per_11
 
 
@@ -259,8 +304,15 @@ def h_p(pres_per_11):
 #INPUT amt and list of donations
 #RETURN tuple: amt, donations left, the amount of the goal left
 def go_fund_me(amt,donations):
-    pass
-    
+    returned=[]
+    amount_left=sum(donations)-amt
+    if sum(donations)-amount_left>=0:
+        while sum(donations)-amt>=0:
+            returned=donations.append(donations[-1])
+            amount_left=sum(donations)
+        return amt, returned, amount_left
+    elif amount_left<=0:
+        return amt, donations, amount_left
 
 
 ###########################################################################
@@ -269,20 +321,28 @@ def go_fund_me(amt,donations):
 #INPUT credit score cs and list of potential clients [[n0,cd0],[n1,cd1],...,[nm,cdm]] where n is name, cd is a dictionary of unweighted credit values
 #RETURN list of people and their score that is strictly greater than cs; if nobody qualifies, then return empty list
 def loan(cr, lst):
+    P=(lst['P'])
+    A=(lst['A'])
+    L=(lst['L'])
+    N=(lst['N'])
+    C=(lst['C'])
     for i in lst:
-        if i=='P':
-            P=i*.35
-        elif i=='A':
-            A=i*.30
-        elif i=='L':
-            L=i*.15
-        elif i=='N':
-            N=i*.10
-        elif i=='C':
-            C=i*.10
-            cr=P+A+L+N+C
-    return cr
-
+        for x in i[1]:
+            if x=='P':
+                new_P=P*.35
+            elif x=='A':
+                new_A=A*.30
+            elif x=='L':
+                new_L=L*.15
+            elif x=='N':
+                new_N=N*.10
+            elif x=='C':
+                new_C=C*.10
+    cs=new_P+new_A+new_L+N+C
+    if cs>cr:
+        return [lst[0], cr]
+    else:
+        return []
 
 #Problem 14
 #INPUT current temperature T(t) of fish, environment temperature T_e, and initial temperature T_0
@@ -290,27 +350,56 @@ def loan(cr, lst):
 #Use the temperatures given in problem description and equation 46 to find k, then use k, and solve for t.
 def time(T_t, T_e, T_0):
     # k = ???? #you have to determine this
-    # T_t=T_e+(T_0-T_e)*math.e(.223144*t) or 
-    # T_t=T_e+(T_0-T_e)*math.e(.255413*t)
-    pass
+    k=-.304023
+    t=.73397
+    T_t=T_e+(T_0-T_e)*math.exp(-k*t)
+    return T_t
 
 #Problem 15
 # A tuple containing Input height, gravity, initial velocity
 # Output (t0,t1) that rocket is at that height (round both values to 2 decimal places)
 def rocket(data):
-    g,v,t=data
-    rocket_height=-g*t**2+v*t
-    pass
+    h,g,v=data
+    t0=round(((-v)+math.sqrt((v)**2-4*-g*h))/(2*g),2)
+    t1=round(((-v)-math.sqrt((v)**2-4*-g*h))/(2*g),2)
+    if t0>=t1:
+        return (t0,t1)
+    else:
+        return (t1,t0)
 
 #problem 16
 #input signals A,B
 #output signals X,Y
 def ad(A,B):
-    # for i in A:
-    #     for j in B:
-    #         if 
-    pass
-
+    if B==1:
+        not_1=0
+    else:
+        not_1=1
+    if not_1==1 and A==1:
+        and_1=1
+    else:
+        and_1=0
+    if A==1:
+        not_2=0
+    else:
+        not_2=1
+    if not_2==1 and B==1:
+        and_2=1
+    else:
+        and_2=0
+    if and_1==1 or and_2==1:
+        x=1
+    else:
+        x=0
+    if A==1:
+        not_3=0
+    else:
+        not_3=1
+    if not_3==1 and B==1:
+        y=1
+    else:
+        y=0
+    return (x,y)
 
 #problem 17
 #this function is completed for you
@@ -323,8 +412,9 @@ def analytic_fence(size):
 #input size of single paddock
 #output [(x,y), total_fence_used]
 def fence(size):
-    pass
-
+    y = math.sqrt(4*((size)/3))
+    x = size/y
+    return math.isclose(((x,y), 3*y + 4*x), size, abs_tol=2)
 
 #problem 18
 #INPUT an atomic event
@@ -332,7 +422,9 @@ def fence(size):
 def X(omega):
     a,b = omega
     # return a + b lecture studing sum of dice
-    pass
+    for i in range(0-7):
+        for j in range(0-7):
+            return i+j
 
 #INPUT event space and r.v. function
 #OUTPUT return the value from the expected_value function. There is nothing returned from random_variable as we are simply printing.
@@ -477,23 +569,23 @@ if __name__ == "__main__":
     #     print(h_p(pres_per/100))
 
     # #problem 12
-    # data12 = [[100,[10,15,20,30,29,13,15,40]],
-    #     [100,[]],
-    #     [100,[30,4]]]
+    data12 = [[100,[10,15,20,30,29,13,15,40]],
+        [100,[]],
+        [100,[30,4]]]
 
-    # for d in data12:
-    #     print(go_fund_me(*d))
+    for d in data12:
+        print(go_fund_me(*d))
     
-    # print(go_fund_me(50, [45,47,78]))
+    print(go_fund_me(50, [45,47,78]))
 
     #Problem 13
-    data = [['x',{'P':600, 'L':700,'A': 500, 'N': 170, 'C': 250}],
-        ['y',{'P':550, 'L':720,'A': 500, 'N': 230, 'C': 250}],
-        ['b',{'P':560, 'L':710,'A': 500, 'N': 221, 'C': 250}],
-        ['c',{'P':800, 'L':700,'A': 200, 'N': 100, 'C': 150}],
-        ['a',{'P':800, 'L':800,'A': 600, 'N': 250, 'C': 150}],
-        ['z',{'P':800, 'L':800,'A': 500, 'N': 250, 'C': 150}]]
-    print(loan(550,data))
+    # data = [['x',{'P':600, 'L':700,'A': 500, 'N': 170, 'C': 250}],
+    #     ['y',{'P':550, 'L':720,'A': 500, 'N': 230, 'C': 250}],
+    #     ['b',{'P':560, 'L':710,'A': 500, 'N': 221, 'C': 250}],
+    #     ['c',{'P':800, 'L':700,'A': 200, 'N': 100, 'C': 150}],
+    #     ['a',{'P':800, 'L':800,'A': 600, 'N': 250, 'C': 150}],
+    #     ['z',{'P':800, 'L':800,'A': 500, 'N': 250, 'C': 150}]]
+    # print(loan(550,data))
 
     #problem 14
     #initial scene of the crime data
@@ -531,7 +623,7 @@ if __name__ == "__main__":
     # print(f"non-analytic {fence(size)}")
 
     #problem 18
-    #build event space
+    # build event space
     # Omega = []
     # for i in range(1,7):
     #     for j in range(1,7):
