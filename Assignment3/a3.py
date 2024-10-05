@@ -84,18 +84,15 @@ def make_line(p0,p1):
 #RETURN a point (x,y) of intersection: "same line", "parallel lines" (x,y) 
 #rounded to two places
 def intersection(l0,l1): 
-    p0,p1=l0
-    m = round((p1[1] - p0[1])/(x1 - x0),2)
-    b = round(y0 - (m*x0),2)
-    p2,p3=l1
-    for x in l0:
-        y_line0=m*x+b
-    for x in l1:
-        y_line1=m*x+b
-    if y_line0==y_line1:
+    l0_m=l0['m']
+    l0_b=l0['b']
+    l1_m=l1['m']
+    l1_b=l1['b']
+    if l0_m==l1_m and l0_b==l1_b:
         return "same line"
     else:
-        return "parallel line"
+        return "parallel lines"
+
 
 ###########################################################################
 # Functions for Problem 5
@@ -486,22 +483,22 @@ if __name__ == "__main__":
     # print(amt(receipt,10/100,[]))
 
     # #problem 4
-    # p0 = (32,32)
-    # p1 = (29,5)
-    # p2 = (15,10)
-    # p3 = (49,25)
-    # p4 = (15,30)
-    # p5 = (50,15)
+    p0 = (32,32)
+    p1 = (29,5)
+    p2 = (15,10)
+    p3 = (49,25)
+    p4 = (15,30)
+    p5 = (50,15)
  
-    # l0,l1 = make_line(p0,p1),make_line(p2,p3)
-    # print(intersection(l0,l1))
-    # l0 = make_line(p4,p5)
-    # print(intersection(l0,l1))
+    l0,l1 = make_line(p0,p1),make_line(p2,p3)
+    print(intersection(l0,l1))
+    l0 = make_line(p4,p5)
+    print(intersection(l0,l1))
     
-    # p6,p7,p8 = (0,0),(1,1),(2,2)
-    # p9,p10 = (0,1),(1,2)
-    # print(intersection(make_line(p6,p7),make_line(p7,p8))) # same line
-    # print(intersection(make_line(p6,p7),make_line(p9,p10))) # parallel lines
+    p6,p7,p8 = (0,0),(1,1),(2,2)
+    p9,p10 = (0,1),(1,2)
+    print(intersection(make_line(p6,p7),make_line(p7,p8))) # same line
+    print(intersection(make_line(p6,p7),make_line(p9,p10))) # parallel lines
 
     #problem 5
     # print(arithmetic_mean([]))
@@ -569,14 +566,14 @@ if __name__ == "__main__":
     #     print(h_p(pres_per/100))
 
     # #problem 12
-    data12 = [[100,[10,15,20,30,29,13,15,40]],
-        [100,[]],
-        [100,[30,4]]]
+    # data12 = [[100,[10,15,20,30,29,13,15,40]],
+    #     [100,[]],
+    #     [100,[30,4]]]
 
-    for d in data12:
-        print(go_fund_me(*d))
+    # for d in data12:
+    #     print(go_fund_me(*d))
     
-    print(go_fund_me(50, [45,47,78]))
+    # print(go_fund_me(50, [45,47,78]))
 
     #Problem 13
     # data = [['x',{'P':600, 'L':700,'A': 500, 'N': 170, 'C': 250}],
