@@ -483,22 +483,22 @@ if __name__ == "__main__":
     # print(amt(receipt,10/100,[]))
 
     # #problem 4
-    p0 = (32,32)
-    p1 = (29,5)
-    p2 = (15,10)
-    p3 = (49,25)
-    p4 = (15,30)
-    p5 = (50,15)
+    # p0 = (32,32)
+    # p1 = (29,5)
+    # p2 = (15,10)
+    # p3 = (49,25)
+    # p4 = (15,30)
+    # p5 = (50,15)
  
-    l0,l1 = make_line(p0,p1),make_line(p2,p3)
-    print(intersection(l0,l1))
-    l0 = make_line(p4,p5)
-    print(intersection(l0,l1))
+    # l0,l1 = make_line(p0,p1),make_line(p2,p3)
+    # print(intersection(l0,l1))
+    # l0 = make_line(p4,p5)
+    # print(intersection(l0,l1))
     
-    p6,p7,p8 = (0,0),(1,1),(2,2)
-    p9,p10 = (0,1),(1,2)
-    print(intersection(make_line(p6,p7),make_line(p7,p8))) # same line
-    print(intersection(make_line(p6,p7),make_line(p9,p10))) # parallel lines
+    # p6,p7,p8 = (0,0),(1,1),(2,2)
+    # p9,p10 = (0,1),(1,2)
+    # print(intersection(make_line(p6,p7),make_line(p7,p8))) # same line
+    # print(intersection(make_line(p6,p7),make_line(p9,p10))) # parallel lines
 
     #problem 5
     # print(arithmetic_mean([]))
