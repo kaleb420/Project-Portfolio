@@ -46,10 +46,20 @@ def deposit(S,i,n):
 #INPUT sinking fund values except deposit
 #OUTPUT a list of period, deposit, interest accrued, total fund
 def sinking_fund(final_amt, r, m, y):
-    i=(r/m)*deposit(S,i,n)
+    interest=r/m
     n=m*y
+    deposit=round(final_amt/(((1+interest)**n-1)/interest),2)
+    lst=[]
     for i in range(n):
-    
+        if lst==[]:
+            interest_amount=0
+            new_total=deposit
+            lst.append([i,deposit,interest_amount,deposit])
+        else:
+            interest_amount=round((r/m)*new_total,2)
+            new_total=round(deposit+(lst[-1][-1]*interest)+lst[-1][-1],2)
+            lst.append([i,deposit,interest_amount,new_total])
+    return lst
 
 #problem 4
 #INPUT Weight in space and earth (pounds)
@@ -70,17 +80,15 @@ def P_ws(v0,h0,v1,h1):
 #output value of x of the taylor appoximation to cos with tau+1 terms
 def cos_(x,tau):
     for i in range(tau+1):
-        cos=((-1**i)/math.factorial(2*i))*x**(2*i)
-    return cos
+        y=((-1)**i/math.factorial(2*i))*x**(2*i)
+    return y
 
 #input x,tau
 #output value of x of the taylor appoximation to e with tau+1 terms
 def e_(x,tau):
     for i in range(tau+1):
-        e=(x**i)/math.factorial(i)
-    return e
-def term(x,n):
-
+        y=(x)**i/math.factorial(i)
+    return y
 
 if __name__ == "__main__":
     """
@@ -102,12 +110,12 @@ if __name__ == "__main__":
 
 
     #problem 3
-    S = 30000
-    m = 4
-    r = 10/100
-    y = 2
-    for i in sinking_fund(S,r,m,y):
-        print(i)
+    # S = 30000
+    # m = 4
+    # r = 10/100
+    # y = 2
+    # for i in sinking_fund(S,r,m,y):
+    #     print(i)
 
 
     #problem 4
@@ -119,10 +127,10 @@ if __name__ == "__main__":
     # print(P_ws(v0,h0,v1,h1))
 
     # problem 6
-    # x = np.arange(-4,4,.5)
+    x = np.arange(-4,4,.5)
 
-    # for i in x:
-    #     print(math.cos(i),cos_(i,2),cos_(i,3),cos_(i,4))
+    for i in x:
+        print(math.cos(i),cos_(i,2),cos_(i,3),cos_(i,4))
 
-    # print(math.exp(2), e_(2,1), e_(2,5), e_(2,10))
-    # print(math.exp(3), e_(3,50))
+    print(math.exp(2), e_(2,1), e_(2,5), e_(2,10))
+    print(math.exp(3), e_(3,50))
