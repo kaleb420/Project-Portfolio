@@ -79,16 +79,22 @@ def P_ws(v0,h0,v1,h1):
 #input x,tau
 #output value of x of the taylor appoximation to cos with tau+1 terms
 def cos_(x,tau):
-    for i in range(tau+1):
-        y=((-1)**i/math.factorial(2*i))*x**(2*i)
-    return y
+    def term(x,n):
+        y=0
+        for i in range(tau+1):
+            y+=((-1)**i/math.factorial(2**i))*x**(2*i)
+        return y
+    return term(x,tau+1)
 
 #input x,tau
 #output value of x of the taylor appoximation to e with tau+1 terms
 def e_(x,tau):
-    for i in range(tau+1):
-        y=(x)**i/math.factorial(i)
-    return y
+    def term(x,n):
+        y=0
+        for i in range(tau+1):
+            y+=(x)**i/math.factorial(i)
+        return y
+    return term(x,tau+1)
 
 if __name__ == "__main__":
     """
