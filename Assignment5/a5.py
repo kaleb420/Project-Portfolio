@@ -9,7 +9,10 @@ import math
 ###########################################################################
 #recursion
 def h(n):
-    pass
+    if n<=0:
+        return 1
+    else:
+        return 2*n+h(n-1)+h(n-2)
 
 #memoization
 #use this dictionary
@@ -19,7 +22,9 @@ def hmemo(n):
 
 #while-loop
 def hw(n):
-    pass
+    while n<=0:
+        return 2*n+h(n-1)+h(n-2)
+    return 1
 
 #tail recursion
 def htr(n, i = 2, acc0 = 1, acc1 = 4):
@@ -27,7 +32,10 @@ def htr(n, i = 2, acc0 = 1, acc1 = 4):
     
 #recursion
 def p(n):
-    pass
+    if n==10000:
+        return 1
+    else:
+        return p(n-1)+.002*p(n-1)
 
 #tail recursion
 def ptr(n,acc=1000):
@@ -35,7 +43,10 @@ def ptr(n,acc=1000):
 
 #recursion 
 def d(n):
-    pass
+    if n==1:
+        return 1
+    else: 
+        return 3*d(n-1)+1
 
 #tail recursion
 def dtr(n,acc=1):
@@ -43,7 +54,10 @@ def dtr(n,acc=1):
     
 #recursion
 def c(n):
-    pass
+    if n==9:
+        return 1
+    else: 
+        return 9*c(n-1)+10**(n-1)-c(n-1)
 
 #tail recursion
 def ctr(n,acc1=9,acc2=0):
@@ -64,10 +78,22 @@ def cw(n):
 #INPUT t = (a,b,c)
 #RETURN return complex or real roots
 def q(t):
-    pass
-   
-   
-
+    a,b,c=t
+    root_type=b**2-(4*a*c)
+    if root_type>=0:
+        real_0=-b+math.sqrt(root_type)/(2*a)
+        real_1=-b-math.sqrt(root_type)/(2*a)
+        if real_0>=real_1:
+            return (real_1,real_0)
+        else:
+            return (real_0,real_1)
+    else:
+        imaginary_0=round(-b+complex(0,root_type*-1)/(2*a),2)
+        imaginary_1=round(-b-complex(0,root_type*-1)/(2*a),2)
+        if imaginary_0>=imaginary_1:
+            return imaginary_1,imaginary_0
+        else:
+            return imaginary_0, imaginary_1
 
 ###########################################################################
 # Functions for Problem 3
@@ -76,13 +102,18 @@ def q(t):
 #RETURN m, n 
 #CONSTRAINT round to 2 decimal places
 def c_s(coefficients):
-    pass
+    a,b,c=coefficients
+    m=round(b/2*a,2)
+    n=round(c-(b**2/4*a),2)
+    return m,n
 
 #INPUT coefficients for quadratic ax^2 + bx + c 
 #RETURN return real roots uses c_s
 def q_(coefficients):
-    pass
-
+    m,n,=c_s(coefficients)
+    x0=round(-m+math.sqrt(-n),2)
+    x1=round(-m-math.sqrt(-n),2)
+    return x0,x1
 
 ###########################################################################
 # Functions for Problem 4
@@ -90,19 +121,22 @@ def q_(coefficients):
 #INPUT List of numbers
 #RETURN Various means
 def mean(lst):
-    pass
+    return round(sum(lst)/len(lst),2)
 
 def var(lst):
-    pass
+    sum_of=0
+    for i in lst:
+        sum_of+=(i-mean(lst))**2
+    return round((1/len(lst))*sum_of,2)
 
 def std(lst):
-    pass
+    return round(math.sqrt(var(lst)),2)
 
 def mean_centered(lst):
-    pass
-
-
-
+    mc=0
+    for i in lst:
+        mc+=i-mean(lst)
+    return mc
 
 ###########################################################################
 # Functions for Problem 5
@@ -112,9 +146,6 @@ def mean_centered(lst):
 def equi(s,d):
     pass
 
-
-
-
 ###########################################################################
 # Functions for Problem 6
 ###########################################################################
@@ -123,13 +154,17 @@ def equi(s,d):
 #RETURN person pair with the smallest degree (smallest degree of difference between the person pair lists)
 #You cannot use sort of any kind
 def inner_prod(v0,v1):
-    pass
+    ip=0
+    for i in v0:
+        for j in v1:
+            ip+=i*j
+    return ip
 
 def mag(v):
-    pass
+    return math.sqrt(inner_prod(v,v))
 
 def angle(v0,v1):
-    pass
+    cos0=inner_prod(v0,v1)/mag(v0)*mag(v1) 
 
 def match(people):
     pass
@@ -143,7 +178,9 @@ def best_match(scores):
 # Functions for Problem 7
 ###########################################################################
 def determinant(matrix):
-    pass
+    for i in matrix:
+        for j in i:
+            return j[0]*j[3]-j[1]*j[2]
 
 def solve(eq1,eq2):
     pass
@@ -187,9 +224,15 @@ def get_points(center,bd):
 #INPUT list of numbers
 #OUTPUT Boolean if geometric series
 def is_geometric_sequence(lst):
-    pass
-
-
+    ratio=lst[1]/lst[0]
+    if len(lst)>2:
+        for i in lst[2:]:
+            if lst[i]/lst[i-1]==ratio:
+                return True
+            else:
+                return False
+    else:
+        return False
 
 ###########################################################################
 # Functions for Problem 10
@@ -309,15 +352,15 @@ if __name__ == "__main__":
 
 
     # #problem 7
-    # print(determinant([[1,2],[2,3]])) #-1
+    print(determinant([[1,2],[2,3]])) #-1
 
-    # eq1,eq2 = [1,1,3],[2,3,1]
-    # print(solve(eq1,eq2))
-    # eq1,eq2 = [[2,4,11],[-5,3,5]]
-    # x_star,y_star = solve(eq1,eq2)
-    # print(solve(eq1,eq2))
-    # eq1,eq2 = [[3,-5,4],[7,4,25]]
-    # print(solve(eq1,eq2))
+    eq1,eq2 = [1,1,3],[2,3,1]
+    print(solve(eq1,eq2))
+    eq1,eq2 = [[2,4,11],[-5,3,5]]
+    x_star,y_star = solve(eq1,eq2)
+    print(solve(eq1,eq2))
+    eq1,eq2 = [[3,-5,4],[7,4,25]]
+    print(solve(eq1,eq2))
 
     #Uncomment to see visualization (make sure to comment before submitting to the Autograder)
     # x = np.linspace(-2,6,100)
