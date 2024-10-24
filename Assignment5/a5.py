@@ -28,7 +28,7 @@ def hw(n):
 
 #tail recursion
 def htr(n, i = 2, acc0 = 1, acc1 = 4):
-    pass
+    return htr(n-1,acc1,2*n+acc0+acc1)
     
 #recursion
 def p(n):
@@ -81,19 +81,17 @@ def q(t):
     a,b,c=t
     root_type=b**2-(4*a*c)
     if root_type>=0:
-        real_0=-b+math.sqrt(root_type)/(2*a)
-        real_1=-b-math.sqrt(root_type)/(2*a)
+        real_0=round((-b+math.sqrt(root_type))/(2*a),2)
+        real_1=round((-b-math.sqrt(root_type))/(2*a),2)
         if real_0>=real_1:
             return (real_1,real_0)
         else:
             return (real_0,real_1)
     else:
-        imaginary_0=round(-b+complex(0,root_type*-1)/(2*a),2)
-        imaginary_1=round(-b-complex(0,root_type*-1)/(2*a),2)
-        if imaginary_0>=imaginary_1:
-            return imaginary_1,imaginary_0
-        else:
-            return imaginary_0, imaginary_1
+        no_dis=round(-b/(2*a),2)
+        imaginary_p=round(math.sqrt(root_type*-1)/(2*a),2)
+        imaginary_n=round(-math.sqrt(root_type*-1)/(2*a),2)
+        return complex(no_dis,imaginary_p), complex(no_dis,imaginary_n)
 
 ###########################################################################
 # Functions for Problem 3
@@ -164,7 +162,8 @@ def mag(v):
     return math.sqrt(inner_prod(v,v))
 
 def angle(v0,v1):
-    cos0=inner_prod(v0,v1)/mag(v0)*mag(v1) 
+    theta=math.acos(inner_prod(v0,v1)/mag(v0)*mag(v1))
+    return round(theta*(180/math.pi),2)
 
 def match(people):
     pass
@@ -178,12 +177,20 @@ def best_match(scores):
 # Functions for Problem 7
 ###########################################################################
 def determinant(matrix):
-    for i in matrix:
-        for j in i:
-            return j[0]*j[3]-j[1]*j[2]
+    return matrix[0][0]*matrix[1][1]-matrix[0][1]*matrix[1][0]
 
 def solve(eq1,eq2):
-    pass
+    a,b,c=eq1
+    d,e,f=eq2
+    m_a=[c,f,b,e]
+    det_a=m_a[0]*m_a[3]-m_a[1]*m_a[2]
+    m_b=[a,d,b,e]
+    det_b=m_b[0]*m_b[3]-m_b[1]*m_b[2]
+    m_d=[a,d,c,f]
+    det_d=m_d[0]*m_d[3]-m_d[1]*m_d[2]
+    x=round(det_a/det_b,2)
+    y=round(det_d/det_b,2)
+    return x,y
 
 #do not change
 def f_1(x):
@@ -192,9 +199,6 @@ def f_1(x):
 #do not change
 def f_2(x):
     return (1/3)*(5*x + 5)
-
-
-
 
 ###########################################################################
 # Functions for Problem 8 
@@ -208,7 +212,11 @@ def intersection(x,y):
 #input two points
 #output city block distance
 def block_distance(p0, p1):
-    pass
+    minimum=0
+    for i in p0:
+        for j in p1:
+            minimum+=abs(i-j)
+    return minimum
 
 #input the center point and city block distance bd
 #output list of points less than equal distance to center
@@ -226,11 +234,10 @@ def get_points(center,bd):
 def is_geometric_sequence(lst):
     ratio=lst[1]/lst[0]
     if len(lst)>2:
-        for i in lst[2:]:
-            if lst[i]/lst[i-1]==ratio:
-                return True
-            else:
+        for i in range(len(lst)-1):
+            if lst[i+1]/lst[i]!=ratio:
                 return False
+        return True
     else:
         return False
 
@@ -240,8 +247,7 @@ def is_geometric_sequence(lst):
 #INPUT portfolio of stock price, shares, market
 #OUTPUT current total value
 def value(portfolio, market):
-   pass
-
+    pass
 
 ###########################################################################
 # Functions for Problem 11
@@ -250,9 +256,13 @@ def value(portfolio, market):
 #OUTPUT show error (as mentioned in the PDF) or smoothed values
 #problem 12
 def smooth(lst):
-   pass 
-
-
+   newlst=[]
+   if lst==[]:
+       return "AveError: list empty"
+   else:
+        for i in range(len(lst[1:])):
+            newlst.append(round((lst[i]+lst[i+1])/2),2)
+        return newlst
 
 ###########################################################################
 #problem 12
@@ -352,15 +362,15 @@ if __name__ == "__main__":
 
 
     # #problem 7
-    print(determinant([[1,2],[2,3]])) #-1
+    # print(determinant([[1,2],[2,3]])) #-1
 
-    eq1,eq2 = [1,1,3],[2,3,1]
-    print(solve(eq1,eq2))
-    eq1,eq2 = [[2,4,11],[-5,3,5]]
-    x_star,y_star = solve(eq1,eq2)
-    print(solve(eq1,eq2))
-    eq1,eq2 = [[3,-5,4],[7,4,25]]
-    print(solve(eq1,eq2))
+    # eq1,eq2 = [1,1,3],[2,3,1]
+    # print(solve(eq1,eq2))
+    # eq1,eq2 = [[2,4,11],[-5,3,5]]
+    # x_star,y_star = solve(eq1,eq2)
+    # print(solve(eq1,eq2))
+    # eq1,eq2 = [[3,-5,4],[7,4,25]]
+    # print(solve(eq1,eq2))
 
     #Uncomment to see visualization (make sure to comment before submitting to the Autograder)
     # x = np.linspace(-2,6,100)
