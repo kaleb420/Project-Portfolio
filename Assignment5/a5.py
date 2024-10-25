@@ -9,7 +9,7 @@ import math
 ###########################################################################
 #recursion
 def h(n):
-    if n<=0:
+    if n==0:
         return 1
     else:
         return 2*n+h(n-1)+h(n-2)
@@ -18,16 +18,21 @@ def h(n):
 #use this dictionary
 dh1 = {-2:1,-1:1,0:1,1:4}
 def hmemo(n):
-    pass
+    if n not in dh1.keys():
+        if n==0:
+            dh1[n]=0
+        else:
+            dh1[n]=n*hmemo(n-1)
+    return dh1[n]
 
 #while-loop
 def hw(n):
-    while n<=0:
+    while n==0:
         return 2*n+h(n-1)+h(n-2)
     return 1
 
 #tail recursion
-def htr(n, i = 2, acc0 = 1, acc1 = 4):
+def htr(n, i = 2, acc0 = 1, acc1 = 2):
     return htr(n-1,acc1,2*n+acc0+acc1)
     
 #recursion
@@ -38,7 +43,7 @@ def p(n):
         return p(n-1)+.002*p(n-1)
 
 #tail recursion
-def ptr(n,acc=1000):
+def ptr(n,acc=10000):
     pass
 
 #recursion 
@@ -65,12 +70,9 @@ def ctr(n,acc1=9,acc2=0):
 
 #while-loop
 def cw(n):
-    pass
-
-
-
-
-
+    while n>=1:
+        9*c(n-1)+10**(n-1)-c(n-1)
+    return 1
 
 ###########################################################################
 # Functions for Problem 2
@@ -101,8 +103,8 @@ def q(t):
 #CONSTRAINT round to 2 decimal places
 def c_s(coefficients):
     a,b,c=coefficients
-    m=round(b/2*a,2)
-    n=round(c-(b**2/4*a),2)
+    m=round((b/2)*a,2)
+    n=round((c-(b**2)/(4*a)),2)
     return m,n
 
 #INPUT coefficients for quadratic ax^2 + bx + c 
@@ -111,7 +113,7 @@ def q_(coefficients):
     m,n,=c_s(coefficients)
     x0=round(-m+math.sqrt(-n),2)
     x1=round(-m-math.sqrt(-n),2)
-    return x0,x1
+    return x1,x0
 
 ###########################################################################
 # Functions for Problem 4
@@ -131,9 +133,9 @@ def std(lst):
     return round(math.sqrt(var(lst)),2)
 
 def mean_centered(lst):
-    mc=0
+    mc=[]
     for i in lst:
-        mc+=i-mean(lst)
+        mc.append(i-mean(lst))
     return mc
 
 ###########################################################################
@@ -142,7 +144,7 @@ def mean_centered(lst):
 #INPUT supply and demand coefficients
 #RETURN solution of quadratic equations
 def equi(s,d):
-    pass
+    return q(s), q(d)
 
 ###########################################################################
 # Functions for Problem 6
@@ -153,9 +155,8 @@ def equi(s,d):
 #You cannot use sort of any kind
 def inner_prod(v0,v1):
     ip=0
-    for i in v0:
-        for j in v1:
-            ip+=i*j
+    for i in range(len(v0)):
+        ip+=v0[i]*v1[i]
     return ip
 
 def mag(v):
@@ -169,9 +170,7 @@ def match(people):
     pass
 
 def best_match(scores):
-   pass 
-
-
+    pass 
 
 ###########################################################################
 # Functions for Problem 7
@@ -208,14 +207,13 @@ def f_2(x):
 def intersection(x,y):
     pass
 
-
 #input two points
 #output city block distance
 def block_distance(p0, p1):
     minimum=0
     for i in p0:
         for j in p1:
-            minimum+=abs(i-j)
+            minimum+=abs(i)-abs(j)
     return minimum
 
 #input the center point and city block distance bd
@@ -234,7 +232,7 @@ def get_points(center,bd):
 def is_geometric_sequence(lst):
     ratio=lst[1]/lst[0]
     if len(lst)>2:
-        for i in range(len(lst)-1):
+        for i in range(len(lst[1:])):
             if lst[i+1]/lst[i]!=ratio:
                 return False
         return True
@@ -247,7 +245,9 @@ def is_geometric_sequence(lst):
 #INPUT portfolio of stock price, shares, market
 #OUTPUT current total value
 def value(portfolio, market):
-    pass
+    p_value=(portfolio['stock']['x'][0]*portfolio['stock']['x'][1])+(portfolio['stock']['y'][0]*portfolio['stock']['y'][1])
+    m_value=market['x']*portfolio['stock']['x'][1]+market['y']*portfolio['stock']['y'][1]
+    return round(((m_value-p_value)/p_value),2)*100
 
 ###########################################################################
 # Functions for Problem 11
@@ -261,7 +261,7 @@ def smooth(lst):
        return "AveError: list empty"
    else:
         for i in range(len(lst[1:])):
-            newlst.append(round((lst[i]+lst[i+1])/2),2)
+            newlst.append(round((lst[i]+lst[i+1])/2,2))
         return newlst
 
 ###########################################################################
@@ -333,32 +333,32 @@ if __name__ == "__main__":
     # d = (0.02,.6,20)
     # print(equi(s,d))
     
-    #work this by hand
+    # # work this by hand
     # s = (5,7,-350)
     # d = (4,-8,1000)
     # print(equi(s,d))
 
     #problem 6
-    # people0 = [[0,1,1],[1,0,0],[1,1,1]]
-    # print(match(people0))
-    # print(best_match(match(people0)))
+    people0 = [[0,1,1],[1,0,0],[1,1,1]]
+    print(match(people0))
+    print(best_match(match(people0)))
 
-    # people1 = [[0,1,1,0,0,0,1],
-    #            [1,1,0,1,1,1,0],
-    #            [1,0,1,1,0,1,1],
-    #            [1,0,0,1,1,0,0],
-    #            [1,1,1,0,0,1,0]]
-    # print(best_match(match(people1)))
-    # #output is ([1, 1, 0, 1, 1, 1, 0], [1, 0, 0, 1, 1, 0, 0], 39.23)
+    people1 = [[0,1,1,0,0,0,1],
+               [1,1,0,1,1,1,0],
+               [1,0,1,1,0,1,1],
+               [1,0,0,1,1,0,0],
+               [1,1,1,0,0,1,0]]
+    print(best_match(match(people1)))
+    #output is ([1, 1, 0, 1, 1, 1, 0], [1, 0, 0, 1, 1, 0, 0], 39.23)
 
-    # v0,v1 = (2,3,-1), (1,-3,5)
-    # print(angle(v0,v1)) #122.83
+    v0,v1 = (2,3,-1), (1,-3,5)
+    print(angle(v0,v1)) #122.83
 
-    # v0,v1 = (3,4,-1),(2,-1,1)
-    # print(angle(v0,v1)) #85.41
+    v0,v1 = (3,4,-1),(2,-1,1)
+    print(angle(v0,v1)) #85.41
 
-    # v0,v1 = (5,-1,1),(1,1,-1)
-    # print(angle(v0,v1)) #70.53
+    v0,v1 = (5,-1,1),(1,1,-1)
+    print(angle(v0,v1)) #70.53
 
 
     # #problem 7
