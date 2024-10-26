@@ -9,7 +9,7 @@ import math
 ###########################################################################
 #recursion
 def h(n):
-    if n==0:
+    if n<=0:
         return 1
     else:
         return 2*n+h(n-1)+h(n-2)
@@ -22,35 +22,35 @@ def hmemo(n):
         if n==0:
             dh1[n]=0
         else:
-            dh1[n]=n*hmemo(n-1)
+            dh1[n]=2*n+hmemo(n-1)+hmemo(n-2)
     return dh1[n]
 
 #while-loop
 def hw(n):
-    while n==0:
-        return 2*n+h(n-1)+h(n-2)
+    while n>=0:
+        return 2*n+hw(n-1)+hw(n-2)
     return 1
 
 #tail recursion
 def htr(n, i = 2, acc0 = 1, acc1 = 2):
     if n==0:
-        return 1
+        return acc0
     else:
         return htr(n-1,acc1,2*n+acc0+acc1)
     
 #recursion
 def p(n):
     if n==0:
-        return 1
+        return 10000
     else:
         return p(n-1)+.02*p(n-1)
 
 #tail recursion
 def ptr(n,acc=10000):
     if n==0:
-        return 1
+        return acc
     else:
-        return p(n-1,)
+        return ptr(n-1, acc+.02*ptr(n-1))
 
 #recursion 
 def d(n):
@@ -61,7 +61,10 @@ def d(n):
 
 #tail recursion
 def dtr(n,acc=1):
-    pass
+    if n==0:
+        return acc
+    else:
+        return dtr(n-1, 3*acc+1)
     
 #recursion
 def c(n):
@@ -72,12 +75,15 @@ def c(n):
 
 #tail recursion
 def ctr(n,acc1=9,acc2=0):
-    pass
+    if n==0:
+        return acc1
+    else:
+        return ctr(n-1,9*acc1+10**(n-1)-acc1)
 
 #while-loop
 def cw(n):
     while n==0:
-        9*c(n-1)+10**(n-1)-c(n-1)
+        return 9*cw(n-1)+10**(n-1)-cw(n-1)
     return 1
 
 ###########################################################################
@@ -150,7 +156,21 @@ def mean_centered(lst):
 #INPUT supply and demand coefficients
 #RETURN solution of quadratic equations
 def equi(s,d):
-    return q(s), q(d)
+    a1,b1,c1=s
+    a2,b2,c2=d
+    a=a2-a1
+    b=b2-b1
+    c=c2-c1
+    root_type=b**2-(4*a*c)
+    if root_type>=0:
+        real_0=round((-b+math.sqrt(root_type))/(2*a),2)
+        real_1=round((-b-math.sqrt(root_type))/(2*a),2)
+        return real_0,real_1
+    else:
+        no_dis=round(-b/(2*a),2)
+        imaginary_p=round(math.sqrt(root_type*-1)/(2*a),2)
+        imaginary_n=round(-math.sqrt(root_type*-1)/(2*a),2)
+        return complex(no_dis,imaginary_p), complex(no_dis,imaginary_n)
 
 ###########################################################################
 # Functions for Problem 6
@@ -176,7 +196,7 @@ def match(people):
     lst=[]
     for i in people:
         for j in people:
-            lst+=[i,j,angle(i,j)]
+            lst+=[[i,j,angle(i,j)]]
     return lst
 
 def best_match(scores):
@@ -225,9 +245,8 @@ def intersection(x,y):
 #output city block distance
 def block_distance(p0, p1):
     minimum=0
-    for i in p0:
-        for j in p1:
-            minimum+=abs(i-j)
+    for i in range(len(p0)):
+        minimum+=abs(p0[i]-p1[i])
     return minimum
 
 #input the center point and city block distance bd
@@ -259,9 +278,12 @@ def is_geometric_sequence(lst):
 #INPUT portfolio of stock price, shares, market
 #OUTPUT current total value
 def value(portfolio, market):
-    p_value=(portfolio['stock']['x'][0]*portfolio['stock']['x'][1])+(portfolio['stock']['y'][0]*portfolio['stock']['y'][1])
-    m_value=market['x']*portfolio['stock']['x'][1]+market['y']*portfolio['stock']['y'][1]
-    return round(((m_value-p_value)/p_value)*100,2)
+    p_value=0
+    m_value=0
+    for i in portfolio['stock']:
+        p_value+=(portfolio['stock'][i][0]*portfolio['stock'][i][1])
+        m_value+=market[i]*portfolio['stock'][i][1]
+    return round(((m_value-p_value)/p_value),2)*100
 
 ###########################################################################
 # Functions for Problem 11
