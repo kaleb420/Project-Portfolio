@@ -1,5 +1,5 @@
 import random as rn
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 import math
 
@@ -33,22 +33,28 @@ def hw(n):
 
 #tail recursion
 def htr(n, i = 2, acc0 = 1, acc1 = 2):
-    return htr(n-1,acc1,2*n+acc0+acc1)
+    if n==0:
+        return 1
+    else:
+        return htr(n-1,acc1,2*n+acc0+acc1)
     
 #recursion
 def p(n):
-    if n==10000:
+    if n==0:
         return 1
     else:
-        return p(n-1)+.002*p(n-1)
+        return p(n-1)+.02*p(n-1)
 
 #tail recursion
 def ptr(n,acc=10000):
-    pass
+    if n==0:
+        return 1
+    else:
+        return p(n-1,)
 
 #recursion 
 def d(n):
-    if n==1:
+    if n==0:
         return 1
     else: 
         return 3*d(n-1)+1
@@ -59,7 +65,7 @@ def dtr(n,acc=1):
     
 #recursion
 def c(n):
-    if n==9:
+    if n==0:
         return 1
     else: 
         return 9*c(n-1)+10**(n-1)-c(n-1)
@@ -70,7 +76,7 @@ def ctr(n,acc1=9,acc2=0):
 
 #while-loop
 def cw(n):
-    while n>=1:
+    while n==0:
         9*c(n-1)+10**(n-1)-c(n-1)
     return 1
 
@@ -103,7 +109,7 @@ def q(t):
 #CONSTRAINT round to 2 decimal places
 def c_s(coefficients):
     a,b,c=coefficients
-    m=round((b/2)*a,2)
+    m=round(b/(2*a),2)
     n=round((c-(b**2)/(4*a)),2)
     return m,n
 
@@ -167,10 +173,18 @@ def angle(v0,v1):
     return round(theta*(180/math.pi),2)
 
 def match(people):
-    pass
+    lst=[]
+    for i in people:
+        for j in people:
+            lst+=[i,j,angle(i,j)]
+    return lst
 
 def best_match(scores):
-    pass 
+    best=10000000
+    for i in scores:
+        if scores[i]<best:
+            best=angle[i]
+    return best
 
 ###########################################################################
 # Functions for Problem 7
@@ -205,7 +219,7 @@ def f_2(x):
 #input two lists of points
 #output the shared points using a single list comprehension
 def intersection(x,y):
-    pass
+    return [p for p in x if p in y]
 
 #input two points
 #output city block distance
@@ -213,16 +227,16 @@ def block_distance(p0, p1):
     minimum=0
     for i in p0:
         for j in p1:
-            minimum+=abs(i)-abs(j)
+            minimum+=abs(i-j)
     return minimum
 
 #input the center point and city block distance bd
 #output list of points less than equal distance to center
 def get_points(center,bd):
-    pass
-
-
-
+    lst=[]
+    while center in range(block_distance(center,bd)):
+        lst.append(bd)
+    return lst
 
 ###########################################################################
 # Functions for Problem 9
@@ -247,7 +261,7 @@ def is_geometric_sequence(lst):
 def value(portfolio, market):
     p_value=(portfolio['stock']['x'][0]*portfolio['stock']['x'][1])+(portfolio['stock']['y'][0]*portfolio['stock']['y'][1])
     m_value=market['x']*portfolio['stock']['x'][1]+market['y']*portfolio['stock']['y'][1]
-    return round(((m_value-p_value)/p_value),2)*100
+    return round(((m_value-p_value)/p_value)*100,2)
 
 ###########################################################################
 # Functions for Problem 11
@@ -339,26 +353,26 @@ if __name__ == "__main__":
     # print(equi(s,d))
 
     #problem 6
-    people0 = [[0,1,1],[1,0,0],[1,1,1]]
-    print(match(people0))
-    print(best_match(match(people0)))
+    # people0 = [[0,1,1],[1,0,0],[1,1,1]]
+    # print(match(people0))
+    # print(best_match(match(people0)))
 
-    people1 = [[0,1,1,0,0,0,1],
-               [1,1,0,1,1,1,0],
-               [1,0,1,1,0,1,1],
-               [1,0,0,1,1,0,0],
-               [1,1,1,0,0,1,0]]
-    print(best_match(match(people1)))
-    #output is ([1, 1, 0, 1, 1, 1, 0], [1, 0, 0, 1, 1, 0, 0], 39.23)
+    # people1 = [[0,1,1,0,0,0,1],
+    #            [1,1,0,1,1,1,0],
+    #            [1,0,1,1,0,1,1],
+    #            [1,0,0,1,1,0,0],
+    #            [1,1,1,0,0,1,0]]
+    # print(best_match(match(people1)))
+    # #output is ([1, 1, 0, 1, 1, 1, 0], [1, 0, 0, 1, 1, 0, 0], 39.23)
 
-    v0,v1 = (2,3,-1), (1,-3,5)
-    print(angle(v0,v1)) #122.83
+    # v0,v1 = (2,3,-1), (1,-3,5)
+    # print(angle(v0,v1)) #122.83
 
-    v0,v1 = (3,4,-1),(2,-1,1)
-    print(angle(v0,v1)) #85.41
+    # v0,v1 = (3,4,-1),(2,-1,1)
+    # print(angle(v0,v1)) #85.41
 
-    v0,v1 = (5,-1,1),(1,1,-1)
-    print(angle(v0,v1)) #70.53
+    # v0,v1 = (5,-1,1),(1,1,-1)
+    # print(angle(v0,v1)) #70.53
 
 
     # #problem 7
@@ -382,17 +396,17 @@ if __name__ == "__main__":
     
     #problem 8
     
-    # A = ((0,-1),2)
-    # B = ((0,1),1)
-    # C = ((4,4),1)
-    # p = get_points(*A)
-    # q = get_points(*B)
-    # r = intersection(p,q)
-    # s = get_points(*C)
-    # t = intersection(s,q)
+    A = ((0,-1),2)
+    B = ((0,1),1)
+    C = ((4,4),1)
+    p = get_points(*A)
+    q = get_points(*B)
+    r = intersection(p,q)
+    s = get_points(*C)
+    t = intersection(s,q)
 
-    # for points in p,q,r,s:
-    #     print(points)
+    for points in p,q,r,s:
+        print(points)
 
     #uncomment to see visualization
     # color = 'rgbmy'
