@@ -20,7 +20,12 @@ def d(x,b=2):
 ########################
 
 def msi(x):
-    pass
+    difference=0
+    for i in range(len(x)):
+        for j in range(len(x)):
+            if x[i]-x[j]>difference:
+                difference=x[i:j]
+    return difference
     
     
 
@@ -73,11 +78,17 @@ def L(x):
 ########################
 #INPUT non-negative integer
 #OUTPUT True if divisible by 9, False otherwise
-
 def div_9(x):
-    pass
-        
-
+    lst=[]
+    while len(lst)>=3:
+        string=str(x)
+        for i in string:
+            lst.append(int(i))
+        lst=sum(lst)
+    if sum(lst)==9:
+        return True
+    else:
+        False
 
 ########################
 # PROBLEM 7
@@ -143,9 +154,9 @@ if __name__ == "__main__":
 
 
     # # #Problem 6
-    # data6 = [99,0,18273645,22,27]
-    # for d in data6:
-    #     print(div_9(d), not bool(d % 9))
+    data6 = [99,0,18273645,22,27]
+    for d in data6:
+        print(div_9(d), not bool(d % 9))
 
     ##problem 7
     # n = 6
