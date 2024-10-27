@@ -18,21 +18,19 @@ def d(x,b=2):
 ########################
 # PROBLEM 2
 ########################
-
 def msi(x):
     difference=0
-    for i in range(len(x)):
-        for j in range(len(x)):
-            if x[i]-x[j]>difference:
-                difference=x[i:j]
-    return difference
-    
-    
+    for i in range(len(x)+1):
+        for j in range(len(x)+1):
+            if sum(x[i:j])>difference:
+                difference=sum(x[i:j])
+                greatest_value_i=i
+                greatest_value_j=j
+    return [greatest_value_i, greatest_value_j, difference]
 
 ########################
 # PROBLEM 3
 ########################
-
 #INPUT string and shift
 #OUTPUT encoded string
 def encode(msg,shift):
@@ -65,13 +63,17 @@ def entropy(xlst):
 ########################
 # PROBLEM 5
 ########################
-
 #INPUT list of 0s 1s
 #OUTPUT longest list of 1s
 def L(x):
-    pass
-
-
+    longest=[0]
+    for i in x:
+        if i==1:
+            longest[-1]+=1
+        elif i==0:
+            longest.append(0)
+    return max(longest)
+    
 
 ########################
 # PROBLEM 6
@@ -79,13 +81,12 @@ def L(x):
 #INPUT non-negative integer
 #OUTPUT True if divisible by 9, False otherwise
 def div_9(x):
-    lst=[]
-    while len(lst)>=3:
-        string=str(x)
-        for i in string:
-            lst.append(int(i))
-        lst=sum(lst)
-    if sum(lst)==9:
+    lst=[str(x)]
+    while len(lst)!=1:
+        for i in str(lst):
+            lst+=[sum(int(i))]
+            lst=str(lst)
+    if int(lst[0])==9:
         return True
     else:
         False
