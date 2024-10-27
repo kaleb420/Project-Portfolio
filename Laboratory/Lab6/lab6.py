@@ -21,6 +21,10 @@ def task1(size, default):
     """
     return [[default if x!=y else 0 for y in range(size)] for x in range(size)]
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> cd86b6fffb8dd475eaf4c1fedf2e052046e317ac
 def task2(words):
     """
     Given a list of words, return a dictionary of the words and the count of vowels in that word.
@@ -32,7 +36,13 @@ def task2(words):
     """
     return{
         word: sum(1 for letter in word if letter.lower() in "aeiou") for word in words
+<<<<<<< HEAD
     } 
+=======
+    }
+
+
+>>>>>>> cd86b6fffb8dd475eaf4c1fedf2e052046e317ac
 
 def listPrinter(lst):
     """
