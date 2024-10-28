@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 ########################
 # PROBLEM 1
 ########################
-
 #recursive functions
 def cbr(x,b=2):
     pass
@@ -47,18 +46,28 @@ def decode(msg,shift):
 ########################
 # PROBLEM 4
 ########################
-
 #INPUT list of immutable objects
 #RETURN probability distribution as a list
 def makeProbability(xlst):
-    pass
+    dict={}
+    new_lst=[]
+    for i in xlst:
+        if i not in dict:
+            dict[i]=1
+        elif i in dict:
+            dict[i]+=1
+    lst=list(dict.values())
+    for j in range(len(lst)):
+        new_lst.append(lst[j]/len(xlst))
+    return new_lst
 
 #INPUT probability distribution
 #RETURN non-negative number entropy
 def entropy(xlst):
-    pass  
-
-
+    sum_of=0
+    for i in makeProbability(xlst):
+        sum_of+=i*math.log2(i)
+    return round(-sum_of,2)
 
 ########################
 # PROBLEM 5
@@ -74,7 +83,6 @@ def L(x):
             longest.append(0)
     return max(longest)
     
-
 ########################
 # PROBLEM 6
 ########################
@@ -105,11 +113,19 @@ def tiles(n,v,lst):
 #INPUT data points (x0,y0),...,(xn,yn)
 #OUTPUT best regression slope m_hat, intercept b_hat
 def std_linear_regression(data):
-    pass
-
-
-
-
+    xyp=0
+    xs=0
+    ys=0
+    xsq=0
+    for i in data:
+        xyp+=i[0]*i[1]
+        xs+=i[0]
+        ys+=i[1]
+        xsq+=i[0]**2
+    sxy=xyp-(xs*ys)/len(data)
+    sxx=xsq-(xs**2/len(data))
+    m_hat=round(sxy/sxx,3)
+    b_hat=round((ys-m_hat*xs)/len(data),3)
 
 if __name__ == "__main__":
 
@@ -142,10 +158,10 @@ if __name__ == "__main__":
     # print(decode(secret_msg,24))
 
     # # #Problem 4
-    # data4 = [["a", "b", "a", "c", "c", "a"],[1],[1,2,3,4]]
-    # # 1.46, -0.0, 2.0; 0 is minimal, log(n) is maximal
-    # for d in data4:
-    #     print(entropy(d)) 
+    data4 = [["a", "b", "a", "c", "c", "a"],[1],[1,2,3,4]]
+    # 1.46, -0.0, 2.0; 0 is minimal, log(n) is maximal
+    for d in data4:
+        print(entropy(d)) 
 
 
     # #Problem  5
@@ -155,9 +171,9 @@ if __name__ == "__main__":
 
 
     # # #Problem 6
-    data6 = [99,0,18273645,22,27]
-    for d in data6:
-        print(div_9(d), not bool(d % 9))
+    # data6 = [99,0,18273645,22,27]
+    # for d in data6:
+    #     print(div_9(d), not bool(d % 9))
 
     ##problem 7
     # n = 6
