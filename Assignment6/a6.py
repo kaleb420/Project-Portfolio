@@ -1,14 +1,16 @@
 import math
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 ########################
 # PROBLEM 1
 ########################
 #recursive functions
 def cbr(x,b=2):
-    pass
-
+    if x==0:
+        return b
+    else:
+        return 
 
 def d(x,b=2):
     pass
@@ -33,15 +35,36 @@ def msi(x):
 #INPUT string and shift
 #OUTPUT encoded string
 def encode(msg,shift):
-    pass
+    encoded_dict={}
+    number_alphabet={'a':1, 'b':2, 'c':3, 'd':4, 'e':5, 'f':6, 'g':7, 'h':8, 'i':9, 'j':10, 'k':11, 'l':12, 'm':13, 'n':14, 'o':15, 'p':16, 'q':17, 'r':18, 's':19, 't':20, 'u':21, 'v':22, 'w':23, 'x':24, 'y':25, 'z':26, '{':27}
+    message=''
+    if ' ' in msg:
+        msg1=msg.replace(' ', '{')
+        for k,v in number_alphabet.items():
+            encoded_dict[v]=k
+        for i in msg1:
+            encoded=number_alphabet[i]+shift
+            if encoded>27:
+                encoded-=27
+            message+=encoded_dict[encoded]
+        return message
 
 #INPUT encoded string and shift
 #OUTPUT decoded string
 def decode(msg,shift):
+    # decoded_dict={}
+    # number_alphabet={'a':0,'b':1,'c':2,'d':3,'e':4,'f':5,'g':6,'h':7,'i':8,'j':9,'k':10,'l':11,'m':12,'n':13,'o':14,'p':15,'q':16,'r':17,'s':18,'t':29,'u':20,'v':21,'w':22,'x':23,'y':24,'z':25,'{':26}
+    # message=''
+    # msg1=msg.replace('{', ' ')
+    # for k,v in number_alphabet.items():
+    #     decoded_dict[v]=k
+    # for i in msg1:
+    #     decoded=number_alphabet[i]-shift
+    #     if decoded>26:
+    #         decoded-=27
+    #     message+=decoded_dict[decoded]
+    # return message
     pass
-
-
-
 
 ########################
 # PROBLEM 4
@@ -89,15 +112,15 @@ def L(x):
 #INPUT non-negative integer
 #OUTPUT True if divisible by 9, False otherwise
 def div_9(x):
-    lst=[str(x)]
-    while len(lst)!=1:
-        for i in str(lst):
-            lst+=[sum(int(i))]
-            lst=str(lst)
-    if int(lst[0])==9:
+    j=0
+    if x==9 or x==0:
         return True
+    elif len(str(x))!=1:
+        for i in str(x):
+            j+=int(i)
+        return div_9(j)
     else:
-        False
+        return False
 
 ########################
 # PROBLEM 7
@@ -147,21 +170,21 @@ if __name__ == "__main__":
 
 
     #problem 3
-    # data = ["abc xyz","the cat", "i love ctwohundred"]
-    # for i,j in enumerate(data,start=2):
-    #     print(f"original msg {j}")
-    #     print(f"encoded  msg {encode(j,i)}")
-    #     print(f"decoded  msg {decode(encode(j,i),i)}")
+    data = ["abc xyz","the cat", "i love ctwohundred"]
+    for i,j in enumerate(data,start=2):
+        print(f"original msg {j}")
+        print(f"encoded  msg {encode(j,i)}")
+        print(f"decoded  msg {decode(encode(j,i),i)}")
 
-    # secret_msg = encode("the quick brown fox jumps over the lazy dog", 24)
-    # print(secret_msg)
-    # print(decode(secret_msg,24))
+    secret_msg = encode("the quick brown fox jumps over the lazy dog", 24)
+    print(secret_msg)
+    print(decode(secret_msg,24))
 
     # # #Problem 4
-    data4 = [["a", "b", "a", "c", "c", "a"],[1],[1,2,3,4]]
-    # 1.46, -0.0, 2.0; 0 is minimal, log(n) is maximal
-    for d in data4:
-        print(entropy(d)) 
+    # data4 = [["a", "b", "a", "c", "c", "a"],[1],[1,2,3,4]]
+    # # 1.46, -0.0, 2.0; 0 is minimal, log(n) is maximal
+    # for d in data4:
+    #     print(entropy(d)) 
 
 
     # #Problem  5
