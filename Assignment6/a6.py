@@ -7,10 +7,11 @@ import numpy as np
 ########################
 #recursive functions
 def cbr(x,b=2):
-    if x==0:
-        return b
+    msg=''
+    if x//b==0:
+        return msg.append(int(x%b))
     else:
-        return 
+        return cbr(x//b), msg.append(int(x%b))
 
 def d(x,b=2):
     pass
@@ -38,33 +39,35 @@ def encode(msg,shift):
     encoded_dict={}
     number_alphabet={'a':1, 'b':2, 'c':3, 'd':4, 'e':5, 'f':6, 'g':7, 'h':8, 'i':9, 'j':10, 'k':11, 'l':12, 'm':13, 'n':14, 'o':15, 'p':16, 'q':17, 'r':18, 's':19, 't':20, 'u':21, 'v':22, 'w':23, 'x':24, 'y':25, 'z':26, '{':27}
     message=''
-    if ' ' in msg:
-        msg1=msg.replace(' ', '{')
-        for k,v in number_alphabet.items():
-            encoded_dict[v]=k
-        for i in msg1:
-            encoded=number_alphabet[i]+shift
-            if encoded>27:
-                encoded-=27
-            message+=encoded_dict[encoded]
-        return message
+    msg1=msg.replace(' ', '{')
+    if shift>27:
+        shift-=27
+    for k,v in number_alphabet.items():
+        encoded_dict[v]=k
+    for i in msg1:
+        encoded=number_alphabet[i]+shift
+        if encoded>27:
+            encoded-=27
+        message+=encoded_dict[encoded]
+    return message
 
 #INPUT encoded string and shift
 #OUTPUT decoded string
 def decode(msg,shift):
-    # decoded_dict={}
-    # number_alphabet={'a':0,'b':1,'c':2,'d':3,'e':4,'f':5,'g':6,'h':7,'i':8,'j':9,'k':10,'l':11,'m':12,'n':13,'o':14,'p':15,'q':16,'r':17,'s':18,'t':29,'u':20,'v':21,'w':22,'x':23,'y':24,'z':25,'{':26}
-    # message=''
-    # msg1=msg.replace('{', ' ')
-    # for k,v in number_alphabet.items():
-    #     decoded_dict[v]=k
-    # for i in msg1:
-    #     decoded=number_alphabet[i]-shift
-    #     if decoded>26:
-    #         decoded-=27
-    #     message+=decoded_dict[decoded]
-    # return message
-    pass
+    decoded_dict={}
+    number_alphabet={'a':1, 'b':2, 'c':3, 'd':4, 'e':5, 'f':6, 'g':7, 'h':8, 'i':9, 'j':10, 'k':11, 'l':12, 'm':13, 'n':14, 'o':15, 'p':16, 'q':17, 'r':18, 's':19, 't':20, 'u':21, 'v':22, 'w':23, 'x':24, 'y':25, 'z':26, ' ':27}
+    message=''
+    msg1=msg.replace('{', ' ')
+    if shift>27:
+        shift-=27
+    for k,v in number_alphabet.items():
+        decoded_dict[v]=k
+    for i in msg1:
+        decoded=number_alphabet[i]-shift
+        if decoded<1:
+            decoded+=27
+        message+=decoded_dict[decoded]
+    return message
 
 ########################
 # PROBLEM 4
@@ -153,15 +156,15 @@ def std_linear_regression(data):
 if __name__ == "__main__":
 
     #problem 1
-    # x1 = cbr(5,3)
-    # print(x1,d(x1,3))
-    # x1 = cbr(11,2)
-    # print(x1,bin(11),int(bin(11),2),d(x1,2))
+    x1 = cbr(5,3)
+    print(x1,d(x1,3))
+    x1 = cbr(11,2)
+    print(x1,bin(11),int(bin(11),2),d(x1,2))
 
-    # for i in range(2,7):
-    #     print(f"base {i}")
-    #     for j in range(1,9):
-    #         print(f"{j}_10, {cbr(j,i)}_{i}, {d(cbr(j,i),i)}_{10}")
+    for i in range(2,7):
+        print(f"base {i}")
+        for j in range(1,9):
+            print(f"{j}_10, {cbr(j,i)}_{i}, {d(cbr(j,i),i)}_{10}")
 
 
     #problem 2
@@ -170,15 +173,15 @@ if __name__ == "__main__":
 
 
     #problem 3
-    data = ["abc xyz","the cat", "i love ctwohundred"]
-    for i,j in enumerate(data,start=2):
-        print(f"original msg {j}")
-        print(f"encoded  msg {encode(j,i)}")
-        print(f"decoded  msg {decode(encode(j,i),i)}")
+    # data = ["abc xyz","the cat", "i love ctwohundred"]
+    # for i,j in enumerate(data,start=2):
+    #     print(f"original msg {j}")
+    #     print(f"encoded  msg {encode(j,i)}")
+    #     print(f"decoded  msg {decode(encode(j,i),i)}")
 
-    secret_msg = encode("the quick brown fox jumps over the lazy dog", 24)
-    print(secret_msg)
-    print(decode(secret_msg,24))
+    # secret_msg = encode("the quick brown fox jumps over the lazy dog", 24)
+    # print(secret_msg)
+    # print(decode(secret_msg,24))
 
     # # #Problem 4
     # data4 = [["a", "b", "a", "c", "c", "a"],[1],[1,2,3,4]]
