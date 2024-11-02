@@ -13,7 +13,11 @@ def cbr(x,b=2):
         return cbr(x//b,b) + str(x%b)
 
 def d(x,b=2):
-    pass
+    n=len(str(x))-1
+    if n==0:
+        return str(x[n-1]*1)
+    else:
+        return str(x[n-1]*b**(n-1)) + d(x[n-1],b)
 
 ########################
 # PROBLEM 2
