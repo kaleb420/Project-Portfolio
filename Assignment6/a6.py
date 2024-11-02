@@ -7,15 +7,13 @@ import numpy as np
 ########################
 #recursive functions
 def cbr(x,b=2):
-    msg=''
     if x//b==0:
-        return msg.append(int(x%b))
+        return str(x%b)
     else:
-        return cbr(x//b), msg.append(int(x%b))
+        return cbr(x//b,b) + str(x%b)
 
 def d(x,b=2):
     pass
-
 
 ########################
 # PROBLEM 2
@@ -143,6 +141,7 @@ def std_linear_regression(data):
     xs=0
     ys=0
     xsq=0
+    sum_of_y2=0
     for i in data:
         xyp+=i[0]*i[1]
         xs+=i[0]
@@ -152,6 +151,12 @@ def std_linear_regression(data):
     sxx=xsq-(xs**2/len(data))
     m_hat=round(sxy/sxx,3)
     b_hat=round((ys-m_hat*xs)/len(data),3)
+    for j in data:
+        sum_of_y2+=j[1]**2
+    sst=sum_of_y2-(ys**2/len(data))
+    sse=sum_of_y2-(b_hat*ys)-(m_hat*xyp)
+    R=round((sst-sse)/sst,3)
+    return m_hat,b_hat,R
 
 if __name__ == "__main__":
 
