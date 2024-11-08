@@ -60,7 +60,7 @@ def radix_decimal (lst):
     for o in radix(nll):
         nlll.append(str(int(o)*(10**(-ml))))
     for p in nlll:
-        nllll.append(p.strip('0'))
+        nllll.append(round(p.strip('0'),3))
     return nllll
 
 ########################
@@ -215,7 +215,7 @@ def approx_root(f, initial_guess):
 #input sides a,b and angle between
 #output length opposite to angle
 def cosine_law(a,b,angle):
-    return math.sqrt(a**2+b**2-2*a*b*math.cos(angle))
+    return round(math.sqrt(a**2+b**2-2*a*b*math.cos(math.radians(angle))),2)
 
 #intput start time, stop time, speed
 #output distance 
