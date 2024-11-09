@@ -58,9 +58,9 @@ def radix_decimal (lst):
     for k in nl:
         nll.append(str(k))
     for o in radix(nll):
-        nlll.append(str(int(o)*(10**(-ml))))
+        nlll.append(str(round(int(o)*(10**(-ml)),3)))
     for p in nlll:
-        nllll.append(round(p.strip('0'),3))
+        nllll.append(p.strip('0'))
     return nllll
 
 ########################
@@ -74,14 +74,13 @@ def rabbit_fox(br,dr,df,bf,rabbit,fox,time_limit):
     history_rabbit = []
     history_fox = []
     while i < time_limit:
-        if history_rabbit==[]:
-            history_rabbit.append(rabbit)
-            history_fox.append(fox)
-            i+=200
-        else:
-            history_rabbit.append(math.ceil(history_rabbit[-1]+(history_rabbit[-1]*br)-(history_rabbit[-1]*history_fox[-1]*dr)))
-            history_fox.append(math.ceil(history_fox[-1]+(bf*dr*history_rabbit[-1]*history_fox[-1])-(history_fox[-1]*df)))
-            i+=200
+        history_rabbit.append(rabbit)
+        history_fox.append(fox)
+        new_rabbit=(history_rabbit[-1]+(history_rabbit[-1]*br)-(history_rabbit[-1]*history_fox[-1]*dr))
+        new_fox=(math.ceil(history_fox[-1]+(bf*dr*history_rabbit[-1]*history_fox[-1])-(history_fox[-1]*df)))
+        rabbit=math.ceil(new_rabbit)
+        fox=math.ceil(new_fox)
+        i+=1
     return history_rabbit,history_fox
 
 ########################
@@ -91,9 +90,15 @@ def rabbit_fox(br,dr,df,bf,rabbit,fox,time_limit):
 #OUTPUT list of parent, child pairs
 #CONSTRAINT use csv reader
 def get_data(path, filename):
+    parent=[]
+    children=[]
     complete_path=path+filename
-    with open(complete_path, 'r') as file:
-        return file.read()
+    with open(complete_path) as file:
+        for i in file:
+            row=i.rstrip().split(',')
+            parent.append(row[0])
+            children.append(row[1])
+    return parent,children
 
 # We have already completed this function for you.
 #input parent name
@@ -106,7 +111,7 @@ def get_child(name,data):
 #output true if has children
 #constraint using list comprehension
 def has_children(name,data):
-    return [child==name for parent,child in data]
+    return [parent==name for parent in data[0]]
 
 #input child name
 #output parent of child
@@ -118,7 +123,7 @@ def get_parent(name,data):
 #output true of children have same parent
 #constraint using list comprehension
 def siblings(name1,name2,data):
-    pass
+    return 
 
 #input grandparent name1, grandchild name2
 #output true if name1 is grandparent to name2
@@ -130,7 +135,7 @@ def grandparent(name1,name2,data):
 #output all names
 #constraint list comprehension only
 def get_all(data):
-    return [parent+child for parent,child in data]
+    return [parent and child for parent,child in data]
 
 #input name1, name2
 #output true if name1 and name 2 are cousins, i.e., have the same grandparents
@@ -177,9 +182,15 @@ def min_cost(distance,hr_rate,speeds):
 # PROBLEM 7
 ########################
 def get_fish_data(path,name):
+    age=[]
+    length=[]
     complete_path=path+name
     with open(complete_path, 'r') as file:
-        return file.read()
+        for i in file:
+            row=i.rstrip().split(',')
+            age.append(row[0])
+            length.append(row[1])
+    return age,length
 
 #INPUT two lists X values and Y values of data
 #RETURN a polynomial of degree three
@@ -270,9 +281,10 @@ def P(x):
 #output maximal revenuetuple (item,revenue)
 def max_revenue(R,a,b):
     rev=-1000000000
+    unit=0
     for i in range(a,b+1):
-        if R(i)-C(i)>rev:
-            rev=R(i)-C(i)
+        if P(i)>rev:
+            rev=P(i)
             unit=i
     return rev,unit
 
@@ -295,15 +307,15 @@ if __name__ == '__main__':
 
             
         #problem 2 #####################################
-        data21 = ["101","10","12","1000","99","1","5", '100', '120', '990', '310', '0', '301', '102', '654']
-        print(radix(data21))
+        # data21 = ["101","10","12","1000","99","1","5", '100', '120', '990', '310', '0', '301', '102', '654']
+        # print(radix(data21))
 
-        data22 = [".301",".101",".20",".1",".12",".654",".99",".31",".309",]
+        # data22 = [".301",".101",".20",".1",".12",".654",".99",".31",".309",]
 
-        print(radix_decimal(data22))
-        d_22 = data22[::]
-        d_22.sort()
-        print(d_22)
+        # print(radix_decimal(data22))
+        # d_22 = data22[::]
+        # d_22.sort()
+        # print(d_22)
 
         #problem 3 #####################################
         # br = 0.03
@@ -377,7 +389,7 @@ if __name__ == '__main__':
         # To test on your system, you may need to provide the path as well. We encourage some testing to figure it out. 
         # please remember that on Windows - the path use two back slashes \\, while on MAC and Linux the path use forward slash  /
 
-        # X7,Y7 = get_fish_data("Assignment7", 'fish_data.txt')
+        # X7,Y7 = get_fish_data("Assignment7/", 'fish_data.txt')
         # data7 = [[i,j] for i,j in zip(X7,Y7)]
         # print(data7)
 
