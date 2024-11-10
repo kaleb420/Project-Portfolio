@@ -90,15 +90,13 @@ def rabbit_fox(br,dr,df,bf,rabbit,fox,time_limit):
 #OUTPUT list of parent, child pairs
 #CONSTRAINT use csv reader
 def get_data(path, filename):
-    parent=[]
-    children=[]
+    lst=[]
     complete_path=path+filename
     with open(complete_path) as file:
         for i in file:
             row=i.rstrip().split(',')
-            parent.append(row[0])
-            children.append(row[1])
-    return parent,children
+            lst.append(row)
+    return lst
 
 # We have already completed this function for you.
 #input parent name
@@ -111,7 +109,7 @@ def get_child(name,data):
 #output true if has children
 #constraint using list comprehension
 def has_children(name,data):
-    return [parent==name for parent in data[0]]
+    return [name==parent for parent in data[0]]
 
 #input child name
 #output parent of child
@@ -123,24 +121,24 @@ def get_parent(name,data):
 #output true of children have same parent
 #constraint using list comprehension
 def siblings(name1,name2,data):
-    return 
+    return [parent==name1 and parent==name2 for parent,child in data]
 
 #input grandparent name1, grandchild name2
 #output true if name1 is grandparent to name2
 #constraint using list comprehension 
 def grandparent(name1,name2,data):
-    pass
+    return [name1==child and name2==parent for child,parent in data]
 
 #input nothing
 #output all names
 #constraint list comprehension only
 def get_all(data):
-    return [parent and child for parent,child in data]
+    return [name[0] and name[1] for name in data ]
 
 #input name1, name2
 #output true if name1 and name 2 are cousins, i.e., have the same grandparents
 def cousins(name1,name2,data):
-    pass
+    return 
 
 ########################
 # PROBLEM 5
@@ -186,18 +184,18 @@ def get_fish_data(path,name):
     length=[]
     complete_path=path+name
     with open(complete_path, 'r') as file:
+        header=file.readline().rstrip().split(',')
         for i in file:
             row=i.rstrip().split(',')
-            age.append(row[0])
-            length.append(row[1])
+            age.append(float(row[0]))
+            length.append(float(row[1]))
     return age,length
 
 #INPUT two lists X values and Y values of data
 #RETURN a polynomial of degree three
 def make_function(X,Y,degree):
-    pass
-
-
+    polyfit=np.polyfit(X,Y,degree)
+    return np.poly1d(polyfit)
 
 ########################
 # PROBLEM 8
@@ -352,20 +350,20 @@ if __name__ == '__main__':
         # To test on your system, you may need to provide the path as well. We encourage some testing to figure it out. 
         # please remember that on Windows - the path use two back slashes \\, while on MAC and Linux the path use forward slash  /
 
-        # data4 = get_data("Assignment7/", "family.txt")
-        # print(data4)
+        data4 = get_data("Assignment7/", "family.txt")
+        print(data4)
 
-        # print(has_children('0',data4)) #true
-        # print(has_children('7',data4)) #false
-        # print(get_child('6',data4))
-        # print(get_parent('g',data4))
-        # print(siblings('7','A',data4)) #true
-        # print(siblings('2','7',data4)) #false
-        # print(grandparent('0','3',data4)) #true
-        # print(grandparent('0','7',data4)) #false
-        # print(get_all(data4))
-        # print(cousins('3','6',data4)) #true
-        # print(cousins('3','5',data4)) #false
+        print(has_children('0',data4)) #true
+        print(has_children('7',data4)) #false
+        print(get_child('6',data4))
+        print(get_parent('g',data4))
+        print(siblings('7','A',data4)) #true
+        print(siblings('2','7',data4)) #false
+        print(grandparent('0','3',data4)) #true
+        print(grandparent('0','7',data4)) #false
+        print(get_all(data4))
+        print(cousins('3','6',data4)) #true
+        print(cousins('3','5',data4)) #false
 
 
 
