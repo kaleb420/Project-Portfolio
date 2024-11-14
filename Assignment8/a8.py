@@ -16,9 +16,15 @@ import matplotlib.cm as cm
 #output sort of tuples [(s,[s0,s1,...]), (t,[t0,t1,...])] where s = sum([s0,s1,...])
 #using the |k-s| ...
 def kns(lst, k = 0):
-    pass
+    nlst=[]
+    sorted=[]
+    for i in range(len(lst)+1):
+        for j in range(len(lst)+1):
+            for k in range(len(lst)+1):
+                if k!=0:
+                    if lst[i:j:k]!=[] and (sum(lst[i:j:k]),lst[i:j:k]) not in nlst:
+                        nlst+=[(sum(lst[i:j:k]),lst[i:j:k])]
     
- 
  
 ###############################
 ## PROBLEM two               ##
@@ -33,41 +39,61 @@ def c_2(n,m):
 #input n >= 1
 #output recursion
 def B(n):
-    pass
-
-
+    if n==0:
+        return 1
+    else:
+        return -(sum([c_2(n+1,i)*B(i) for i in range(n)])/(n+1))
 
 ###############################
 ## PROBLEM three             ##
 ###############################
-
-
 #INPUTS ith candle, starting value of x, default width, and the four critical values: open, close, max_p, min_p.  
 #RETURN three tuples: (point, width, height, color), topline, bottomline
 #topline ((xt0,yt0),(xt1,yt1)) line from max to top middle of box
 #bottomline ((xb0,yb0),(xb1,yb1)) line from min to bottom middle of box
 def make(i,start,width_default,d):
-    pass
-
-
-
+    open=d[0]
+    close=d[1]
+    max_p=d[2]
+    min_p=d[3]
+    height=abs(close-open)
+    if close>open:
+        color='green'
+    elif close<open:
+        color='red'
+    if color=='green':
+        top=close
+        bottom=open
+        y=open
+    elif color=='red':
+        top=open
+        bottom=close
+        y=close
+    point=start,y
+    center=(width_default/2)+start
+    top_line=((center,top),(center,max_p))
+    bottom_line=((center,bottom),(center,min_p))
+    return (point,width_default,height,color),top_line,bottom_line
 
 ###############################
 ## PROBLEM four              ##
 ###############################
-
 #input list of numbers
 #output list of permuations -- order does not matter
 def permutation(lst):
-    pass
-
-
-
+    nlst=[]
+    if len(lst)==0:
+        return [[]]
+    for i in range(len(lst)):
+        first=lst[i]
+        remainder=lst[:i]+lst[i+1:]
+        for j in permutation(remainder):
+            nlst.append([first]+j)
+    return nlst
 
 ###############################
 ## PROBLEM five              ##
 ###############################
-
 class CN:
     def __init__(self, real=0,imag=0):
         self.real = real
@@ -118,7 +144,7 @@ class CN:
         return CN(r_, i_)
     
     def __pow__(self,power):
-        pass
+        return CN((self.real**power),(self.imag**power))
         
     def __truediv__(self,divisor):
         pass
@@ -148,20 +174,17 @@ class fraction:
             return a
 
         cf = abs(gcd(self.denominator,self.numerator))
-        ## Complte the code here to return the reduced form
-        # We have already put-in the gcd() code for finding the common factor
-        # Use common factor to reduce the numerator and denominator and return the reduced form
+        self.denominator//=cf 
+        self.numerator//=cf
     
     def __str__(self):
         return f"({self.get_numerator()}/{self.get_denominator()})"
     
     def __add__(self,other):
-        pass
+        return fraction(((self.numerator*other.denominator)+(self.denominator*other.numerator)),(self.denominator*other.denominator))
 
     def __mul__(self,other):
-        pass
-    
-
+        return fraction((self.numerator*other.numerator),(self.denominator*other.denominator))
 
 ###############################
 ## PROBLEM seven             ##
@@ -206,18 +229,14 @@ def translate(DNA_d, thedict):
 ###############################
 ## PROBLEM eight             ##
 ###############################
-
 #input function and epsilon
 #output lambda expression (derivative)
 def derivative(f, epsilon):
-    pass
+    return lambda x: (f(x+epsilon)-f(x-epsilon))/(2*epsilon)
     
 #leave as is
 def f(x):
     return x**2 - 3*x
-
-
-
 
 if __name__ == "__main__":
 
@@ -246,7 +265,7 @@ if __name__ == "__main__":
     # ax = fig.add_subplot(111)
     # start = 0
     # default_width = 10
-    # for i in range(len(data5)):
+    # for i in range(len(data)):
     
     #     candle_box,top_line,bottom_line = make(i,start,default_width,data[i])
     #     print(candle_box)
@@ -270,15 +289,15 @@ if __name__ == "__main__":
 
 
     #problem 5
-    # w = CN(1,2)
-    # x = CN(2,1)
+    w = CN(1,2)
+    x = CN(2,1)
 
-    # y = complex(1,2)
-    # z = complex(2,1)
+    y = complex(1,2)
+    z = complex(2,1)
 
-    # for i in range(5):
-    #     print(i, w**i, y**i)
-    # print(w/x,y/z)
+    for i in range(5):
+        print(i, w**i, y**i)
+    print(w/x,y/z)
 
 
     # #uncomment to see mandelbrot
@@ -355,9 +374,9 @@ if __name__ == "__main__":
     # f_prime = derivative((lambda x:x**2-3*x),epsilon)
     # print(f_prime(data))
 
-    # uncomment to see the AI plot and your derivative in action!
-    # Remember to comment out the following plotting code and also the import of matplotlib before submitting to the Autograder.
-    # The following plotting code makes use of your derivative function.
+    # # uncomment to see the AI plot and your derivative in action!
+    # # Remember to comment out the following plotting code and also the import of matplotlib before submitting to the Autograder.
+    # # The following plotting code makes use of your derivative function.
     # N = 50
     # x = np.linspace(1,14,100)
     # gm = np.zeros(N)
@@ -389,7 +408,7 @@ if __name__ == "__main__":
     # for i in range(N):
     #     gm[i] = fmean
     #     r[i] = residuals(data,fmean)
-    #     # print(fmean,residuals(data,fmean))
+    #     print(fmean,residuals(data,fmean))
     #     fmean = update(fmean,data)
 
     # print(gm[-1])
