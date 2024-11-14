@@ -11,7 +11,6 @@ import matplotlib.cm as cm
 ###############################
 ## PROBLEM ONE               ##
 ###############################
-
 #input lst of integers, non-negative integer
 #output sort of tuples [(s,[s0,s1,...]), (t,[t0,t1,...])] where s = sum([s0,s1,...])
 #using the |k-s| ...
@@ -24,7 +23,6 @@ def kns(lst, k = 0):
                 if k!=0:
                     if lst[i:j:k]!=[] and (sum(lst[i:j:k]),lst[i:j:k]) not in nlst:
                         nlst+=[(sum(lst[i:j:k]),lst[i:j:k])]
-    
  
 ###############################
 ## PROBLEM two               ##
@@ -189,7 +187,6 @@ class fraction:
 ###############################
 ## PROBLEM seven             ##
 ###############################
-
 #the dictionary for the transation
 aa_d = {}
 
@@ -204,9 +201,17 @@ actual = "PLHSPHPANFCVFSRD-IPYSEHLRRGALDPGRFRGPRSELSEIERARSRDLRRGPGPPGGEAAARRPLE
 # Key is a tuple (c0, c1, ... , cn) where ci are codons
 # Value is a pair [name, abbreviation] for the amino acid
 # make sure to close the file
-
 def get_amino_acids(path, filename):
-    pass
+    key=[]
+    complete_path=path+filename
+    with open (complete_path,'r') as file:
+        for i in file:
+            row=i.rstrip().split(',')
+            DNA_d.append([row[0],row[1]])
+            key.append(row[2:])
+    for j in range(len(DNA_d)):
+        aa_d[tuple(key[j])]=DNA_d[j]
+    return aa_d
 
 #INPUT path and file name of DNA sequence file
 #RETURN a list [header, DNA]
@@ -215,16 +220,19 @@ def get_amino_acids(path, filename):
 #no whitespace
 #make sure to close the file
 def get_DNA(path, filename):
-    pass  
-
+    complete_path=path+filename
+    with open(complete_path,'r') as file:
+        header=file.readline().rstrip().split(',')
+        for i in file:
+            row=i.rstrip().split(',')
+        header+=row
+    return header
 
 # INPUT A list containing our FASTA file and the dictionary obtained from get_amino_acids
 # RETURN a string representing the protein
 # using the dictionary
 def translate(DNA_d, thedict):
     pass
-
-
 
 ###############################
 ## PROBLEM eight             ##
@@ -241,11 +249,11 @@ def f(x):
 if __name__ == "__main__":
 
     #problem 1
-    # lst = [1,2,3]
-    # print(kns(lst,0))
-    # print(kns(lst,3))
-    # print(kns(lst,sum(lst)))
-    # print(kns([1,2,1],2))
+    lst = [1,2,3]
+    print(kns(lst,0))
+    print(kns(lst,3))
+    print(kns(lst,sum(lst)))
+    print(kns([1,2,1],2))
     
     
     #problem 2
@@ -350,8 +358,8 @@ if __name__ == "__main__":
     # fn1, fn2 = "amino_acids.txt", "DNA.txt"
     # print(fn1,fn2)
     
-    # aa_d = get_amino_acids("write the path here", fn1)
-    # DNA_d = get_DNA("write the path here", fn2)
+    # aa_d = get_amino_acids("Assignment8/", fn1)
+    # DNA_d = get_DNA("Assignment8/", fn2)
     # protein = translate(DNA_d)
 
     # # print("Dictionary")
