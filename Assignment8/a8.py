@@ -1,9 +1,9 @@
 import numpy as np
 import random as rn
-import matplotlib.pyplot as plt
-import matplotlib
+# import matplotlib.pyplot as plt
+# import matplotlib
 import math
-import matplotlib.cm as cm
+# import matplotlib.cm as cm
 
 
 
@@ -16,13 +16,13 @@ import matplotlib.cm as cm
 #using the |k-s| ...
 def kns(lst, k = 0):
     nlst=[]
-    sorted=[]
     for i in range(len(lst)+1):
         for j in range(len(lst)+1):
-            for k in range(len(lst)+1):
-                if k!=0:
-                    if lst[i:j:k]!=[] and (sum(lst[i:j:k]),lst[i:j:k]) not in nlst:
-                        nlst+=[(sum(lst[i:j:k]),lst[i:j:k])]
+            for p in range(len(lst)+1):
+                if p!=0:
+                    if lst[i:j:p]!=[] and (sum(lst[i:j:p]),lst[i:j:p]) not in nlst:
+                        nlst+=[(sum(lst[i:j:p]),lst[i:j:p])]
+    nlst.sort(key=lambda x: abs(k-x[0]))
     return nlst
 
 ###############################
@@ -38,7 +38,10 @@ def c_2(n,m):
 #input n >= 1
 #output recursion
 def B(n):
-    pass
+    if n==0:
+        return 1
+    else:
+        return -(sum([c_2(n+1,i)*B(i) for i in range(n)])/(n+1))
 
 ###############################
 ## PROBLEM three             ##
@@ -48,7 +51,28 @@ def B(n):
 #topline ((xt0,yt0),(xt1,yt1)) line from max to top middle of box
 #bottomline ((xb0,yb0),(xb1,yb1)) line from min to bottom middle of box
 def make(i,start,width_default,d):
-    pass
+    open=d[0]
+    close=d[1]
+    max_p=d[2]
+    min_p=d[3]
+    height=abs(close-open)
+    if close>open:
+        color='green'
+    elif close<open:
+        color='red'
+    if color=='green':
+        top=close
+        bottom=open
+        y=open
+    elif color=='red':
+        top=open
+        bottom=close
+        y=close
+    point=start,y
+    center=(width_default/2)+start
+    top_line=((center,top),(center,max_p))
+    bottom_line=((center,bottom),(center,min_p))
+    return (point,width_default,height,color),top_line,bottom_line
 
 ###############################
 ## PROBLEM four              ##
@@ -56,17 +80,14 @@ def make(i,start,width_default,d):
 #input list of numbers
 #output list of permuations -- order does not matter
 def permutation(lst):
-    nlst=[]
-    if len(lst)==1:
+    if len(lst)==0:
         return [[]]
-    for i in permutation(lst[1:]):
-        nlst+=[i+[lst[0]+1]]
-    return nlst
+    else:
+        return [[lst[i]] + j for i in range(len(lst)) for j in permutation(lst[:i] + lst[i+1:])]
 
 ###############################
 ## PROBLEM five              ##
 ###############################
-
 class CN:
     def __init__(self, real=0,imag=0):
         self.real = real
@@ -117,13 +138,18 @@ class CN:
         return CN(r_, i_)
     
     def __pow__(self,power):
-        pass
+        real=0
+        imag=0
+        for i in range(power+1):
+            bc=math.factorial(power)/(math.factorial(i)*(math.factorial(power-i)))
+            if i%2==0:
+                real+=bc*self.real**(power-i)*self.imag**i
+            else:
+                imag+=bc*self.real**(power-i)*self.imag**i
+        return CN(int(real),int(imag))
         
     def __truediv__(self,divisor):
-        pass
-
- 
-
+        return CN(((self.real*divisor.real)+(self.imag*divisor.imag))/(divisor.real**2+divisor.imag**2),((self.imag*divisor.real)-(self.real*divisor.imag))/(divisor.real**2+divisor.imag**2))
 
 ###############################
 ## PROBLEM six               ##
@@ -147,20 +173,17 @@ class fraction:
             return a
 
         cf = abs(gcd(self.denominator,self.numerator))
-        ## Complte the code here to return the reduced form
-        # We have already put-in the gcd() code for finding the common factor
-        # Use common factor to reduce the numerator and denominator and return the reduced form
+        self.denominator//=cf
+        self.numerator//=cf
     
     def __str__(self):
         return f"({self.get_numerator()}/{self.get_denominator()})"
     
     def __add__(self,other):
-        pass
+        return fraction(((self.numerator*other.denominator)+(self.denominator*other.numerator)),(self.denominator*other.denominator))
 
     def __mul__(self,other):
-        pass
-    
-
+        return fraction((self.numerator*other.numerator),(self.denominator*other.denominator))
 
 ###############################
 ## PROBLEM seven             ##
@@ -184,7 +207,7 @@ def get_amino_acids(path, filename):
     complete_path=path+filename
     with open (complete_path,'r') as file:
         for i in file:
-            row=i.rstrip().split(',')
+            row=i.rstrip().split(', ')
             DNA_d.append([row[0],row[1]])
             key.append(row[2:])
     for j in range(len(DNA_d)):
@@ -210,7 +233,10 @@ def get_DNA(path, filename):
 # RETURN a string representing the protein
 # using the dictionary
 def translate(DNA_d, thedict):
-    pass
+    translation=''
+    for i in DNA_d[0:2]:
+        translation+=thedict[i]
+    return translation
 
 ###############################
 ## PROBLEM eight             ##
@@ -218,7 +244,7 @@ def translate(DNA_d, thedict):
 #input function and epsilon
 #output lambda expression (derivative)
 def derivative(f, epsilon):
-    pass
+    return lambda x: (f(x+epsilon)-f(x-epsilon))/(2*epsilon)
     
 #leave as is
 def f(x):
@@ -227,11 +253,11 @@ def f(x):
 if __name__ == "__main__":
 
     #problem 1
-    lst = [1,2,3]
-    print(kns(lst,0))
-    print(kns(lst,3))
-    print(kns(lst,sum(lst)))
-    print(kns([1,2,1],2))
+    # lst = [1,2,3]
+    # print(kns(lst,0))
+    # print(kns(lst,3))
+    # print(kns(lst,sum(lst)))
+    # print(kns([1,2,1],2))
     
     
     #problem 2
@@ -251,7 +277,7 @@ if __name__ == "__main__":
     # ax = fig.add_subplot(111)
     # start = 0
     # default_width = 10
-    # for i in range(len(data5)):
+    # for i in range(len(data)):
     
     #     candle_box,top_line,bottom_line = make(i,start,default_width,data[i])
     #     print(candle_box)
@@ -333,24 +359,24 @@ if __name__ == "__main__":
     # To test on your system, you may need to provide the path as well. We encourage some testing to figure it out. 
     # please remember that on Windows - the path use two back slashes \\, while on MAC and Linux the path use forward slash  /
         
-    # fn1, fn2 = "amino_acids.txt", "DNA.txt"
-    # print(fn1,fn2)
+    fn1, fn2 = "amino_acids.txt", "DNA.txt"
+    print(fn1,fn2)
     
-    # aa_d = get_amino_acids("Assignment8/", fn1)
-    # DNA_d = get_DNA("Assignment8/", fn2)
-    # protein = translate(DNA_d)
+    aa_d = get_amino_acids("Assignment8/", fn1)
+    DNA_d = get_DNA("Assignment8/", fn2)
+    protein = translate(DNA_d)
 
-    # # print("Dictionary")
-    # print(aa_d)
-    # print("FASTA file")
-    # print(DNA_d)
-    # print("Translations match:", str(protein == actual))
+    # print("Dictionary")
+    print(aa_d)
+    print("FASTA file")
+    print(DNA_d)
+    print("Translations match:", str(protein == actual))
 
-    # #should return "PLHS"    
-    # print(translate(["nothing", "CCACTGCACTCA"]))
+    #should return "PLHS"    
+    print(translate(["nothing", "CCACTGCACTCA"], aa_d))
 
-    # #should returns "D-"
-    # print(translate(["nothing", "GACTAA"]))
+    #should returns "D-"
+    print(translate(["nothing", "GACTAA"], aa_d))
 
     
     # # problem 8
