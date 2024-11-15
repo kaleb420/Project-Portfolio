@@ -301,15 +301,15 @@ if __name__ == "__main__":
 
 
     #problem 5
-    # w = CN(1,2)
-    # x = CN(2,1)
+    w = CN(1,2)
+    x = CN(2,1)
 
-    # y = complex(1,2)
-    # z = complex(2,1)
+    y = complex(1,2)
+    z = complex(2,1)
 
-    # for i in range(5):
-    #     print(i, w**i, y**i)
-    # print(w/x,y/z)
+    for i in range(5):
+        print(i, w**i, y**i)
+    print(w/x,y/z)
 
 
     # #uncomment to see mandelbrot
@@ -386,9 +386,9 @@ if __name__ == "__main__":
     # f_prime = derivative((lambda x:x**2-3*x),epsilon)
     # print(f_prime(data))
 
-    # uncomment to see the AI plot and your derivative in action!
-    # Remember to comment out the following plotting code and also the import of matplotlib before submitting to the Autograder.
-    # The following plotting code makes use of your derivative function.
+    # # uncomment to see the AI plot and your derivative in action!
+    # # Remember to comment out the following plotting code and also the import of matplotlib before submitting to the Autograder.
+    # # The following plotting code makes use of your derivative function.
     # N = 50
     # x = np.linspace(1,14,100)
     # gm = np.zeros(N)
@@ -420,7 +420,7 @@ if __name__ == "__main__":
     # for i in range(N):
     #     gm[i] = fmean
     #     r[i] = residuals(data,fmean)
-    #     # print(fmean,residuals(data,fmean))
+    #     print(fmean,residuals(data,fmean))
     #     fmean = update(fmean,data)
 
     # print(gm[-1])
