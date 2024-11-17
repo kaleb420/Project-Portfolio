@@ -1,9 +1,9 @@
 import numpy as np
 import random as rn
-# import matplotlib.pyplot as plt
-# import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib
 import math
-# import matplotlib.cm as cm
+import matplotlib.cm as cm
 
 
 
@@ -56,21 +56,19 @@ def make(i,start,width_default,d):
     max_p=d[2]
     min_p=d[3]
     height=abs(close-open)
-    if close>open:
+    if close>=open:
         color='green'
-    elif close<open:
-        color='red'
-    if color=='green':
         top=close
         bottom=open
         y=open
-    elif color=='red':
+    elif close<open:
+        color='red'
         top=open
         bottom=close
         y=close
     point=start,y
     center=(width_default/2)+start
-    top_line=((center,top),(center,max_p))
+    top_line=((center,max_p),(center,top))
     bottom_line=((center,bottom),(center,min_p))
     return (point,width_default,height,color),top_line,bottom_line
 
@@ -142,10 +140,15 @@ class CN:
         imag=0
         for i in range(power+1):
             bc=math.factorial(power)/(math.factorial(i)*(math.factorial(power-i)))
-            if i%2==0:
-                real+=bc*self.real**(power-i)*self.imag**i
-            else:
-                imag+=bc*self.real**(power-i)*self.imag**i
+            term=bc*self.real**(power-i)*self.imag**i
+            if i%4==0:
+                real+=term
+            elif i%4==1:
+                imag+=term
+            elif i%4==2:
+                real-=term
+            elif i%4==3:
+                imag-=term
         return CN(int(real),int(imag))
         
     def __truediv__(self,divisor):
@@ -233,9 +236,16 @@ def get_DNA(path, filename):
 # RETURN a string representing the protein
 # using the dictionary
 def translate(DNA_d, thedict):
+    ndict={}
     translation=''
-    for i in DNA_d[0:2]:
-        translation+=thedict[i]
+    for k,v in thedict.items():
+        for c in k:
+            ndict[c]=v
+    for j in DNA_d[1:]:
+        for i in range(0,len(j),3):
+            triple=j[i:i+3]
+            if len(triple)==3:
+                translation+=ndict[triple][1]
     return translation
 
 ###############################
@@ -301,15 +311,15 @@ if __name__ == "__main__":
 
 
     #problem 5
-    w = CN(1,2)
-    x = CN(2,1)
+    # w = CN(1,2)
+    # x = CN(2,1)
 
-    y = complex(1,2)
-    z = complex(2,1)
+    # y = complex(1,2)
+    # z = complex(2,1)
 
-    for i in range(5):
-        print(i, w**i, y**i)
-    print(w/x,y/z)
+    # for i in range(5):
+    #     print(i, w**i, y**i)
+    # print(w/x,y/z)
 
 
     # #uncomment to see mandelbrot
@@ -359,24 +369,24 @@ if __name__ == "__main__":
     # To test on your system, you may need to provide the path as well. We encourage some testing to figure it out. 
     # please remember that on Windows - the path use two back slashes \\, while on MAC and Linux the path use forward slash  /
         
-    fn1, fn2 = "amino_acids.txt", "DNA.txt"
-    print(fn1,fn2)
+    # fn1, fn2 = "amino_acids.txt", "DNA.txt"
+    # print(fn1,fn2)
     
-    aa_d = get_amino_acids("Assignment8/", fn1)
-    DNA_d = get_DNA("Assignment8/", fn2)
-    protein = translate(DNA_d)
+    # aa_d = get_amino_acids("Assignment8/", fn1)
+    # DNA_d = get_DNA("Assignment8/", fn2)
+    # protein = translate(DNA_d, aa_d)
 
-    # print("Dictionary")
-    print(aa_d)
-    print("FASTA file")
-    print(DNA_d)
-    print("Translations match:", str(protein == actual))
+    # # print("Dictionary")
+    # print(aa_d)
+    # print("FASTA file")
+    # print(DNA_d)
+    # print("Translations match:", str(protein == actual))
 
-    #should return "PLHS"    
-    print(translate(["nothing", "CCACTGCACTCA"], aa_d))
+    # #should return "PLHS"    
+    # print(translate(["nothing", "CCACTGCACTCA"], aa_d))
 
-    #should returns "D-"
-    print(translate(["nothing", "GACTAA"], aa_d))
+    # #should returns "D-"
+    # print(translate(["nothing", "GACTAA"], aa_d))
 
     
     # # problem 8
