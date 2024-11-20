@@ -33,9 +33,11 @@ def graphit(x,y,n):
 # Replace the pass statements with correct code implementation
 class Line:
     def __init__(self, **kwargs):
-        pass
+        self.b=kwargs
+        self.m=kwargs
+
     def build_lambda(self):
-        pass
+        self.fn=lambda x: self.m*x+self.b
     
     def sign(self):
         if self.b > 0:
@@ -49,10 +51,13 @@ class Line:
         return self.m,self.b
 
     def __and__(self, right_line):
-       pass  
+        if self.fn==right_line.fn:
+            return "same"
+        elif self.m==right_line.m and self.fn!=right_line.fn:
+            return "parallel"
         
     def __call__(self, arg):
-        pass
+        return lambda x: arg.m*x+arg.b
     
     def __str__(self):
         return f"y = {'' if self.m == 1 else round(self.m,2)}x {self.sign()}"
@@ -120,15 +125,31 @@ def query7(db_cursor):
 
 # problem 4
 def correlation4(data):
-    pass
-
-
+    a=[]
+    b=[]
+    c=[]
+    d=[]
+    corr=[]
+    header=data[0]
+    data.remove(data[0])
+    for i in data:
+        a.append(i[0])
+        b.append(i[1])
+        c.append(i[2])
+        d.append(i[3])
+    lst=[a,b,c,d]
+    for k in range(len(lst)):
+        for j in range(len(lst)):
+            if k<j:
+                correlation,pv=pearsonr(lst[k],lst[j])
+                corr.append([header[k],header[j],float(correlation)])
+    corr.sort(key=lambda x: x[2])
+    return corr
 
 # problem 5
 def my_cluster(data,k):
-    pass
-
-
+    kmeans=KMeans(n_cluster=k, random_state=0,n_init='auto').fit(data)
+    return kmeans
 
 # Do not change -- for visualization
 def my_plot(data,cluster_object):
@@ -251,12 +272,12 @@ if __name__ == "__main__":
     # print(cluster_object.labels_)
     # my_plot(data_from_class,cluster_object)
 
-    # data for homework
+    # # data for homework
     # data5 = [(30, 31, 28, 932), (1, 2, 9, 7), (33, 35, 6, 1127),
     # (14, 15, 18, 213), (5, 7, 3, 33), (7, 9, 29, 61), 
     # (19, 21, 15, 383), (10, 12, 16, 113)]
 
-    # datac = replace this with the two least correlated columns from data5
+    # datac = [(i[0],i[1]) for i in correlation4(data)]
     # cluster_object = my_cluster(datac, 2)
     # print(cluster_object.cluster_centers_)
     # print(cluster_object.labels_)
