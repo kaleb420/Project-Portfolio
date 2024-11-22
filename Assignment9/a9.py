@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 import sqlite3
 import random as rn
@@ -16,28 +16,69 @@ def step(x, y, i, constant):
     rn.seed(constant)
     direction = rn.randint(1,4) #leave this
     # TODO: implement this function
-    pass
+    if direction==1:
+        x[i]=x[i-1]-1
+        y[i]=y[i-1]
+    elif direction==2:
+        x[i]=x[i-1]+1
+        y[i]=y[i-1]
+    elif direction==3:
+        x[i]=x[i-1]
+        y[i]=y[i-1]+1
+    elif direction==4:
+        x[i]=x[i-1]
+        y[i]=y[i-1]-1
 
 #Do not change -- visualization
-def graphit(x,y,n):
-    plt.title("Random {0} Walk\nLast Location {1},{2}".format(n,int(x[n-1]),int(y[n-1])) )
-    plt.plot(x,y) 
-    plt.plot([x[1],x[1]],[y[1]-10,y[1]+10], "b-")
-    plt.plot([x[1]-10,x[1]+10],[y[1],y[1]], "b-")
-    plt.plot([x[n-1]-10,x[n-1]+10],[y[n-1],y[n-1]], "r-")
-    plt.plot([x[n-1],x[n-1]],[y[n-1]-10,y[n-1]+10], "r-")
-    plt.show() 
+# def graphit(x,y,n):
+#     plt.title("Random {0} Walk\nLast Location {1},{2}".format(n,int(x[n-1]),int(y[n-1])) )
+#     plt.plot(x,y) 
+#     plt.plot([x[1],x[1]],[y[1]-10,y[1]+10], "b-")
+#     plt.plot([x[1]-10,x[1]+10],[y[1],y[1]], "b-")
+#     plt.plot([x[n-1]-10,x[n-1]+10],[y[n-1],y[n-1]], "r-")
+#     plt.plot([x[n-1],x[n-1]],[y[n-1]-10,y[n-1]+10], "r-")
+#     plt.show() 
 
 
 #Problem 2
 # Replace the pass statements with correct code implementation
 class Line:
     def __init__(self, **kwargs):
-        self.b=kwargs
-        self.m=kwargs
+        if 'points' in kwargs:
+            po,pt=kwargs['points']
+            self.m=(pt[1]-po[1])/(pt[0]-po[0])
+            self.b=po[1]-po[0]*self.m
+        elif 'point_intercept' in kwargs:
+            po,self.b=kwargs['point_intercept']
+            self.m=(po[1]-self.b)/(po[0]-0)
+        elif 'function' in kwargs:
+            string=kwargs['function']
+            if '+' in string:
+                split=string.split('+')
+                if '.' in split[1]:
+                    self.b=float(split[1])
+                else:
+                    self.b=int(split[1])
+            elif '-' in string:
+                split=string.split('-')
+                if '.' in split[1]:
+                    self.b=float(split[1])
+                else:
+                    self.b=-int(split[1])
+            xsplit=string.split('x')
+            if '.' in xsplit[0]:
+                self.m=float(xsplit[0])
+            elif '.' not in xsplit[0] and xsplit[0]!='':
+                self.m=int(xsplit[0])
+            elif xsplit[0]=='':
+                self.m=1
+        elif 'point_slope' in kwargs:
+            po,self.m=kwargs['point_slope']
+            self.b=self.m*po[0]+po[1]
 
     def build_lambda(self):
         self.fn=lambda x: self.m*x+self.b
+        return self.fn
     
     def sign(self):
         if self.b > 0:
@@ -57,7 +98,7 @@ class Line:
             return "parallel"
         
     def __call__(self, arg):
-        return lambda x: arg.m*x+arg.b
+        return self.fn(arg)
     
     def __str__(self):
         return f"y = {'' if self.m == 1 else round(self.m,2)}x {self.sign()}"
@@ -104,24 +145,53 @@ def query1(db_cursor):
     
 
 def query2(db_cursor):
-    pass
+    temp=[]
+    for i in db_cursor.execute("SELECT * FROM Weather"):
+        if i[2]<80:
+            temp.append(i)
 
 def query3(db_cursor):
-    pass
+    temp=[]
+    for i in db_cursor.execute("SELECT * FROM Weather"):
+        if i[0]=='Albuqurque':
+            alow=i[3]
+    for j in db_cursor.execute("SELECT * FROM Weather"):
+        if j[3]>alow:
+            temp.append(j[0])
+    return temp
 
 def query4(db_cursor):
-    pass
+    min_temp=['city',100]
+    for i in db_cursor.execute("SELECT * FROM Weather"):
+        if min_temp[1]>i[3]:
+            min_temp=[i[0],i[3]]
+    return min_temp
 
 def query5(db_cursor):
-    pass
+    max_temp=['city',100]
+    for i in db_cursor.execute("SELECT * FROM Weather"):
+        if max_temp[1]<i[2]:
+            max_temp=[i[0],i[2]]
+        elif max_temp[1]==i[2]:
+            max_temp.append(i[0],i[2])
+    return max_temp
 
 def query6(db_cursor):
-    pass
+    high=[]
+    low=[]
+    for i in db_cursor.execute("SELECT * FROM Weather"):
+        high.append(i[2])
+        low.append(i[3])
+    return [sum(high)/len(high),sum(low)/len(low)]
 
 def query7(db_cursor):
-    pass
-
-
+    lst=[]
+    for i in db_cursor.execute("SELECT * FROM Weather"):
+        if i[3] not in lst:
+            lst.append([i[3],1])
+        elif i[3] in lst:
+            lst[i][1]+=1
+    return lst
 
 # problem 4
 def correlation4(data):
@@ -148,22 +218,23 @@ def correlation4(data):
 
 # problem 5
 def my_cluster(data,k):
-    kmeans=KMeans(n_cluster=k, random_state=0,n_init='auto').fit(data)
+    x=np.array(data)
+    kmeans=KMeans(n_clusters=k, random_state=0,n_init='auto').fit(x)
     return kmeans
 
 # Do not change -- for visualization
-def my_plot(data,cluster_object):
-    fig, ax = plt.subplots()
-    X = np.array(data)
-    colors = ["#4EACC5", "#FF9C34"]
-    centroid_colors = ['red','blue']
+# def my_plot(data,cluster_object):
+#     fig, ax = plt.subplots()
+#     X = np.array(data)
+#     colors = ["#4EACC5", "#FF9C34"]
+#     centroid_colors = ['red','blue']
 
-    for i,c in zip(range(2),colors):
-        plt.scatter(X[cluster_object.labels_ == i,0],X[cluster_object.labels_ == i,1],color = colors[i])
-        cntdx,cntdy = cluster_object.cluster_centers_[i]
-        plt.scatter(cntdx,cntdy,color = centroid_colors[i], marker='.')
-        plt.text(cntdx-1,cntdy-1,f"{cntdx,cntdy}")
-    plt.show()
+#     for i,c in zip(range(2),colors):
+#         plt.scatter(X[cluster_object.labels_ == i,0],X[cluster_object.labels_ == i,1],color = colors[i])
+#         cntdx,cntdy = cluster_object.cluster_centers_[i]
+#         plt.scatter(cntdx,cntdy,color = centroid_colors[i], marker='.')
+#         plt.text(cntdx-1,cntdy-1,f"{cntdx,cntdy}")
+#     plt.show()
 
 
 
