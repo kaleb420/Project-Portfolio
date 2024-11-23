@@ -1,6 +1,6 @@
 # import matplotlib.pyplot as plt
 import numpy as np
-import sqlite3
+# import sqlite3
 import random as rn
 from scipy.stats import pearsonr
 from sklearn.cluster import KMeans
@@ -17,10 +17,10 @@ def step(x, y, i, constant):
     direction = rn.randint(1,4) #leave this
     # TODO: implement this function
     if direction==1:
-        x[i]=x[i-1]-1
+        x[i]=x[i-1]+1
         y[i]=y[i-1]
     elif direction==2:
-        x[i]=x[i-1]+1
+        x[i]=x[i-1]-1
         y[i]=y[i-1]
     elif direction==3:
         x[i]=x[i-1]
@@ -74,7 +74,7 @@ class Line:
                 self.m=1
         elif 'point_slope' in kwargs:
             po,self.m=kwargs['point_slope']
-            self.b=self.m*po[0]+po[1]
+            self.b=self.m*-po[0]+po[1]
 
     def build_lambda(self):
         self.fn=lambda x: self.m*x+self.b
@@ -92,13 +92,16 @@ class Line:
         return self.m,self.b
 
     def __and__(self, right_line):
-        if self.fn==right_line.fn:
-            return "same"
-        elif self.m==right_line.m and self.fn!=right_line.fn:
-            return "parallel"
+        if self.m==right_line.m and self.b==right_line.b:
+            return ["same"]
+        elif self.m==right_line.m and self.b!=right_line.b:
+            return ["parallel"]
+        else:
+            x=((right_line.b-self.b)/(self.m-right_line.m))
+            return x,self.m*x+self.b
         
     def __call__(self, arg):
-        return self.fn(arg)
+        return self.m*arg+self.b
     
     def __str__(self):
         return f"y = {'' if self.m == 1 else round(self.m,2)}x {self.sign()}"
@@ -114,50 +117,51 @@ class Line:
 # We encourage some testing to figure it out. 
 # Remember that on Windows - the path use two back slashes \\, while on MAC and Linux the path use forward slash  / 
 
-connection = sqlite3.connect("mydatabase.db")
-my_cursor = connection.cursor()
-my_cursor.execute("""SELECT name FROM sqlite_master WHERE type='table'""")
-if not (list(my_cursor.fetchall())):
-    
-    # print('Building Weather table...')
-    my_cursor.execute(''' CREATE TABLE Weather (City text, State text, High real, Low real)''')
-    my_cursor.execute("INSERT INTO Weather Values('Phoenix', 'Arizona', 105, 90)")
-    my_cursor.execute("INSERT INTO Weather Values('Tucson', 'Arizona', 101, 92)")
-    my_cursor.execute("INSERT INTO Weather Values('Flag Staff', 'Arizona', 105, 90)")
-    my_cursor.execute("INSERT INTO Weather Values('San Diego', 'California', 77, 60)")
-    my_cursor.execute("INSERT INTO Weather Values('Albuquerque', 'New Mexico', 80, 72)")
-    my_cursor.execute("INSERT INTO Weather Values('Nome', 'Alaska', 64 ,-54)")
-else:
-    print('Weather Table Exists')
+# connection = sqlite3.connect("mydatabase.db")
+# my_cursor = connection.cursor()
+# my_cursor.execute("""SELECT name FROM sqlite_master WHERE type='table'""")
+# my_cursor.execute('DROP TABLE IF EXISTS Weather')
+# if not (list(my_cursor.fetchall())):
+#     # print('Building Weather table...')
+#     my_cursor.execute(''' CREATE TABLE Weather (City text, State text, High real, Low real)''')
+#     my_cursor.execute("INSERT INTO Weather Values('Phoenix', 'Arizona', 105, 90)")
+#     my_cursor.execute("INSERT INTO Weather Values('Tucson', 'Arizona', 101, 92)")
+#     my_cursor.execute("INSERT INTO Weather Values('Flag Staff', 'Arizona', 105, 90)")
+#     my_cursor.execute("INSERT INTO Weather Values('San Diego', 'California', 77, 60)")
+#     my_cursor.execute("INSERT INTO Weather Values('Albuquerque', 'New Mexico', 80, 72)")
+#     my_cursor.execute("INSERT INTO Weather Values('Nome', 'Alaska', 64 ,-54)")
+#     connection.commit()
+# else:
+#     print('Weather Table Exists')
 
-data = [
-    ('Phoenix', 'Arizona', 105, 90),('Tucson', 'Arizona', 101, 92),
-    ('Flag Staff', 'Arizona', 105, 90), ('San Diego', 'California', 77, 60),
-    ('Alguquerque', 'New Mexico', 80, 72), ('Nome', 'Alaska', 64 ,-54)
-]
+# data = [
+#     ('Phoenix', 'Arizona', 105, 90),('Tucson', 'Arizona', 101, 92),
+#     ('Flag Staff', 'Arizona', 105, 90), ('San Diego', 'California', 77, 60),
+#     ('Alguquerque', 'New Mexico', 80, 72), ('Nome', 'Alaska', 64 ,-54)
+# ]
 
 # We have completed query1 for you.
 def query1(db_cursor):
     temp = []
     for i in db_cursor.execute("SELECT * FROM Weather"):
-        temp.append[i]
+        temp.append(i)
     return temp
     
-
 def query2(db_cursor):
     temp=[]
     for i in db_cursor.execute("SELECT * FROM Weather"):
         if i[2]<80:
             temp.append(i)
+    return temp
 
 def query3(db_cursor):
     temp=[]
     for i in db_cursor.execute("SELECT * FROM Weather"):
-        if i[0]=='Albuqurque':
+        if i[0]=='Albuquerque':
             alow=i[3]
     for j in db_cursor.execute("SELECT * FROM Weather"):
         if j[3]>alow:
-            temp.append(j[0])
+            temp.append([j[0]])
     return temp
 
 def query4(db_cursor):
@@ -165,16 +169,18 @@ def query4(db_cursor):
     for i in db_cursor.execute("SELECT * FROM Weather"):
         if min_temp[1]>i[3]:
             min_temp=[i[0],i[3]]
-    return min_temp
+    return [min_temp]
 
 def query5(db_cursor):
-    max_temp=['city',100]
+    max_temp=[]
     for i in db_cursor.execute("SELECT * FROM Weather"):
+        if max_temp==[]:
+            max_temp=[i[0],i[2]]
         if max_temp[1]<i[2]:
             max_temp=[i[0],i[2]]
         elif max_temp[1]==i[2]:
-            max_temp.append(i[0],i[2])
-    return max_temp
+            max_temp.append([i[0],i[2]])
+    return max_temp[2:]
 
 def query6(db_cursor):
     high=[]
@@ -182,15 +188,19 @@ def query6(db_cursor):
     for i in db_cursor.execute("SELECT * FROM Weather"):
         high.append(i[2])
         low.append(i[3])
-    return [sum(high)/len(high),sum(low)/len(low)]
+    return [[sum(high)/len(high),sum(low)/len(low)]]
 
 def query7(db_cursor):
+    dct={}
     lst=[]
     for i in db_cursor.execute("SELECT * FROM Weather"):
-        if i[3] not in lst:
-            lst.append([i[3],1])
-        elif i[3] in lst:
-            lst[i][1]+=1
+        if i[3] in dct:
+            dct[i[3]]+=1
+        else:
+            dct[i[3]]=1
+    for j,k in dct.items():
+        lst.append([j,k])
+    lst.sort()
     return lst
 
 # problem 4
@@ -213,7 +223,7 @@ def correlation4(data):
             if k<j:
                 correlation,pv=pearsonr(lst[k],lst[j])
                 corr.append([header[k],header[j],float(correlation)])
-    corr.sort(key=lambda x: x[2])
+    corr.sort(key=lambda x: abs(x[2]))
     return corr
 
 # problem 5
