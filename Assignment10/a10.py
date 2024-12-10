@@ -10,7 +10,6 @@ import random as rn
 #       problem 1
 #
 ##########################
-
 #do not change the following function code
 cnt = 0
 def weigh(x,y):
@@ -18,12 +17,10 @@ def weigh(x,y):
     cnt+=1
     return sum(x) == sum(y)
 
-
 #input list of numbers
 #returns list of 3 list equal size + empty, [x], [x,y]
 def split_weight(lst):
     pass
-
 
 #input recursive funciton takes a list of coins with one fake
 #returns fake
@@ -31,14 +28,11 @@ def split_weight(lst):
 def find(lst):
     pass
 
-
-
 ##########################
 #            
 #       problem 2
 #
 ##########################
-
 #html class
 class my_HTML:
     def __init__(self):
@@ -90,25 +84,23 @@ def add_hieroglyphs(page,name):
 #       problem 3
 #
 ##########################
-
-
 #input file name
 #output tree model from skicit learn 
 def build_tree_model(credit_data):
     pass
-
-
 
 ##########################
 #            
 #       problem 4
 #
 ##########################
-
 #input flips and model
 #the product of the flips
 def likelihood(flips,model):
-    pass
+    num=0
+    while len(flips)>num:
+        model[flips[num]]
+        num+=1
 
 #input flips and all models
 #output list of model ID and product sorted by greatest product value
@@ -157,14 +149,14 @@ if __name__ == "__main__":
     # plt.show()
 
     #problem 4
-    # models = {0:{"H":.1, "T":.9},1:{"H":.3, "T":.7},2:{"H":.5, "T":.5},
-    #       3:{"H":.6, "T":.4},4:{"H":.8, "T":.2}}
-    # flips = "HHTT"
-    # print(likelihood(flips,models[2]))
+    models = {0:{"H":.1, "T":.9},1:{"H":.3, "T":.7},2:{"H":.5, "T":.5},
+          3:{"H":.6, "T":.4},4:{"H":.8, "T":.2}}
+    flips = "HHTT"
+    print(likelihood(flips,models[2]))
 
-    # flips = "H"*rn.randint(0,5) + "T"*rn.randint(0,5)
-    # print(flips)
-    # print(max_likelihood(flips,models))
+    flips = "H"*rn.randint(0,5) + "T"*rn.randint(0,5)
+    print(flips)
+    print(max_likelihood(flips,models))
 
     print()
 

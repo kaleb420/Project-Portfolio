@@ -5,26 +5,54 @@ import random as rn
 #input list of semi-ordered intervals
 #output combined intervals under conditions
 def combine(lst):
-    pass
-
+    nlst=[]
+    if len(lst)==1:
+        return lst
+    for i in range(len(lst)-1):
+        if nlst==[]:
+            if lst[i][1]>=lst[i+1][0]:
+                combined=[lst[i][0],lst[i+1][1]]
+                nlst.append(combined)
+            else:
+                nlst.append(lst[i])
+                nlst.append(lst[i+1])
+        else:
+            if nlst[-1][1]>=lst[i+1][0]:
+                combined=[nlst[-1][0],lst[i+1][1]]
+                nlst[-1]=combined
+            else:
+                nlst.append(lst[i+1])
+    return nlst
 
 #problem 2
 def b(lst):
-    pass
-
-
+    k=1
+    if len(lst)==0 or len(lst)==1:
+        return -1
+    else:
+        while k!=len(lst):
+            rs=lst[-k:]
+            ls=lst[:-k]
+            if sum(rs)==sum(ls):
+                return len(ls)
+            else:
+                k+=1
+        return -1
 
 #problem 3
-
 #defined the homework
 def star(n):
-    pass
+    if n==0:
+        return 1
+    else:
+        return n*star(n-1)
 
 #defined in homework    
 def star_star(n):
-    pass
-
-
+    if n==0:
+        return 1
+    else:
+        return star(n)*star_star(n-1)
 
 if __name__ == "__main__":
 
@@ -39,7 +67,7 @@ if __name__ == "__main__":
     #     print(f"{el} → {combine(el)}")
         
     #problem 2
-    # data = [[1,2,3],[0,1,1,0,1,1],[0],[3,3],[1,2,3,3,2,1],[1,2,3,3,2,6]]
+    # data = [[1,2,3],[0,1,1,0,1,1],[0],[3,3],[1,2,3,3,2,1],[1,2,3,3,2,6],[1,0,1]]
 
     # for d in data:
     #     ptr = b(d)
