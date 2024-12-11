@@ -97,16 +97,23 @@ def build_tree_model(credit_data):
 #input flips and model
 #the product of the flips
 def likelihood(flips,model):
-    num=0
-    while len(flips)>num:
-        model[flips[num]]
-        num+=1
+    t=1
+    for i in flips:
+        t*=model[i]
+    return t
 
 #input flips and all models
 #output list of model ID and product sorted by greatest product value
 def max_likelihood(flips, models):
-    pass
-
+    k=0
+    nlst=[]
+    while k!=len(models):
+        t=1
+        for i in flips:
+            t*=models[k][i]
+        nlst.append([k,t])
+        k+=1
+    return nlst
 
 if __name__ == "__main__":
 
