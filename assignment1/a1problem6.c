@@ -19,6 +19,6 @@ int main (void){
 		i=i+2;
 	}
 	if (number>2){
-		printf("%d ", number);
+		printf("The prime factorization of %d is: ", number);
 	}
 }

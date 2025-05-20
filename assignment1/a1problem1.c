@@ -5,8 +5,8 @@ int main(void){
 	char morning;
 	int phone;
 	scanf("%c", &morning);
-	scanf("%c", &mom);
-	scanf("%c", &sleeping);
+	scanf(" %c", &mom);
+	scanf(" %c", &sleeping);
 	if(sleeping=='y'){
 		phone=0;
 	}
@@ -25,9 +25,9 @@ int main(void){
 		}
 	}
 	if(phone==0){
-		printf("don't answer phone\n");
+		printf("don't answer phone");
 	}
 	else if(phone==1){
-		printf("answer phone\n");
+		printf("answer phone");
 	}
 }

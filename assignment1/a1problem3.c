@@ -5,8 +5,8 @@ int main(void){
 	double num2;
 	char operator;
 	scanf("%lf", &num1);
-	scanf("%c", &operator);
 	scanf("%lf", &num2);
+	scanf("%c", &operator);
 	switch(operator){
 		case '+':
 			printf("%.3f\n", num1+num2);

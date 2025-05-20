@@ -81,6 +81,7 @@ int main(void){
 			Annual=10*HSalary*4*12;
 		}
 	}
+	scanf("%c", &Married);
 	if (Married=='y'){
 		if (Annual>32000){
 			Tax=Annual*.25;
@@ -100,8 +101,11 @@ int main(void){
 	if (MSalary<0 || WSalary<0 || HSalary<0){
 		printf("Error: Salary cannot be negative.");
 	}
-	if (OLimit < OType){
-		printf("Overtime hours exceed limit. Only %d hours will be counted", OLimit);
+	else{
+		if (OLimit < OType){
+			printf("Overtime hours exceed limit. Only %d hours will be counted.\n", OLimit);
+		}
+		printf("This employee's annual income is $%.3f before tax and $%.3f after tax\n", Annual, Annual-Tax);
+
 	}
-	printf("This employee's annual income is $%.3f before tax and $%.3f after tax\n", Annual, Annual-Tax);
 }
