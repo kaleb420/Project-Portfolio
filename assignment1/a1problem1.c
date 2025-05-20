@@ -8,14 +8,17 @@ int main(void){
 		phone=0;
 	}
 	else if(sleeping=='n'){
-		if(mom=='y'){
+		if(mom=='y' && morning='y'){
 			phone=1;
 		}
-		else if(morning=='n'){
+		else if(mom=='y' && morning=='n'){
 			phone=1;
 		}
-		else{
+		else if(mom=='n' && morning=='y'){
 			phone=0;
+		}
+		else if(mom=='n' && morning=='n'){
+			phone=1;
 		}
 	}
 	if(phone==0){

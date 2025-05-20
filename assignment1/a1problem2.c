@@ -7,6 +7,12 @@ int main(void){
 	char *type;
 	char *isosceles;
 	char *equilateral;
+	printf("Input first angle: ");
+	scanf("%d", &a1);
+	printf("Input second angle: ");
+	scanf("%d", &a2);
+	printf("Input third angle: ");
+	scanf("%d", &a3);
 	if(a1+a2+a3==180 && a1>0 && a2>0 && a3>0){
 		validity="valid";
 		if(a1>90 || a2>90 || a3>90){
@@ -31,9 +37,10 @@ int main(void){
 			isosceles="";
 			equilateral="";
 		}
+	printf("%s %s %s %s", validity, type, isosceles, equilateral);
 	}
 	else{
 		validity="invalid";
+		printf("%s", validity);
 	}
-	printf("%s %s %s %s", validity, type, isosceles, equilateral);
 }

@@ -28,7 +28,7 @@ int main(void){
 		x=x+dx;
 		y=y+dy;
 		time=time+dt;
-		printf("Time step: %.3d, Prey (x): %.3f, Predators (y): %.3f\n", iterations, x, y);
+		printf("Time step: %d, Prey (x): %.3f, Predators (y): %.3f\n", iterations, x, y);
 		iterations++;
 	}
 }
