@@ -4,6 +4,7 @@ int main (void){
 	int number;
 	int i=3;
 	scanf("%d", &number);
+	printf("The prime factorization of %d is: ", number);
 	if (number<=1){
 		printf("%d has no prime factorization", number);
 	}
@@ -19,6 +20,6 @@ int main (void){
 		i=i+2;
 	}
 	if (number>2){
-		printf("The prime factorization of %d is: ", number);
+		printf("%d ", number);
 	}
 }

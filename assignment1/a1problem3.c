@@ -4,9 +4,7 @@ int main(void){
 	double num1;
 	double num2;
 	char operator;
-	scanf("%lf", &num1);
-	scanf("%lf", &num2);
-	scanf("%c", &operator);
+	scanf("%lf %c %lf", &num1, &operator, &num2);
 	switch(operator){
 		case '+':
 			printf("%.3f\n", num1+num2);
