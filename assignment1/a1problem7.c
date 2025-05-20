@@ -1,7 +1,6 @@
 #include <stdio.h>
 int main(void){
 	int number;
-	printf("Enter the starting Fizz Buzz number: ");
 	scanf("%d", &number);
 	if(number<=0){
 		printf("Error: cannot compute Fizz Buzz of %d", number);
