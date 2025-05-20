@@ -105,7 +105,7 @@ int main(void){
 		if (OLimit < OType){
 			printf("Overtime hours exceed limit. Only %d hours will be counted.\n", OLimit);
 		}
-		printf("This employee's annual income is $%.3f before tax and $%.3f after tax\n", Annual, Annual-Tax);
+		printf("This employee's annual income is $%.3f before tax and $%.3f after tax.\n", Annual, Annual-Tax);
 
 	}
 }
