@@ -20,7 +20,7 @@ int main(void){
 		}
 		if(a1==a2 || a1==a3 || a2==a3){
 			isosceles="isosceles";
-			if(a1==a2==a3){
+			if(a1==a2 && a2==a3){
 				equilateral="equilateral";
 			}
 			else{
@@ -33,7 +33,7 @@ int main(void){
 		}
 	}
 	else{
-		validity="not valid";
+		validity="invalid";
 	}
-	printf("%s, %s, %s, %s\n", validity, type, isosceles, equilateral);
+	printf("%s %s %s %s", validity, type, isosceles, equilateral);
 }

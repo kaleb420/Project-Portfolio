@@ -7,11 +7,11 @@ int main(void){
 	float delta;
 	float gamma;
 	float dt;
-	float ndt;
 	int N;
 	float dx;
 	float dy;
 	int iterations;
+	int time;
 	x=40;
 	y=9;
 	alpha=.1;
@@ -21,13 +21,13 @@ int main(void){
 	dt=.01;
 	N=1000;
 	iterations=1;
-	ndt=dt;
+	time=0
 	while (iterations!=N){
-		dx=(alpha*x-beta*x*y)*ndt;
-		dy=(-gamma*y+delta*x*y)*ndt;
+		dx=(alpha*x-beta*x*y)*dt;
+		dy=(-gamma*y+delta*x*y)*dt;
 		x=x+dx;
 		y=y+dy;
-		ndt=ndt+dt;
+		time=time+dt;
 		printf("Time step: %.3d, Prey (x): %.3f, Predators (y): %.3f\n", iterations, x, y);
 		iterations++;
 	}

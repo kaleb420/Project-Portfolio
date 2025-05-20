@@ -15,8 +15,6 @@ int main(void){
 	float Tax;
 	int OLimit;
 	int OType;
-	printf("Input employee type: ");
-	scanf("%c", &Type);
 	if(Type=='A'){
 		printf("Input monthly salary: ");
 		scanf("%f", &MSalary);
@@ -31,8 +29,9 @@ int main(void){
 		scanf("%f", &MOvertime);
 		if (OLimit < OType){
 			Annual=MSalary*12+(MSalary/4/5/8)*10*1.5*12;
+		}
 		else{
-		Annual=MSalary*12+(MSalary/4/5/8)*MOvertime*1.5*12;
+			Annual=MSalary*12+(MSalary/4/5/8)*MOvertime*1.5*12;
 	}}
 	else if(Type=='E'){
 		OLimit=1;
@@ -45,10 +44,15 @@ int main(void){
 		scanf(" %c", &Vacation);
 		printf("Input number of products sold in a year: ");
 		scanf("%d", &Sold);
-		if (Vacation=='y'){
-			Annual=MSalary*11+DOvertime*4*5*11*1.35+600*Sold+.5*MSalary;
+		if (OLimit < OType){
+			if (Vacation=='y'){
+				Annual=MSalary*11+1*4*5*11*1.35+600*Sold+.5*MSalary;
+			}
+			else if (Vacation=='n'){
+				Annual=MSalary*12+1*4*5*12*1.35+600*Sold;
+			}
 		}
-		else if (Vacation=='n'){
+		else {
 			Annual=MSalary*12+DOvertime*4*5*12*1.35+600*Sold;
 	}}
 	else if(Type=='P'){
@@ -60,8 +64,12 @@ int main(void){
 		scanf("%f", &WOvertime);
 		printf("Input number of products sold in a year: ");
 		scanf("%d", &Sold);
-		Annual=WSalary*4+WOvertime*4+600*Sold;
-	}
+		if (OLimit < OType){
+			Annual=WSalary*4+10*4+600*Sold;
+		}
+		else {
+			Annual=WSalary*4+WOvertime*4+600*Sold;
+	}}
 	else if(Type=='H'){
 		OLimit=20;
 		OType=WOvertime;
@@ -75,6 +83,9 @@ int main(void){
 		else if(WHours<=10){
 			Annual=10*HSalary*4*12;
 		}
+	}
+	if (MSalary<0 || WSalary<0 || HSalary<0){
+		printf("Error: Salary cannot be negative.");
 	}
 	printf("Is this employee married: ");
 	scanf(" %c", &Married);
@@ -95,7 +106,6 @@ int main(void){
 		}
 	}
 	if (OLimit < OType){
-		Annual
 		printf("Overtime hours exceed limit. Only %d hours will be counted", OLimit);
 	}
 	printf("This employee's annual income is $%.3f before tax and $%.3f after tax\n", Annual, Annual-Tax);

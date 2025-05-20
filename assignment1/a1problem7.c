@@ -7,19 +7,19 @@ int main(void){
 	else{
 		while(number>=1){
 			if(number%3==0 && number%5==0){
-				printf("Fizz-Buzz");
+				printf("Fizz-Buzz ");
 				number--;
 			}
 			else if(number%3==0){
-				printf("Fizz");
+				printf("Fizz ");
 				number--;
 			}
 			else if(number%5==0){
-				printf("Buzz");
+				printf("Buzz ");
 				number--;
 			}
 			else{
-				printf("%d", number);
+				printf("%d ", number);
 				number--;
 			}
 		}

@@ -4,12 +4,6 @@ int main(void){
 	double num1;
 	double num2;
 	char operator;
-	printf("What's the first number? ");
-	scanf("%lf", &num1);
-	printf("What's the operator? ");
-	scanf(" %c", &operator);
-	printf("What's the second number? ");
-	scanf("%lf", &num2);
 	switch(operator){
 		case '+':
 			printf("%.3f\n", num1+num2);
@@ -33,6 +27,6 @@ int main(void){
 				printf("Error: even root of negative number\n");
 			}
 			else{
-				printf("%.6f\n", pow(num2,1.0/num1));
+				printf("%.3f\n", pow(num2,1.0/num1));
 			}
 }}
