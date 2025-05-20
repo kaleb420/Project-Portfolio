@@ -15,13 +15,17 @@ int main(void){
 	float Tax;
 	int OLimit;
 	int OType;
+	scanf("%c", &Type);
 	if(Type=='A'){
+		scanf("%f", &MSalary);
 		OLimit=10000000;
 		WSalary=1;
 		HSalary=1;
 		Annual=MSalary*12;
 	}
 	else if(Type=='S'){
+		scanf("%f", &MSalary);
+		scanf("%f", &MOvertime);
 		OLimit=10;
 		OType=MOvertime;
 		if (OLimit < MOvertime){
@@ -31,6 +35,10 @@ int main(void){
 			Annual=MSalary*12+(MSalary/4/5/8)*MOvertime*1.5*12;
 	}}
 	else if(Type=='E'){
+		scanf("%f", &MSalary); 
+		scanf("%f", &DOvertime);
+		scanf("%c", &Vacation);
+		scanf("%d", &Sold);
 		OLimit=1;
 		OType=DOvertime;
 		if (OLimit < DOvertime){
@@ -50,6 +58,9 @@ int main(void){
 			}
 	}}
 	else if(Type=='P'){
+		scanf("%f", &WSalary);
+		scanf("%f", &WOvertime);
+		scanf("%d", &Sold);
 		OLimit=10;
 		OType=WOvertime;
 		if (OLimit < WOvertime){
@@ -59,6 +70,8 @@ int main(void){
 			Annual=WSalary*4+WOvertime*4+600*Sold;
 	}}
 	else if(Type=='H'){
+		scanf("%f", &HSalary);
+		scanf("%f", &WHours);
 		OLimit=20;
 		OType=WOvertime;
 		if (WHours>10){

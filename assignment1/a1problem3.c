@@ -4,9 +4,8 @@ int main(void){
 	double num1;
 	double num2;
 	char operator;
-	printf("What's the first number? ");
 	scanf("%lf", &num1);
-	printf("What's the second number? ");
+	scanf("%c", &operator);
 	scanf("%lf", &num2);
 	switch(operator){
 		case '+':

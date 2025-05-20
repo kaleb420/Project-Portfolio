@@ -3,6 +3,7 @@
 int main (void){
 	int number;
 	int i=3;
+	scanf("%d", &number);
 	if (number<=1){
 		printf("%d has no prime factorization", number);
 	}

@@ -4,11 +4,14 @@ int main(void){
 	char mom;
 	char morning;
 	int phone;
+	scanf("%c", &morning);
+	scanf("%c", &mom);
+	scanf("%c", &sleeping);
 	if(sleeping=='y'){
 		phone=0;
 	}
 	else if(sleeping=='n'){
-		if(mom=='y' && morning='y'){
+		if(mom=='y' && morning=='y'){
 			phone=1;
 		}
 		else if(mom=='y' && morning=='n'){

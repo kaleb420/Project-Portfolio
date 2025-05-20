@@ -22,7 +22,7 @@ int main(void){
 	N=1000;
 	iterations=1;
 	time=0;
-	while (iterations!=N){
+	while (iterations<=N){
 		dx=(alpha*x-beta*x*y)*dt;
 		dy=(-gamma*y+delta*x*y)*dt;
 		x=x+dx;

@@ -2,8 +2,6 @@
 int main(void){
 	int number;
 	int binary=0;
-	int counter=1;
-	int reversed;
 	scanf("%d", &number);
 	if(number<0){
 		printf("Error: Number must be a positive integer");
