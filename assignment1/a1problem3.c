@@ -4,7 +4,7 @@ int main(void){
 	double num1;
 	double num2;
 	char operator;
-	scanf("%lf %c %lf", &num1, &operator, &num2);
+	scanf("%lf  %c %lf", &num1, &operator, &num2);
 	switch(operator){
 		case '+':
 			printf("%.3f\n", num1+num2);
@@ -17,7 +17,7 @@ int main(void){
 				printf("%.3f\n", num1 / num2);
 			}
 			else{
-				printf("Error: dividing by zero\n");
+				printf("Error: dividing by zero");
 			}
 		case '%':
 			printf("%.3f\n", fmod(num1, num2));
@@ -25,9 +25,15 @@ int main(void){
 			printf("%.3f\n", pow(num1,num2));
 		case 'r':
 			if (fmod(num1,2)==0 && num2<0){
-				printf("Error: even root of negative number\n");
+				printf("Error: even root of negative number");
 			}
 			else{
-				printf("%.3f\n", pow(num2,1.0/num1));
+				if (pow(num2,1.0/num1>0)){
+					printf("%.3f\n", pow(num2,1.0/num1));
+				}
+				else{
+					printf("%.3f\n", -pow(-num2,1.0/num1));
+				}
 			}
-}}
+	}
+}

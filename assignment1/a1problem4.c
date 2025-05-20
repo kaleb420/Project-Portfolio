@@ -15,7 +15,7 @@ int main(void){
 	float Tax;
 	int OLimit;
 	int OType;
-	scanf("%c", &Type);
+	scanf(" %c", &Type);
 	if(Type=='A'){
 		scanf("%f", &MSalary);
 		OLimit=10000000;
@@ -37,7 +37,7 @@ int main(void){
 	else if(Type=='E'){
 		scanf("%f", &MSalary); 
 		scanf("%f", &DOvertime);
-		scanf("%c", &Vacation);
+		scanf(" %c", &Vacation);
 		scanf("%d", &Sold);
 		OLimit=1;
 		OType=DOvertime;
@@ -81,7 +81,7 @@ int main(void){
 			Annual=10*HSalary*4*12;
 		}
 	}
-	scanf("%c", &Married);
+	scanf(" %c", &Married);
 	if (Married=='y'){
 		if (Annual>32000){
 			Tax=Annual*.25;
