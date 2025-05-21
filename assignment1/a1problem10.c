@@ -13,30 +13,30 @@ int main(void){
 	scanf(" %c", &type);
 	if (type=='e'){
 		if (encrypted>1000){
-			printf("%d", encrypted);
+			printf("Encrypted number: %d", encrypted);
 		}
 		else if(encrypted<1000){
-			printf("0%d", encrypted);
+			printf("Encrypted number: 0%d", encrypted);
 		}
 		else if(encrypted<100){
-			printf("00%d", encrypted);
+			printf("Encrypted number: 00%d", encrypted);
 		}
 		else if(encrypted<10){
-			printf("000%d", encrypted);
+			printf("Encrypted number: 000%d", encrypted);
 		}
 	}
 	else if(type=='d'){
 		if (encrypted>1000){
-			printf("%d", decrypted);
+			printf("Decrypted number: %d", decrypted);
 		}
 		else if(encrypted<1000){
-			printf("0%d", decrypted);
+			printf("Decrypted number: 0%d", decrypted);
 		}
 		else if(encrypted<100){
-			printf("00%d", decrypted);
+			printf("Decrypted number: 00%d", decrypted);
 		}
 		else if(encrypted<10){
-			printf("000%d", decrypted);
+			printf("Decrypted number: 000%d", decrypted);
 		}
 	}
 }
