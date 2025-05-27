@@ -1,3 +1,4 @@
+#include <stdio.h>
 void collatz(int n){
 	if (n==1){
 		return;
@@ -11,7 +12,7 @@ void collatz(int n){
 }
 void collatzIterative(int n){
 	while (n!=1){
-		return;
+		printf("%d,", n);
 		if (n%2==1){
 			n=3*n+1;
 		}
@@ -19,5 +20,6 @@ void collatzIterative(int n){
 			n=n/2;
 		}
 	}
+	printf("%d",n);
 	return;
 }
