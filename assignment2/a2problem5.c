@@ -1,0 +1,23 @@
+void collatz(int n){
+	if (n==1){
+		return;
+	}
+	if (n%2==1){
+		collatz(3*n+1);
+	}
+	else if (n%2==0){
+		collatz(n/2);
+	}
+}
+void collatzIterative(int n){
+	while (n!=1){
+		return;
+		if (n%2==1){
+			n=3*n+1;
+		}
+		else if (n%2==0){
+			n=n/2;
+		}
+	}
+	return;
+}

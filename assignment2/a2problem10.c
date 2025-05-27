@@ -1,0 +1,15 @@
+unsigned long long int fibonacciIterative(int n){
+	int n1=0;
+	int n2=1;
+	while (n1+n2!=n){
+		n2=n2+n1;
+		n1=n2-n1;
+	}
+	return n1+n2;
+}
+unsigned long long int fibonacciRecursive(int n){
+	if (n==1 || n==0)
+		return n;
+	else
+		return fibonacciRecursive(n-1) + fibonacciRecursive(n-2);
+}
