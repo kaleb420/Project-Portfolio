@@ -8,7 +8,10 @@ unsigned long long int fibonacciIterative(int n){
 		n2=n2+n1;
 		n1=n2-n1;
 	}
-	return n1+n2;
+	if (n<=0)
+		return 0;
+	else
+		return n1+n2;
 }
 unsigned long long int fibonacciRecursive(int n){
 	if (n==1 || n==0)

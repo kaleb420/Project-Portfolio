@@ -1,7 +1,7 @@
 #include <stdio.h>
 void collatz(int n){
 	if (n==1){
-		printf("%d", n);
+		printf("%d\n", n);
 		return;
 	}
 	printf("%d,", n);
