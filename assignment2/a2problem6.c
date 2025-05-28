@@ -1,16 +1,12 @@
 #include <stdio.h>
 int sumOfSquares(int n){
-	int Sum=0;
-	int digit;
-	while (n>0){
-		digit=n%10;
-		n=n/10;
-		Sum+=digit*digit;
+	if (n!=0){
+		return (n%10)*(n%10)+sumOfSquares(n/10);
 	}
-	return Sum;
+	else
+		return 0;
 }
 int Happy2Help(int n, int depth){
-	depth=0;
 	while (depth<=100){
 		if (n==1)
 			return 1;

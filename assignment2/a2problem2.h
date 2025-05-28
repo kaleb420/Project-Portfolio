@@ -1,2 +1,2 @@
 int countFunctionCalls(void);
-int calculateFactorial(int n);
+unsigned long long int calculateFactorial(unsigned long long int n);
