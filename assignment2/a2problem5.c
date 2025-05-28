@@ -4,10 +4,10 @@ void collatz(int n){
 		return;
 	}
 	if (n%2==1){
-		collatz(3*n+1);
+		return collatz(3*n+1);
 	}
 	else if (n%2==0){
-		collatz(n/2);
+		return collatz(n/2);
 	}
 }
 void collatzIterative(int n){

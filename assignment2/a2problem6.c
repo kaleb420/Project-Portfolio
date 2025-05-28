@@ -8,7 +8,7 @@ int sumOfSquares(int n){
 	}
 	return Sum;
 }
-int happy2Help(int n, int depth){
+int Happy2Help(int n, int depth){
 	if (n==1)
 		return 1;
 	else if (depth>=100)
