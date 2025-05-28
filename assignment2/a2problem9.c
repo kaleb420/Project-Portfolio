@@ -1,8 +1,7 @@
-static int original;
+#include <math.h>
 int power(int base, int expt){
-	original=base;
 	if (expt==1)
 		return base;
 	else
-		return power(base*original, expt-1);
+		return base*power(base, expt-1);
 }

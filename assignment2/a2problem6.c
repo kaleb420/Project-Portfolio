@@ -19,7 +19,7 @@ int Happy2Help(int n, int depth){
 	}
 }
 int isHappy(int n){
-	int h=happy2Help(n,0);
+	int h=Happy2Help(n,0);
 	if (h==1)
 		return 1;
 	else

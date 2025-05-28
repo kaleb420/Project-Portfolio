@@ -5,5 +5,6 @@ int main(void){
         int expt;
         scanf("%d", &base);
         scanf("%d", &expt);
-        power(base,expt);
+        int p=power(base,expt);
+	printf("%d", p);
 }
