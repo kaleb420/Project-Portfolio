@@ -15,10 +15,7 @@ int enter(int n){
 		return 1;
 }
 void leave(int n){
-	if (get_current_cap()-n>=0)
-		return;
-	else if (get_current_cap()-n<0)
-		return;
+	return;
 }
 void restaurantSim(int C, int N, int B, int T){
 	int time_passed=0;
