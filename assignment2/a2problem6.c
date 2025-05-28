@@ -16,7 +16,7 @@ int Happy2Help(int n, int depth){
 			return 1;
 		else{
 			depth++;
-			return sumOfSquares(n);
+			return Happy2Help(sumOfSquares(n), depth);
 		}
 	}
 	return 0;

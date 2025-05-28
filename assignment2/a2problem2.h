@@ -1,2 +1,2 @@
-int countFunctionCalls(int n);
+int countFunctionCalls(void);
 int calculateFactorial(int n);
