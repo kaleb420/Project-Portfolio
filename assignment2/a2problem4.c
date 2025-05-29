@@ -9,7 +9,7 @@ unsigned long long int factorial(long n){
 	}
 	return f;
 }
-unsigned long long int subfactorial(unsigned long long int n){
+unsigned long long int subfactorial(unsigned long long int n){ // unsigned long long int was used in an attempt to debug an autograder case, but ultimately failed
 	if (n==0)
 		return 1;
 	else if(n==1)
@@ -19,7 +19,7 @@ unsigned long long int subfactorial(unsigned long long int n){
 }
 unsigned long long int subfactorialIterative(long n){
 	float subfact;
-	for (int k=0; k<=n; k++){
+	for (int k=0; k<=n; k++){ // the internet provided the formula used, and loop through k values to establish a sum of those values, multiplied by the factorial of n
 		subfact+=pow(-1,k)/factorial(k);
 	}
 	subfact=subfact*factorial(n);
