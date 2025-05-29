@@ -15,6 +15,7 @@ int enter(int n){
 		return 1;
 }
 void leave(int n){
+	get_current_cap()-n;
 	return;
 }
 void restaurantSim(int C, int N, int B, int T){
@@ -25,7 +26,9 @@ void restaurantSim(int C, int N, int B, int T){
 	get_max_cap();
 	while (time_passed<=T){
 		group_size=rand()%N;
-		if (rand()%2==0)
+		if get_current_cap()+N>=C
+			return leave(group_size);
+		else if (rand()%2==0)
 			return leave(group_size);
 		else if (rand()%2==1)
 			return;

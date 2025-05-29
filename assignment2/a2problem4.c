@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <math.h>
 unsigned long long int factorial(long n){
 	long f=1;
@@ -8,7 +9,7 @@ unsigned long long int factorial(long n){
 	}
 	return f;
 }
-unsigned long long int subfactorial(long n){
+unsigned long long int subfactorial(unsigned long long int n){
 	if (n==0)
 		return 1;
 	else if(n==1)
