@@ -23,10 +23,18 @@ int findIntersection(int *input1, int input1_length, int *input2, int input2_len
 }
 int findUnion(int *input1, int input1_length, int *input2, int input2_length){
 	int different_elements=0;
+	int *inputone=input1;
 	int *temp1=input1;
 	int *temp2=input2;
 	for (int i=0; i<input1_length; i++){
-		different_elements++;
+		for (int k=0; k<input1_length; i++){
+			input1=temp1;
+			inputone=temp1;
+			input1+=i;
+			inputone+=k;
+			if (i!=k && input1!=inputone)
+				different_elements++;
+		}
 		for (int j=0; j<input2_length; j++){
 			input1=temp1;
 			input2=temp2;

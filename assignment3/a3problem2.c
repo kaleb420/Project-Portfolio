@@ -18,8 +18,8 @@ void printBoard(char board[SIZE][SIZE]){
 	}
 }
 int checkWin(char board[SIZE][SIZE]){
-	for (int i=0; i<=SIZE-3; i++){
-		for (int j=0; j<=SIZE-3; j++){
+	for (int i=0; i<=SIZE-2; i++){
+		for (int j=0; j<=SIZE-2; j++){
 			if (board[i][j]=='X' && board[i+1][j]=='X' && board[i+2][j]=='X')
 				return 1;
 			else if (board[i][j]=='O' && board[i+1][j]=='O' && board[i+2][j]=='O')
@@ -31,6 +31,10 @@ int checkWin(char board[SIZE][SIZE]){
 			else if (board[i][j]=='X' && board[i+1][j+1]=='X' && board[i+2][j+2]=='X')
 				return 1;
 			else if (board[i][j]=='O' && board[i+1][j+1]=='O' && board[i+2][j+2]=='O')
+				return 1;
+			else if (board[i][j]=='X' && board[i-1][j-1]=='X' && board[i-2][j-2]=='X')
+				return 1;
+			else if (board[i][j]=='O' && board[i-1][j-1]=='O' && board[i-2][j-2]=='O')
 				return 1;
 		}
 	}
