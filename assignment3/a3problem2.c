@@ -18,8 +18,8 @@ void printBoard(char board[SIZE][SIZE]){
 	}
 }
 int checkWin(char board[SIZE][SIZE]){
-	for (int i=0; i<=SIZE-2; i++){
-		for (int j=0; j<=SIZE-2; j++){
+	for (int i=0; i<=SIZE-3; i++){
+		for (int j=0; j<=SIZE-3; j++){
 			if (board[i][j]=='X' && board[i+1][j]=='X' && board[i+2][j]=='X')
 				return 1;
 			else if (board[i][j]=='O' && board[i+1][j]=='O' && board[i+2][j]=='O')
