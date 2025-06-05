@@ -22,29 +22,34 @@ int findIntersection(int *input1, int input1_length, int *input2, int input2_len
 	return similar_elements;
 }
 int findUnion(int *input1, int input1_length, int *input2, int input2_length){
-	int different_elements=0;
-	int *inputone=input1;
 	int *temp1=input1;
 	int *temp2=input2;
+	int a_length=input1_length+input2_length;
+	int a[a_length];
+	int in_a;
+	int unique_count=0;
 	for (int i=0; i<input1_length; i++){
-		for (int k=0; k<input1_length; k++){
-			input1=temp1;
-			inputone=temp1;
-			input1+=i;
-			inputone+=k;
-			if (i!=k && *input1!=*inputone)
-				different_elements++;
-		}
-		for (int j=0; j<input2_length; j++){
-			input1=temp1;
-			input2=temp2;
-			input1+=i;
-			input2+=j;
-			if (*input1!=*input2)
-				different_elements++;
-		}
+		input1=temp1;
+		input1+=i;
+		a[i]=*input1;
 	}
-	return different_elements;
+	for (int j=input1_length; j<input1_length+input2_length; j++){
+		input2=temp2;
+		input2+=j-input1_length;
+		a[j]=*input2;
+	}
+	for (int k=0; k<a_length; k++){
+		in_a=0;
+		for (int p=0; p<k; p++){
+			if (a[k]==a[p]){
+				in_a=1;
+				break;
+			}
+		}
+		if (in_a==0)
+			unique_count++;
+	}
+	return unique_count;
 }
 float calculateJaccard(int *input1, int input1_length, int *input2, int input2_length){
 	return findIntersection(input1, input1_length, input2, input2_length)/findUnion(input1, input1_length, input2, input2_length);
