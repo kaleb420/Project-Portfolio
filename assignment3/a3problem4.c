@@ -52,5 +52,8 @@ int findUnion(int *input1, int input1_length, int *input2, int input2_length){
 	return unique_count;
 }
 float calculateJaccard(int *input1, int input1_length, int *input2, int input2_length){
-	return findIntersection(input1, input1_length, input2, input2_length)/findUnion(input1, input1_length, input2, input2_length);
+	float Intersect=findIntersection(input1, input1_length, input2, input2_length);
+	float Union=findUnion(input1, input1_length, input2, input2_length);
+	float Jaccard=Intersect/Union;
+	return Jaccard;
 }
