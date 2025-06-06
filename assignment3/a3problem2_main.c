@@ -6,7 +6,7 @@ int main(void){
 	int counter;
 	char board[SIZE][SIZE];
 	initializeBoard(board);
-	while (checkWin(board)!=1){
+	while (checkWin(board)!=1){ // continually run functions until either the board is full or a player has won
 		if (isBoardFull(board)==1)
 			break;
 		printBoard(board);

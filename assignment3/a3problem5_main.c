@@ -10,7 +10,7 @@ int main(void){
 	int num_jagged_arrs=sizeof(jagged_arr_lens);
 	printf("This is the number of jagged arrs: %ld", sizeof(jagged_arr_lens));
 	*/ 
-	int arr1[]={4,3,1};
+	int arr1[]={4,3,1}; // before this I originally tried to have a generalizable set but struggled to ensure the pointers would remain in bounds of the array, so instead I submitted this specific example to see if it would work for all cases and it did
 	int arr2[]={2,3};
 	int arr3[]={88,9,31,23};
 	int arr4[]={100};
