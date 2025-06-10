@@ -2,10 +2,9 @@
 int strLen(const char* str){
 	int counter=0;
 	if (str[counter]=='\0')
-		return -1;
+		return 0; 
 	while (str[counter]!='\0'){
-		if (str[counter]!= ' ')
-			counter++;
+		counter++;
 	}
 	return counter;
 }
@@ -37,5 +36,6 @@ const char * strChr(const char * str, int character){
 	while (str[counter]!='\0'){
 		if (str[counter]==character)
 			return str[counter];
+		counter++;
 	}
 }

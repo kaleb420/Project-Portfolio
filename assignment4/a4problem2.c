@@ -16,6 +16,8 @@ char **tokenize(char *s, char d, int *n){
 		}
 		token[columns][rows]=s[j];
 		rows+=1;
+		j+=1;
 	}
+	free(token);
 	return token;
 }
