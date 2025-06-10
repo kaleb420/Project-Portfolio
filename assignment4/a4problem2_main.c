@@ -4,10 +4,11 @@
 int main(void){
 	char *s="hello world, how are, you doing?";
 	char d=',';
-	int *n=0;
-	char **token=tokenize(s, d, n);
-	for (int i=0; i<*n+1; i++){
+	int n=1;
+	char **token=tokenize(s, d, &n);
+	for (int i=0; i<n; i++){
 		printf("%s", token[i]);
 	}
-	printf("n is populated with %d", *n);
+	printf("\nn is populated with %d", n);
+	free(token);
 }

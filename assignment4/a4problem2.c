@@ -10,14 +10,15 @@ char **tokenize(char *s, char d, int *n){
 	int j=0;
 	while (s[j]!='\0'){
 		if (s[j]==d){
-			n+=1;
-			columns+=1;
-			rows=0;
+			if (j!=0 && s[j+1]!='\0'){
+				(*n)+=1;
+				columns+=1;
+				rows=0;
+			}
 		}
 		token[columns][rows]=s[j];
 		rows+=1;
 		j+=1;
 	}
-	free(token);
 	return token;
 }

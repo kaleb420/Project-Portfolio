@@ -30,6 +30,8 @@ char **getXMLTagAndContent(char *s){
 		row++;
 		counter++;
 	}
-	free(str);
+	/* for (int j=0; j<3; j++){
+		printf("%s\n", str[j]);
+	} */
 	return str; 
 }
