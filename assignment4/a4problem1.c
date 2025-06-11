@@ -33,7 +33,6 @@ void strCat(char* destination, char* source){
 		counter++;
 		destination_counter++;
 	}
-	destination[destination_counter]=source[0];
 	destination[destination_counter+1]='\0';
 }
 const char * strChr(const char * str, int character){
