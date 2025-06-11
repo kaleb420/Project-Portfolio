@@ -9,7 +9,7 @@ char **tokenize(char *s, char d, int *n){
 	}
 	int j=0;
 	while (s[j]!='\0'){
-		if (s[j]==d){
+		if (s[j]==d && s[j+1]!=d){
 			if (j!=0 && s[j+1]!='\0'){
 				(*n)+=1;
 				columns+=1;
