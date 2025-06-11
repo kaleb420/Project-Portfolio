@@ -2,12 +2,12 @@
 #include <stdlib.h>
 int* createArrayList(int initialCapacity, int *capacity, int *size){
 	int *arr=(int *)malloc(sizeof(int)*initialCapacity);
-	size=0;
-	capacity=initialCapacity;
+	*size=0;
+	*capacity=initialCapacity;
 	return arr;
 }
 int* resizeArrayList(int *list, int *capacity, int resizeFactor){
-	int *newlist=(int *)malloc(sizeof(capacity)+resizeFactor);
+	int *newlist=(int *)malloc(sizeof(*capacity)+resizeFactor);
 	int counter=0;
 	while (list[counter]!='\0'){
 		newlist[counter]=list[counter];
