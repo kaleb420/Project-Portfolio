@@ -23,13 +23,17 @@ void strNCpy(char* destination, const char* source, int n){
 	}
 }
 void strCat(char* destination, char* source){
+	int destination_counter=0;
+	while (destination[destination_counter]!='\0'){
+		destination_counter++;
+	}
 	int counter=0;
 	while (source[counter]!='\0'){
-		destination[counter]=source[counter];
+		destination[destination_counter]=source[counter];
 		counter++;
 	}
-	destination[counter]=source[0];
-	destination[counter+1]='\0';
+	destination[destination_counter]=source[0];
+	destination[destination_counter+1]='\0';
 }
 const char * strChr(const char * str, int character){
 	int counter=0;
