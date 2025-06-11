@@ -11,7 +11,7 @@ char **tokenize(char *s, char d, int *n){
 	while (s[j]!='\0'){
 		if (s[j]==d){
 			if (j!=0 && s[j+1]!='\0'){
-				(*n)+=1;
+				n+=1;
 				columns+=1;
 				rows=0;
 			}
@@ -23,6 +23,5 @@ char **tokenize(char *s, char d, int *n){
 			j+=1;
 		}
 	}
-	n-=99;
 	return token;
 }
