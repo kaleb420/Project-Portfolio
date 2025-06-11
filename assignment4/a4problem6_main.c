@@ -12,5 +12,5 @@ int main(void){
 	addItem(list, size, capacity, value);
 	removeItem(list, size, index);
 	resizeArrayList(list, capacity, resizeFactor);
-	printArrayList(list, size);
+	printArrayList(list, *size);
 }

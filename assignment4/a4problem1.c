@@ -31,6 +31,7 @@ void strCat(char* destination, char* source){
 	while (source[counter]!='\0'){
 		destination[destination_counter]=source[counter];
 		counter++;
+		destination_counter++;
 	}
 	destination[destination_counter]=source[0];
 	destination[destination_counter+1]='\0';

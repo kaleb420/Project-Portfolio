@@ -18,6 +18,9 @@ char **tokenize(char *s, char d, int *n){
 			}
 			j+=1;
 		}
+		else if (s[j]==d && s[j+1]==d){
+			j+=1;
+		}
 		else{
 			token[columns][rows]=s[j];
 			rows+=1;

@@ -7,17 +7,16 @@ int* createArrayList(int initialCapacity, int *capacity, int *size){
 	return arr;
 }
 int* resizeArrayList(int *list, int *capacity, int resizeFactor){
-	int *newlist=(int *)malloc(sizeof(*capacity)*resizeFactor);
-	int counter=0;
-	while (list[counter]!='\0'){
-		newlist[counter]=list[counter];
+	int *newlist=(int *)malloc(*capacity*resizeFactor);
+	for (int i=0; i<*capacity+resizeFactor; i++){
+		newlist[i]=list[i];
 	}
 	return newlist;
 }
 int* addItem(int *list, int *size, int *capacity, int value){
-	if (*size>=*capacity){
+	if (*size>*capacity){
 		int *resized=resizeArrayList(list, capacity, *size-*capacity);
-		(*capacity)+=1;
+		*capacity==*size;
 		resized[*size]=value;
 		return resized;
 	}
@@ -29,7 +28,6 @@ void removeItem(int *list, int *size, int index){
 	for (; index<(*size)-1; index++){
 		list[index]=list[index+1];
 	}
-	(*size)-=1;
 }
 void printArrayList(int *list, int size){
 	printf("[");
