@@ -4,9 +4,8 @@
 int main(void){
 	char *s=",hello world, how are, you doing?,";
 	char d=',';
-	int n=0;
+	int n=1;
 	char **token=tokenize(s, d, &n);
-	n-=98;
 	for (int i=0; i<n; i++){
 		printf("%s", token[i]);
 	}

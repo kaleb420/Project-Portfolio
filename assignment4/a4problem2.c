@@ -23,5 +23,6 @@ char **tokenize(char *s, char d, int *n){
 			j+=1;
 		}
 	}
+	n-=99;
 	return token;
 }
