@@ -3,6 +3,7 @@
 char **tokenize(char *s, char d, int *n){
 	int columns=0;
 	int rows=0;
+	*n=1;
 	char **token=(char **)malloc(sizeof(char *)*20);
 	for (int i=0; i<20; i++){
 		token[i]=malloc(sizeof(char)*20);
