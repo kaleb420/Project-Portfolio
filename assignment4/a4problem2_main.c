@@ -9,6 +9,6 @@ int main(void){
 	for (int i=0; i<n; i++){
 		printf("%s", token[i]);
 	}
-	printf("\nn is populated with %d", n);
+	printf("%d", n);
 	free(token);
 }

@@ -7,13 +7,8 @@ int* createArrayList(int initialCapacity, int *capacity, int *size){
 	return arr;
 }
 int* resizeArrayList(int *list, int *capacity, int resizeFactor){
-	int *newlist=(int *)malloc(sizeof(*capacity)+resizeFactor);
-	int counter=0;
-	while (list[counter]!='\0'){
-		newlist[counter]=list[counter];
-		counter++;
-	}
-	return newlist;
+	list=(int *)malloc(sizeof(*capacity)+resizeFactor);
+	return list;
 }
 int* addItem(int *list, int *size, int *capacity, int value){
 	if ((*size)>(*capacity)){
@@ -23,6 +18,7 @@ int* addItem(int *list, int *size, int *capacity, int value){
 	return list;
 }
 void removeItem(int *list, int *size, int index){
+	list[index]-=list[index];
 	for (; index<(*size)-1; index++){
 		list[index]=list[index+1];
 	}
