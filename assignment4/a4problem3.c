@@ -18,27 +18,27 @@ long **read_content(void){
 	int smallest=10000000;
 	int largest=-10000000;
 	while (index0[number]!='\0'){
-		number+=1;
 		sum+=index0[number];
 		if (index0[number]>largest)
 			largest=index0[number];
 		if (index0[number]<smallest)
 			smallest=index0[number];
+		number+=1;
 	}
 	average=sum/(number+1);
 	range=largest-smallest;
-	free(arr);
+	printf("not freed");
+	fflush(stdout);
 	free(index1);
 	free(integers);
-	printf("will return");
-	fflush(stdout);
 	return arr;
 }
 int main(void){
-	long **read=read_content();
-	printf("The array contains: [%ld]\n", read[0][0]);
-	printf("There are %ld numbers,\n", read[1][0]);
-	printf("The sum is %ld,\n", read[1][1]);
-	printf("The average is %ld,\n", read[1][2]);
-	printf("The range is %ld.", read[1][3]);
+	long **arr=read_content();
+	printf("The array contains: [%ld]\n", arr[0][0]);
+	printf("There are %ld numbers,\n", arr[1][0]);
+	printf("The sum is %ld,\n", arr[1][1]);
+	printf("The average is %ld,\n", arr[1][2]);
+	printf("The range is %ld.", arr[1][3]);
+	free(arr);
 }

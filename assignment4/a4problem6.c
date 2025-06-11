@@ -12,6 +12,7 @@ int* resizeArrayList(int *list, int *capacity, int resizeFactor){
 	int counter=0;
 	while (list[counter]!='\0'){
 		newlist[counter]=list[counter];
+		counter++;
 	}
 	free(newlist);
 	return newlist;
