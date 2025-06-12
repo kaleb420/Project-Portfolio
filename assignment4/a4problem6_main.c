@@ -9,12 +9,11 @@ int main(void){
 	int value;
 	int index;
 	int resizeFactor;
-	int size2=*size;
-	createArrayList(initialCapacity, capacity, size);
+	list=createArrayList(initialCapacity, capacity, size);
 	addItem(list, size, capacity, value);
 	removeItem(list, size, index);
-	resizeArrayList(list, capacity, resizeFactor);
-	printArrayList(list, size2);
+	list=resizeArrayList(list, capacity, resizeFactor); 
+	printArrayList(list, *size);
 	free(capacity);
 	free(size);
 	free(list);
