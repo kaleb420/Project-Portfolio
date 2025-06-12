@@ -34,20 +34,19 @@ long **read_content(void){
 	index1[0]=size;
 	index1[2]=index1[1]/size;
 	index1[3]=largest-smallest;
+	printf("The array contains: ");
+        for (int i=0; i<size; i++){
+                if (i==size-1)
+                        printf("%ld],\n", arr[0][i]);
+                else if (i==0)
+                        printf("[%ld, ", arr[0][i]);
+                else
+                        printf("%ld, ", arr[0][i]);
+        }
 	return arr;
 }
 int main(void){
 	long **arr=read_content();
-	int size=sizeof(arr[0])/2;
-	printf("The array contains: ");
-	for (int i=0; i<size; i++){
-		if (i==size-1)
-			printf("%ld],\n", arr[0][i]);
-		else if (i==0)
-			printf("[%ld, ", arr[0][i]);
-		else 
-			printf("%ld, ", arr[0][i]);
-	}
 	printf("There are %ld numbers,\n", arr[1][0]);
 	printf("The sum is %ld,\n", arr[1][1]);
 	printf("The average is %ld,\n", arr[1][2]);
