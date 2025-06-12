@@ -1,41 +1,53 @@
 #include <stdio.h>
+#include <ctype.h>
 #include <stdlib.h>
 long **read_content(void){
 	long **arr=(long **)malloc(sizeof(long *)*2);
-	long *index0;
-	long *index1=(long *)malloc(sizeof(long)*4);
-	long number=0;
-	long *integers=(long *)malloc(sizeof(long)*20);
-	long sum=0;
-	long average=0;
-	long range=0;
+	long *index0=(long *)malloc(sizeof(long *)*20);
+	long *index1=(long *)malloc(sizeof(long *)*4);
 	arr[0]=index0;
 	arr[1]=index1;
-	index1[0]=integers;
-	index1[1]=sum;
-	index1[2]=average;
-	index1[3]=range;
+	index1[0]=0;
+	index1[1]=0;
+	index1[2]=0;
+	index1[3]=0;
 	int smallest=10000000;
 	int largest=-10000000;
-	while (index0[number]!='\0'){
-		sum+=index0[number];
-		if (index0[number]>largest)
-			largest=index0[number];
-		if (index0[number]<smallest)
-			smallest=index0[number];
-		number+=1;
+	int size=0;
+	long temp;
+	while (1==1){
+		if (scanf("%ld", &temp)==1){
+			index0[size]=temp;
+			size++;
+		}
+		else{
+			break;
+		}
 	}
-	average=sum/(number+1);
-	range=largest-smallest;
-	printf("not freed");
-	fflush(stdout);
-	free(index1);
-	free(integers);
+	for (int i=0; i<size; i++){
+		index1[1]+=index0[i];
+		if (index0[i]>largest)
+			largest=index0[i];
+		if (index0[i]<smallest)
+			smallest=index0[i];
+	}
+	index1[0]=size;
+	index1[2]=index1[1]/size;
+	index1[3]=largest-smallest;
 	return arr;
 }
 int main(void){
 	long **arr=read_content();
-	printf("The array contains: [%ld]\n", arr[0][0]);
+	int size=sizeof(arr[0])/2;
+	printf("The array contains: ");
+	for (int i=0; i<size; i++){
+		if (i==size-1)
+			printf("%ld],\n", arr[0][i]);
+		else if (i==0)
+			printf("[%ld, ", arr[0][i]);
+		else 
+			printf("%ld, ", arr[0][i]);
+	}
 	printf("There are %ld numbers,\n", arr[1][0]);
 	printf("The sum is %ld,\n", arr[1][1]);
 	printf("The average is %ld,\n", arr[1][2]);
