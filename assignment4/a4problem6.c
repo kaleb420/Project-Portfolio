@@ -16,10 +16,11 @@ int* resizeArrayList(int *list, int *capacity, int resizeFactor){
 }
 int* addItem(int *list, int *size, int *capacity, int value){
 	if (*size>*capacity){
-		int *resized=resizeArrayList(list, capacity, *size-*capacity);
+		list=resizeArrayList(list, capacity, *size-*capacity);
 		*capacity=*size;
 	}
 	list[*size]=value;
+	(*size)+=1;
 	return list;
 }
 void removeItem(int *list, int *size, int index){
