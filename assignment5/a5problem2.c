@@ -6,7 +6,7 @@ struct Student *readFile(const char *file){
 	FILE *fPtr=fopen(file, "r");
 	struct Student *head;
 	int number;
-	char name[20];
+	char name[50];
 	float marks;
 	while (!feof(fPtr)){
 		struct Student *next=malloc(sizeof(struct Student));
@@ -17,6 +17,9 @@ struct Student *readFile(const char *file){
 		fscanf(fPtr, "%d", &number);
 		fscanf(fPtr, "%s", name);
 		fscanf(fPtr, "%f", &marks);
+		next->rollNumber=number;
+		strcpy(next->name, name);
+		next->marks=marks;
 	}
 	fclose(fPtr);
 	return head;
