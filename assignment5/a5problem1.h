@@ -1,5 +1,5 @@
 struct person{
-	char name[25];
+	char *name;
 	int age;
 	void (*setName)(struct person, const char);
 	void (*setAge)(struct person, int);
