@@ -4,7 +4,21 @@
 #include "a5problem2.h"
 struct Student *readFile(const char *file){
 	FILE *fPtr=fopen(file, "r");
-	struct Student *head=fPtr;
+	struct Student *head;
+	int number;
+	char name[20];
+	float marks;
+	while (!feof(fPtr)){
+		struct Student *next=malloc(sizeof(struct Student));
+	        if (head==NULL)
+			head=next;
+		else
+			head->next=next;
+		fscanf(fPtr, "%d", &number);
+		fscanf(fPtr, "%s", name);
+		fscanf(fPtr, "%f", &marks);
+	}
+	fclose(fPtr);
 	return head;
 }
 void displayAllRecords(struct Student *head){
