@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "a5problem2.h"
 int main(void){
-	const char *file;
+	const char *file="records1.txt";
 	int rollNumber;
 	char *name;
 	float marks;
