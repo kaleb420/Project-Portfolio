@@ -4,10 +4,10 @@
 #include "a5problem1.h"
 struct person * createPerson(void){
 	struct person *p=(struct person *)malloc(sizeof(struct person));
-	p->setName=setName;
-	p->setAge=setAge;
-	p->getName=getName;
-	p->getAge=getAge;
+	p->setName;
+	p->setAge;
+	p->getName;
+	p->getAge;
 	free(p);
 	return p;
 }

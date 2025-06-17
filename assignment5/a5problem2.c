@@ -10,21 +10,21 @@ struct Student *readFile(const char *file){
 	float marks;
 	int counter=0;
 	while (!feof(fPtr)){
-		struct Student *next=malloc(sizeof(struct Student));
+		struct Student *new_student=malloc(sizeof(struct Student));
 	        if (head==NULL)
-			head=next;
+			head=new_student;
 		else if (counter==1)
-			head->next=next;
+			head->next=new_student;
 		else
-			next->next=next;
+			new_student->next=new_student;
 		fscanf(fPtr, "%d", &number);
 		fscanf(fPtr, "%s", name);
 		fscanf(fPtr, "%f", &marks);
-		next->rollNumber=number;
-		strcpy(next->name, name);
-		next->marks=marks;
+		new_student->rollNumber=number;
+		strcpy(new_student->name, name);
+		new_student->marks=marks;
 		counter++;
-		free(next);
+		free(new_student);
 	}
 	fclose(fPtr);
 	return head;
