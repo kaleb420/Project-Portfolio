@@ -6,8 +6,7 @@ void setName(struct person *p, const char *name){
 	int length=strlen(name);
 	char *buffer=(char *)malloc(length*sizeof(char));
 	strcpy(buffer,name);
-	strcpy(p->name, buffer);
-	free(buffer);
+	p->name=buffer;
 }
 void setAge(struct person *p, int age){
 	p->age=age;
