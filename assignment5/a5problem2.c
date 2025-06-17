@@ -5,25 +5,24 @@
 struct Student *readFile(const char *file){
 	FILE *fPtr=fopen(file, "r");
 	struct Student *head;
+	struct Student *traversal;
 	int number;
 	char name[50];
 	float marks;
-	int counter=0;
 	while (!feof(fPtr)){
 		struct Student *new_student=malloc(sizeof(struct Student));
-	        if (head==NULL)
+	        if (head==NULL){
 			head=new_student;
-		else if (counter==1)
-			head->next=new_student;
+			traversal=head;
+		}
 		else
-			new_student->next=new_student;
+			traversal->next=new_student;
 		fscanf(fPtr, "%d", &number);
 		fscanf(fPtr, "%s", name);
 		fscanf(fPtr, "%f", &marks);
 		new_student->rollNumber=number;
 		strcpy(new_student->name, name);
 		new_student->marks=marks;
-		counter++;
 		free(new_student);
 	}
 	fclose(fPtr);
