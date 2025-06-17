@@ -4,22 +4,24 @@
 #include "a5problem2.h"
 struct Student *readFile(const char *file){
 	FILE *fPtr=fopen(file, "r");
-	struct Student *head;
+	struct Student *head=NULL;
 	struct Student *traversal;
 	int number;
 	char name[50];
 	float marks;
-	while (!feof(fPtr)){	
+	while (fscanf(fPtr, "%d %s %f", &number, name, &marks)==3){	
 		struct Student *new_student=malloc(sizeof(struct Student));
 	        if (head==NULL){
 			head=new_student;
+			traversal=new_student;
 		}
+		else if (new_student==NULL)
+			break;
 		else{
-			head->next=new_student;
+			traversal->next=new_student;
+			traversal=new_student;
+
 		}
-		fscanf(fPtr, "%d", &number);
-		fscanf(fPtr, "%s", name);
-		fscanf(fPtr, "%f", &marks);
 		new_student->rollNumber=number;
 		strcpy(new_student->name, name);
 		new_student->marks=marks;

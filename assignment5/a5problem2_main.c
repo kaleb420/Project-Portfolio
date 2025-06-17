@@ -7,7 +7,7 @@ int main(void){
 	float marks;
 	struct Student *head;
 	struct Student *s;
-	readFile(file);
+	head=readFile(file);
 	displayAllRecords(head);
 	searchStudent(s, rollNumber);
 	addStudent(s, rollNumber, name, marks);
