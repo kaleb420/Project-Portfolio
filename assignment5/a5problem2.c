@@ -45,8 +45,8 @@ struct Student *searchStudent(struct Student *s, int rollNumber){
 	}
 	return NULL;
 }
-void addStudent(struct Student*s, int rollNumber, char *name, float marks){
-	struct Student *added_student=(struct Student *)malloc(sizeof(struct Student));
+void addStudent(struct Student *s, int rollNumber, char *name, float marks){
+	struct Student *added_student=malloc(sizeof(struct Student));
 	while (s->next!=NULL){
 		s=s->next;
 	}
@@ -54,15 +54,13 @@ void addStudent(struct Student*s, int rollNumber, char *name, float marks){
 	added_student->rollNumber=rollNumber;
 	strcpy(added_student->name, name);
 	added_student->marks=marks;
-	free(added_student);
 }
 void deleteStudent(struct Student *s, int rollNumber){
-	while (s->next->rollNumber!=rollNumber){
+	while (s->rollNumber!=rollNumber){
 		s=s->next;
 	}
-	struct Student *delete=s->next;
+	struct Student *delete=s;
 	s->next=s->next->next;
-	free(delete);
 	delete=NULL;
 }
 void writeFile(struct Student *head, const char *file){
