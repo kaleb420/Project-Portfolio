@@ -47,17 +47,19 @@ struct Student *searchStudent(struct Student *s, int rollNumber){
 }
 void addStudent(struct Student *s, int rollNumber, char *name, float marks){
 	struct Student *added_student=malloc(sizeof(struct Student));
-	while (s->next!=NULL){
-		s=s->next;
+	struct Student *temp=s;
+	while (temp->next!=NULL){
+		temp=temp->next;
 	}
-	s->next=added_student;
+	temp->next=added_student;
 	added_student->rollNumber=rollNumber;
 	strcpy(added_student->name, name);
 	added_student->marks=marks;
 }
 void deleteStudent(struct Student *s, int rollNumber){
-	while (s->rollNumber!=rollNumber){
-		s=s->next;
+	struct Student *temp=s;
+	while (temp!=NULL && temp->rollNumber!=rollNumber){
+		temp=temp->next;
 	}
 	struct Student *delete=s;
 	s->next=s->next->next;
