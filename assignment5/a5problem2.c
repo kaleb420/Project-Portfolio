@@ -8,18 +8,23 @@ struct Student *readFile(const char *file){
 	int number;
 	char name[50];
 	float marks;
+	int counter=0;
 	while (!feof(fPtr)){
 		struct Student *next=malloc(sizeof(struct Student));
 	        if (head==NULL)
 			head=next;
-		else
+		else if (counter==1)
 			head->next=next;
+		else
+			next->next=next;
 		fscanf(fPtr, "%d", &number);
 		fscanf(fPtr, "%s", name);
 		fscanf(fPtr, "%f", &marks);
 		next->rollNumber=number;
 		strcpy(next->name, name);
 		next->marks=marks;
+		counter++;
+		free(next);
 	}
 	fclose(fPtr);
 	return head;
@@ -27,7 +32,7 @@ struct Student *readFile(const char *file){
 void displayAllRecords(struct Student *head){
 	struct Student *temporary=head;
 	while (temporary!=NULL){
-		printf("%d, %s, %.1f\n", temporary->rollNumber, temporary->name, temporary->marks);
+		printf("%d %s %.1f\n", temporary->rollNumber, temporary->name, temporary->marks);
 		temporary=temporary->next;
 	}
 }
@@ -49,6 +54,7 @@ void addStudent(struct Student*s, int rollNumber, char *name, float marks){
 	added_student->rollNumber=rollNumber;
 	strcpy(added_student->name, name);
 	added_student->marks=marks;
+	free(added_student);
 }
 void deleteStudent(struct Student *s, int rollNumber){
 	while (s->next->rollNumber!=rollNumber){
@@ -63,7 +69,7 @@ void writeFile(struct Student *head, const char *file){
 	FILE *fPtr=fopen(file, "r");
 	struct Student *temp=head;
 	while (temp!=NULL){
-		printf("%d, %s, %.1f\n", temp->rollNumber, temp->name, temp->marks);
+		printf("%d %s %.1f\n", temp->rollNumber, temp->name, temp->marks);
 		temp=temp->next;
 	}
 }
