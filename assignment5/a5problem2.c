@@ -15,8 +15,10 @@ struct Student *readFile(const char *file){
 			head=new_student;
 			traversal=head;
 		}
-		else
+		else{
 			traversal->next=new_student;
+			traversal=new_student
+		}
 		fscanf(fPtr, "%d", &number);
 		fscanf(fPtr, "%s", name);
 		fscanf(fPtr, "%f", &marks);
