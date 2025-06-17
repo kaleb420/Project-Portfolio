@@ -4,7 +4,7 @@
 #include "a5problem1.h"
 void setName(struct person *p, const char *name){
 	int length=strlen(name);
-	char *buffer=(char *)malloc((length+1)*sizeof(char));
+	char *buffer=(char *)malloc(length*sizeof(char));
 	strcpy(buffer,name);
 	strcpy(p->name, buffer);
 	free(buffer);
@@ -24,6 +24,5 @@ struct person * createPerson(void){
         p->setAge=setAge;
         p->getName=getName;
         p->getAge=getAge;
-        free(p);
         return p;
 }
