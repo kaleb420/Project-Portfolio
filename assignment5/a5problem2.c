@@ -6,10 +6,10 @@ struct Student *readFile(const char *file){
 	FILE *fPtr=fopen(file, "r");
 	struct Student *head=NULL;
 	struct Student *traversal;
-	int number;
+	int rollNumber;
 	char name[50];
 	float marks;
-	while (fscanf(fPtr, "%d %s %f", &number, name, &marks)==3){	
+	while (fscanf(fPtr, "%d %s %f", &rollNumber, name, &marks)==3){	
 		struct Student *new_student=malloc(sizeof(struct Student));
 	        if (head==NULL){
 			head=new_student;
@@ -19,10 +19,10 @@ struct Student *readFile(const char *file){
 			break;
 		else{
 			traversal->next=new_student;
+			new_student->next=NULL;
 			traversal=new_student;
-
 		}
-		new_student->rollNumber=number;
+		new_student->rollNumber=rollNumber;
 		strcpy(new_student->name, name);
 		new_student->marks=marks;
 		free(new_student);
