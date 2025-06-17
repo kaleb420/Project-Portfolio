@@ -9,7 +9,7 @@ struct Student *readFile(const char *file){
 	int number;
 	char name[50];
 	float marks;
-	while (!feof(fPtr)){
+	while (fscanf(fPtr, "%d %s %f", &number, name, &marks)==3){
 		struct Student *new_student=malloc(sizeof(struct Student));
 	        if (head==NULL){
 			head=new_student;
