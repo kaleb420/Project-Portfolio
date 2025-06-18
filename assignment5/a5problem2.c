@@ -27,6 +27,7 @@ struct Student *readFile(const char *file){
 		traversal->marks=marks;
 	}
 	fclose(fPtr);
+	struct Student *s=head;
 	return head;
 }
 void displayAllRecords(struct Student *head){
@@ -61,8 +62,9 @@ void deleteStudent(struct Student *s, int rollNumber){
 	while (temp!=NULL && temp->rollNumber!=rollNumber){
 		temp=temp->next;
 	}
-	struct Student *delete=s;
-	s->next=s->next->next;
+	struct Student *delete=temp;
+	temp->next=temp->next->next;
+	free(delete);
 	delete=NULL;
 }
 void writeFile(struct Student *head, const char *file){
