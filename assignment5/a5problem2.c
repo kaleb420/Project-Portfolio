@@ -89,4 +89,5 @@ void writeFile(struct Student *head, const char *file){
 		fprintf(fPtr,"%d %s %.1f\n", temp->rollNumber, temp->name, temp->marks);
 		temp=temp->next;
 	}
+	fclose(fPtr);
 }
