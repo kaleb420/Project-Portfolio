@@ -6,3 +6,4 @@ struct person{
 	char *(*getName)(const struct person *p);
 	int (*getAge)(const struct person *p);
 };
+struct person * createPerson(void);

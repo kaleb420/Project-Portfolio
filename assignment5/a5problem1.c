@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include "a5problem1.h"
 void setName(struct person *p, const char *name){
-	int length=strlen(name);
 	p->name=NULL;
 	strcpy(p->name,name);
 }
