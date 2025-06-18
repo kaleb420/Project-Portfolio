@@ -83,10 +83,10 @@ void deleteStudent(struct Student *s, int rollNumber){
 	}
 }
 void writeFile(struct Student *head, const char *file){
-	FILE *fPtr=fopen(file, "r");
+	FILE *fPtr=fopen(file, "w");
 	struct Student *temp=head;
 	while (temp!=NULL){
-		printf("%d %s %.1f\n", temp->rollNumber, temp->name, temp->marks);
+		fprintf(fPtr,"%d %s %.1f\n", temp->rollNumber, temp->name, temp->marks);
 		temp=temp->next;
 	}
 }
