@@ -6,7 +6,7 @@ int main(void){
 	int age;
 	struct person *p;
 	createPerson();
-	p->setName(p,name);
+	p->setName(p,name); // point towards the function that should be called 
 	p->setAge(p, age);
 	p->getName(p);
 	p->getAge(p);

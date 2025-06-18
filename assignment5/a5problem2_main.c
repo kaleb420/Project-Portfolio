@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "a5problem2.h"
 int main(void){
-	const char *file="records1.txt";
+	const char *file="records1.txt"; // set file equal to the file installed in this folder containing the data
 	int rollNumber;
 	char *name;
 	float marks;
