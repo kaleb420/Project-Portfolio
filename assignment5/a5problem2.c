@@ -61,21 +61,21 @@ void addStudent(struct Student *s, int rollNumber, char *name, float marks){
 void deleteStudent(struct Student *s, int rollNumber){
 	struct Student *temp=s;
 	struct Student *delete;
-	while (temp->next!=NULL && temp->next->rollNumber!=rollNumber){ // check for first and last elements being deleted
+	while (temp->next!=NULL && temp->next->rollNumber!=rollNumber){
 		temp=temp->next;
 	}
-	if (temp->next==NULL){
+	if (temp->next==NULL){ // delete last node 
 		delete=temp;
 		free(delete);
 		delete=NULL;
 	}
-	else if (temp->next->rollNumber==rollNumber){
-		delete=temp;
+	else if (temp->next->rollNumber==rollNumber){ // delete any middle node
+		delete=temp->next;
 		temp->next=temp->next->next;
 		free(delete);
 		delete=NULL;
 	}
-	else if (s->rollNumber==rollNumber){
+	else if (s->rollNumber==rollNumber){ // delete the first node
 		delete=s;
 		s=temp->next;
 		free(delete);

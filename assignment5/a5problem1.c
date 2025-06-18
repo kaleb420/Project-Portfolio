@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include "a5problem1.h"
 void setName(struct person *p, const char *name){
-	p->name=NULL;
+	int length=strlen(name);
+	p->name=malloc(sizeof(char)*(length+1));
 	strcpy(p->name,name);
 }
 void setAge(struct person *p, int age){
