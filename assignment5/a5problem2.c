@@ -56,16 +56,31 @@ void addStudent(struct Student *s, int rollNumber, char *name, float marks){
 	added_student->rollNumber=rollNumber;
 	strcpy(added_student->name, name);
 	added_student->marks=marks;
+	added_student->next=NULL;
 }
 void deleteStudent(struct Student *s, int rollNumber){
 	struct Student *temp=s;
-	while (temp!=NULL && temp->rollNumber!=rollNumber){
+	struct Student *delete;
+	while (temp->next!=NULL && temp->next->rollNumber!=rollNumber){ // check for first and last elements being deleted
 		temp=temp->next;
 	}
-	struct Student *delete=temp;
-	temp->next=temp->next->next;
-	free(delete);
-	delete=NULL;
+	if (temp->next==NULL){
+		delete=temp;
+		free(delete);
+		delete=NULL;
+	}
+	else if (temp->next->rollNumber==rollNumber){
+		delete=temp;
+		temp->next=temp->next->next;
+		free(delete);
+		delete=NULL;
+	}
+	else if (s->rollNumber==rollNumber){
+		delete=s;
+		s=temp->next;
+		free(delete);
+		delete=NULL;
+	}
 }
 void writeFile(struct Student *head, const char *file){
 	FILE *fPtr=fopen(file, "r");
