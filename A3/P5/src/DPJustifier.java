@@ -5,6 +5,12 @@ public class DPJustifier extends AbstractJustifier {
     @Override
     public List<String> justify(List<String> words, int L, double b) {
         int size = words.size();
+        int k=0;
+        int W=0;
+        int S=0;
+        boolean last;
+        double cost=0;
+        double total=0;
         int[] prefix = new int[size + 1];
         for (int i = 0; i < size; i++) {
             prefix[i + 1] = prefix[i] + words.get(i).length();
@@ -15,13 +21,13 @@ public class DPJustifier extends AbstractJustifier {
         for (int i = size - 1; i >= 0; i--) {
             dp[i] = Integer.MAX_VALUE;
             for (int j = i; j < size; j++) {
-                int k=j-i;
-                int W=prefix[j+1]-prefix[i];
-                int S=L-W;
-                boolean last=j==size-1;
-                double cost=lineCost(k, S, b, last);
-                if (cost < Integer.MAX_VALUE) {
-                    double total=cost+dp[j+1];
+                k=j-i;
+                W=prefix[j+1]-prefix[i];
+                S=L-W;
+                last=j==size-1;
+                cost=lineCost(k, S, b, last);
+                if (cost < dp[i]) {
+                    total=cost+dp[j+1];
                     if (total < dp[i]) {
                         dp[i]=total;
                         next[i]=j+1;
@@ -31,9 +37,10 @@ public class DPJustifier extends AbstractJustifier {
         }
         List<String> lines = new ArrayList<>();
         int i = 0;
+        int j=0;
         while (i < size) {
-            int j = next[i] - 1;
-            boolean last = (next[i] == size);
+            j = next[i] - 1;
+            last = (next[i] == size);
             lines.add(render(words, i + 1, j + 1, L, last));
             i = next[i];
         }
