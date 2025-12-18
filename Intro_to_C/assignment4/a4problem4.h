@@ -1,0 +1,1 @@
+char **getXMLTagAndContent(char *s);
