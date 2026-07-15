@@ -1,0 +1,1 @@
+Hello, and welcome to my project portfolio, this is a collection of every project I have ever worked on or been a part of. Anything with a vague name such as Intro to Java is a collection of projects I had to do for a class. While anything with a specific name like Tigris and Euphrates is a personal project I worked on. 
