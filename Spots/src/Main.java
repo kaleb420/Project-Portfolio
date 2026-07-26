@@ -85,6 +85,6 @@ public class Main {
             winner=winCheck();
             turn=(turn+1)%playerCount;
         }
-        System.out.println(winner + "has won!");
+        System.out.println(winner + " has won!");
     }
 }

@@ -40,10 +40,10 @@ public class Action_Cards {
         functionCall.put("Fetch", this::fetch);
         functionCall.put("Search", this::search);
         orange.add("Dig");
-        //orange.add("Retrieve");
-        //orange.add("Trot");
-        //orange.add("Walk");
-        //orange.add("Track");
+        orange.add("Retrieve");
+        orange.add("Trot");
+        orange.add("Walk");
+        orange.add("Track");
         purple.add("Chase");
         purple.add("Run");
         purple.add("Bolt");
@@ -514,6 +514,7 @@ public class Action_Cards {
             return;
         }
         useTreat(player, dice, start, dice.size());
+        print.printDice(player, dice);
         System.out.println("Would you like to repeat this trick? (y/n)");
         input=yesOrNo();
         if (input.equals("y"))
