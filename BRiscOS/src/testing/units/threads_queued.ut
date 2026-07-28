@@ -1,0 +1,102 @@
+#ifdef UTEST
+#include <complete.h>
+#if MILETONE_5 == 1
+#include <blib.h>
+#include <testing.h>
+#include <wrapper_defs.h>
+
+REGISTER(RESUME_QUEUED, 5, resume_queued_tests, resume_queued_suites, 1);
+REGISTER(SUSPEND_QUEUED, 5, suspend_queued_tests, suspend_queued_suites, 1);
+
+static test_suite_t resume_queued_suites[] = {
+  {
+    .section = "General",
+    .prompts = {
+      "Thread added to queue"
+    }
+  }
+};
+
+static test_suite_t suspend_queued_suites[] = {
+  {
+    .section = "General",
+    .prompts = {
+      "Thread removed from queue"
+    }
+  }
+};
+
+/*
+[[gnu::unused]]
+static i64 spoof_list_insert([[gnu::unused]] wrapper_alias_e name, ...) {
+  return 1;
+}
+
+[[gnu::unused]]
+static i64 spoof_list_dequeue([[gnu::unused]] wrapper_alias_e name, ...) {
+  return 1;
+}
+
+[[gnu::unused]]
+static i64 spoof_list_remove([[gnu::unused]] wrapper_alias_e name, ...) {
+  return 1;
+}
+*/
+
+#define asbit(x) (1 << x)
+static void run_queue_tests([[gnu::unused]] i64 (*test_fn)(u32), [[gnu::unused]] test_suite_t* suite, [[gnu::unused]] u32 allowed) {
+  //i64 result;
+
+  /* Check all thread states */
+  /*
+  for (u32 state=0; state < NUM_STATES; state++) {
+    clear_threads();
+    shadows[LIST_INSERT_THREAD].numcalls = shadows[LIST_DEQUEUE_THREAD].numcalls = 0;
+    thread_table[state].state = state;   // Using the 'state' variable here two ways, as the state value, and a proxy random index
+    result = test_fn(state);
+    if (!(asbit(state) & allowed)) {
+      //assert(shadows[LIST_INSERT_THREAD].numcalls == 0, 
+      assert(result == -1, &suite->results[0], "sdss",
+	     "FAIL - Returned ", result, " when thread was ", state_names[state]);
+      assert(rescheds == 0, &suite->results[0], "ss",
+	     "FAIL - Resched called when thread was ", state_names[state]);
+      assert(thread_table[state].state == state, &suite->results[0], "ss",
+	     "FAIL - State was changed when thread was ", state_names[state]);
+    }
+    else {
+      assert(get_result(state) == result, &suite->results[3], "sdsd", "FAIL - Expected return of ", get_result(state), " got ", result);
+      assert(thread_table[state].state == expect, &suite->results[1], "ssss",
+	     "FAIL - State was ", state_names[thread_table[state].state], " expected ", state_names[expect]);
+      if (state != TH_DEFUNCT)
+	assert(rescheds == resched_count, &suite->results[2], "ss",
+	       "FAIL - Thread was not rescheduled when ", state_names[state]);
+    }
+  }
+  */
+}
+
+static void resume_queued_tests([[gnu::unused]] override_t* sh) {
+  shadows = sh;
+  i64 (*test_fn)(u32) = resume;
+  shadows[RESCHED].precall = spoof_resched;
+  shadows[LIST_INSERT_THREAD].precall = spoof_list_insert;
+  shadows[LIST_DEQUEUE_THREAD].precall = spoof_list_dequeue;
+  shadows[LIST_REMOVE_THREAD].precall = spoof_list_remove;
+
+  
+}
+
+static void suspend_queued_tests([[gnu::unused]] override_t* sh) {
+  shadows = sh;
+  i64 (*test_fn)(u32) = suspend;
+  shadows[RESCHED].precall = spoof_resched;
+  shadows[LIST_INSERT_THREAD].precall = spoof_list_insert;
+  shadows[LIST_DEQUEUE_THREAD].precall = spoof_list_dequeue;
+  shadows[LIST_REMOVE_THREAD].precall = spoof_list_remove;
+
+  
+  
+}
+
+#endif
+#endif

@@ -1,0 +1,228 @@
+#ifdef UTEST
+#include <complete.h>
+#if MILESTONE_10 == 1
+#include <blib.h>
+#include <testing.h>
+#include <devices.h>
+
+REGISTER(FILESYSTEM_OPEN, 10, open_tests, open_suites, 3);
+REGISTER(FILESYSTEM_CLOSE, 10, close_tests, close_suites, 1);
+//          NAME MS        FUNC  SUITES, NUM_SUITES
+
+
+static test_suite_t open_suites[] = {
+  {
+    .section = "General",
+    .prompts = {
+      "Returns error on invalid request", 
+      "Returns table index"
+    }
+  },
+  {
+    .section = "Creation",
+    .prompts = {
+      "Adds file to directory",
+      "Block allocated for inode",
+      "Inode saved to device",
+      "Superblock saved to device",
+      "Bitmap saved to device"
+    }
+  },
+  {
+    .section = "Opening",
+    .prompts = {
+      "Inode loaded from disk",
+      "File added to open table",
+    }
+  },
+};
+
+static test_suite_t close_suites[] = {
+  {
+    .section = "General",
+    .prompts = {
+      "Returns error on invalid request",
+      "Writes inode to device",
+      "Removed from open table"
+    }
+  }
+};
+
+static void write_inode(block_device_t* disk, u32 block, u32 seed) {
+  inode_t inode = (inode_t) { .id = block };
+  u32 refblocks[INODE_BLOCKS];
+  for (u32 j=0; j<INODE_BLOCKS; j++) {
+    refblocks[j] = (511 * (seed + (j * INODE_BLOCKS)) + 32) % 510 + 2;  // Calculate psudorandom coprime block ids
+  }
+  memcpy(&inode.blocks, refblocks, sizeof(u32) * INODE_BLOCKS);
+  disk->write(disk, block, 0, &inode, sizeof(inode_t));
+}
+
+static void validate_block(block_device_t* disk, u8* data, u32 len, u32 block, result_t* test, const char* err) {
+  u8 buffer[512];
+  disk->read(disk, block, 0, &buffer, len);
+  for (u32 i=0; i<len; i++)
+    assert(data[i] == buffer[i], test, "s", err);
+}
+
+static void setup_device(block_device_t* dev, char* names[], u32* blocks, u32 len) {
+  fsystem_t* fsd = (fsystem_t*)dev->context;
+  
+  memset(fsd->freemask, 0, fsd->freemasksz);
+  fsd->freemask[0] = 0x3;
+  fsd->root_dir.numentries = len;
+  for (u32 i=0; i<len; i++) {
+    set_usedblock_fs(fsd, blocks[i], 0x1);
+    fsd->root_dir.entry[i].inode_block = blocks[i];
+    write_inode((block_device_t*)dev->origin, blocks[i], i);
+
+    for (u32 j=0; names[i][j] != '\0'; j++)
+      fsd->root_dir.entry[i].name[j] = names[i][j];
+  }
+}
+
+static void setup_oft(u64 open, u32 dirs[], u32 len) {
+  memset(oft, 0, sizeof(filetable_t) * NUM_FD);
+  for (u32 i=0; i<NUM_FD; i++) {
+    oft[i].head = 53;
+    if (i < len) {
+      if ((open >> i) & 0x1) {
+	oft[i].state = FSTATE_OPEN;
+	oft[i].head = 0;
+      }
+      oft[i].direntry = dirs[i];
+    }
+  }
+}
+
+static void open_tests([[gnu::unused]] override_t* shadows) {
+  block_device_t* dev = (block_device_t*)get_device_by_handle((u64)init_fs("testfs", (u64)init_ramdisk("testrd", 512)));
+  fsystem_t* fsd = (fsystem_t*)dev->context;
+  i64 fd;
+
+  /*  Create names and blocks for the test, names = 'a', 'b', 'c' ..., blocks are psudorandom  */
+  char* names[DIR_SIZE];
+  char namemap[DIR_SIZE][2] = { 0 };
+  u32 iblocks[DIR_SIZE] = { 0 };
+  for (u32 i=0; i<DIR_SIZE; i++) {
+    names[i] = &namemap[i][0];
+    namemap[i][0] = (char)('a' + (i % 24));
+    iblocks[i] = ((517 * i + 12) % 510) + 2;  // Calculate psudorandom coprime block ids 2+
+  }
+
+  /*  Create directory ids for use in testing  */
+  u32 dirs[DIR_SIZE] = { 0 };
+  for (u32 i=0; i<DIR_SIZE; i++) {
+    dirs[i] = (19 * i + 4) % 16;  // Calculate psudorandom coprime directory ids
+  }
+
+  setup_device(dev, names, iblocks, DIR_SIZE);
+  /* --------------  Test Basic Opening ------------------- */
+  for (u32 i=0; i<NUM_FD; i++) {
+    u64 open = (0x1LU << i) - 1;
+
+    setup_oft(open, dirs, i);
+    fd = fs_open((device_t*)dev, names[dirs[i]], 1);
+
+    assert(fd == i, &open_suites[0].results[1], "sd", "FAIL - Expected return of 0, got ", fd);
+    assert(oft[fd].head == 0, &open_suites[2].results[1], "s", "FAIL - Head was not reset to start of file");
+    assert(oft[fd].state == FSTATE_OPEN, &open_suites[2].results[1], "s", "FAIL - State of entry was not set to open");
+    assert(oft[fd].direntry == dirs[i], &open_suites[2].results[1], "s", "FAIL - Directory index in oft did not match file's location");
+    validate_block((block_device_t*)dev->origin, (u8*)&oft[fd].inode, sizeof(inode_t), iblocks[dirs[i]],
+		   &open_suites[2].results[0], "FAIL - inode data does not match data in block device");
+  }
+
+  /* ------------- Test Open Failures -------------------  */
+  // File already open
+  setup_oft(0x1, dirs, 1);
+  fd = fs_open((device_t*)dev, names[dirs[0]], 1);
+  assert(fd == -1, &open_suites[0].results[0], "s", "FAIL - Attempted to reopen file already listed in open file table");
+  
+  // Out of oft space
+  setup_oft(0xFFFFFFFF, dirs, NUM_FD);
+  fd = fs_open((device_t*)dev, names[dirs[NUM_FD+1]], 1);
+  assert(fd == -1, &open_suites[0].results[0], "s", "FAIL - Attempted to open file when no open file table slots available");
+
+  /* --------------- Test Creation ------------------------ */
+  setup_device(dev, names, iblocks, 2);
+  setup_oft(0, dirs, 0);
+  fd = fs_open((device_t*)dev, "*", 1);
+  assert(fd == 0, &open_suites[0].results[1], "s", "FAIL - Newly created file did not appear in expected oft slot");
+  assert(oft[fd].head == 0, &open_suites[2].results[1], "s", "FAIL - Created file head was not set to 0");
+
+  assert(fsd->root_dir.numentries == 3, &open_suites[1].results[0], "s", "FAIL - Root dir count does not reflect new file");
+  assert(fsd->root_dir.entry[oft[fd].direntry].inode_block == oft[fd].inode.id, &open_suites[1].results[0], "s",
+	 "FAIL - Inode in directory does not match oft inode record");
+  assert(test_strcmp("*", fsd->root_dir.entry[oft[fd].direntry].name) == 0, &open_suites[1].results[0], "s",
+	 "FAIL - Name in directory entry does not match provided name");
+  assert(get_usedblock_fs(fsd, oft[fd].inode.id) == 1, &open_suites[1].results[1], "s",
+	 "FAIL - inode block was not marked as used in bitmap");
+  
+  assert(oft[fd].inode.id != 0, &open_suites[1].results[1], "sds", "FAIL - inode block ", oft[fd].inode.id, " was already in use");
+  assert(oft[fd].inode.id != 1, &open_suites[1].results[1], "sds", "FAIL - inode block ", oft[fd].inode.id, " was already in use");
+  for (i32 i=0; i<2; i++)
+    assert(oft[fd].inode.id != iblocks[i], &open_suites[1].results[1], "sds",
+	   "FAIL - inode block ", oft[fd].inode.id, " was already in use");
+
+  validate_block((block_device_t*)dev->origin, (u8*)&oft[fd].inode, sizeof(inode_t), oft[fd].inode.id,
+		 &open_suites[1].results[2], "FAIL - inode data was not found on the block device");
+  validate_block((block_device_t*)dev->origin, (u8*)fsd, sizeof(fsystem_t), 0,
+		 &open_suites[1].results[3], "FAIL - Superblock did not match updated filesystem information after create");
+  validate_block((block_device_t*)dev->origin, (u8*)fsd->freemask, fsd->freemasksz, 1,
+		 &open_suites[1].results[4], "FAIL - Bitmap block did not match updated filesystem information after create");
+
+
+  /* ------------- Test Creation Failure ------------------ */
+  // Directory full
+  setup_device(dev, names, iblocks, DIR_SIZE);
+  fd = fs_open((device_t*)dev, "foobar", 6);
+  assert(fd == -1, &open_suites[0].results[0], "s", "FAIL - Attempted to create file when directory was full");
+
+  // Out of disk space
+  setup_device(dev, names, iblocks, 0);
+  memset(fsd->freemask, 0xFF, fsd->freemasksz);
+  fd = fs_open((device_t*)dev, "bazbar", 6);
+  assert(fd == -1, &open_suites[0].results[0], "s", "FAIL - Attempted to create file when no blocks remain on disk");
+}
+
+static void close_tests([[gnu::unused]] override_t* shadows) {
+  block_device_t* dev = (block_device_t*)get_device_by_handle((u64)init_fs("testfs", (u64)init_ramdisk("testrd", 512)));
+  i64 fd;
+
+  /*  Create names and blocks for the test, names = 'a', 'b', 'c' ..., blocks are psudorandom  */
+  char* names[DIR_SIZE];
+  char namemap[DIR_SIZE][2] = { 0 };
+  u32 iblocks[DIR_SIZE] = { 0 };
+  for (u32 i=0; i<DIR_SIZE; i++) {
+    names[i] = &namemap[i][0];
+    namemap[i][0] = (char)('a' + (i % 24));
+    iblocks[i] = ((517 * i + 12) % 510) + 2;  // Calculate psudorandom coprime block ids 2+
+  }
+
+  /*  Create directory ids for use in testing  */
+  u32 dirs[DIR_SIZE] = { 0 };
+  for (u32 i=0; i<DIR_SIZE; i++) {
+    dirs[i] = (19 * i + 4) % 16;  // Calculate psudorandom coprime directory ids
+  }
+
+  setup_device(dev, names, iblocks, DIR_SIZE);
+  setup_oft(0x2, dirs, 2);
+
+  inode_t inode;
+  oft[1].inode.size = 88;
+  memcpy(&inode, &oft[1].inode, sizeof(inode_t));
+  
+  fd = fs_close((device_t*)dev, 1);
+  assert(oft[1].state == FSTATE_CLOSED, &close_suites[0].results[2], "s", "FAIL - State of table entry was still OPEN after close call");
+  validate_block((block_device_t*)dev->origin, (u8*)&inode, sizeof(inode_t), inode.id,
+		 &close_suites[0].results[1], "FAIL - Changed inode state was not saved back to block device");
+
+  fd = fs_close((device_t*)dev, NUM_FD);
+  assert(fd == -1, &close_suites[0].results[0], "s", "FAIL - Attempted to close file outside of maximum table size");
+
+  fd = fs_close((device_t*)dev, 5);
+  assert(fd == -1, &close_suites[0].results[0], "s", "FAIL - Attempted to close file that was already closed");
+}
+
+#endif
+#endif

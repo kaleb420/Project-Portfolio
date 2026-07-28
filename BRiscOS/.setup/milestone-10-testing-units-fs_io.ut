@@ -1,0 +1,84 @@
+#ifdef UTEST
+#include <complete.h>
+#if MILESTONE_10 == 1
+#include <blib.h>
+#include <testing.h>
+
+REGISTER(FILESYSTEM_READ, 11, read_tests, read_suites, 4);
+REGISTER(FILESYSTEM_WRITE, 11, write_tests, write_suites, 3);
+
+static test_suite_t read_suites[] = {
+  {
+    .section = "General",
+    .prompts = {
+      "Returns error on invalid arguments",
+      "Returns number of bytes read"
+    }
+  },
+  {
+    .section = "From File Start",
+    .prompts = {
+      "Correctly reads partial block",
+      "Correctly reads full block",
+      "Correctly reads multiple blocks",
+      "Maintains inode state",
+    }
+  },
+  {
+    .section = "From Middle of Block",
+    .prompts = {
+      "Correctly reads partial block",
+      "Correctly reads rest of block",
+      "Correctly reads multiple blocks",
+      "Maintains inode state",
+    }
+  },
+  {
+    .section = "From Middle of File",
+    .prompts = {
+      "Correctly reads partial block",
+      "Correctly reads full block",
+      "Correctly reads multiple blocks",
+      "Does not read past end of the file",
+      "Maintains inode state",
+    }
+  },
+};
+
+static test_suite_t write_suites[] = {
+  {
+    .section = "General",
+    .prompts = {
+      "Returns error on invalid arguments",
+      "Return number of bytes written"
+    }
+  },
+  {
+    .section = "From File Start",
+    .prompts = {
+      "Writes full block",
+      "Writes less than a block",
+      "Writes across multiple blocks",
+      "Maintains inode state"
+    }
+  },
+  {
+    .section = "Append to End",
+    .prompts = {
+      "Aquires blocks for write",
+      "Writes data into blocks",
+      "Maintains inode state",
+    }
+  },
+};
+
+static void read_tests([[gnu::unused]] override_t* shadows) {
+  
+}
+
+static void write_tests([[gnu::unused]] override_t* shadows) {
+  
+}
+
+#endif
+#endif

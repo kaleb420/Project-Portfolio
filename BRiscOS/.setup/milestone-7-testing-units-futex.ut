@@ -1,0 +1,183 @@
+#ifdef UTEST
+#include <complete.h>
+#if MILESTONE_7 == 1
+#include <blib.h>
+#include <syscall.h>
+#include <testing.h>
+#include <actionqueue.h>
+REGISTER(FUTEX, 7, futex_tests, suites, 2);
+//          NAME MS        FUNC  SUITES, NUM_SUITES
+
+
+static test_suite_t suites[] = {
+  {
+    .section = "Enqueue",
+    .prompts = {
+      "Critical sections protected by mutex",
+      "Thread state adjusted",
+      "Thread added to queue",
+      "Returns thread on success",
+      "Handles invalid arguments",
+    }
+  },
+  {
+    .section = "Dequeue",
+    .prompts = {
+      "Critical sections protected by mutex",
+      "Thread state adjusted",
+      "Thread removed from queue",
+      "Returns correct number of threads",
+      "Correctly handles count argument",
+    }
+  },
+};
+
+typedef struct {
+  wrapper_alias_e action;
+  i64 key;
+  u32 threadid;
+} op_t;
+
+static op_t op_queue[(NUM_THREADS * 2) + 4];
+static u8 op_count = 0, op_idx = 0;
+static bool lock = false;
+static test_suite_t* suite;
+
+static void reset_test(override_t* shadows) {
+  shadows[LIST_INSERT_THREAD].numcalls = shadows[LIST_DEQUEUE_THREAD].numcalls =
+    shadows[LIST_REMOVE_THREAD].numcalls = shadows[LIST_DEQUEUE_KEY].numcalls = 0;
+  lock = false;
+  op_count = op_idx = 0;
+  memset(op_queue, 0, sizeof(op_t) * 4);
+}
+
+static void append_op(wrapper_alias_e action, i64 key, u32 threadid) {
+  memcpy(&op_queue[op_count++], &(op_t) { .action=action, .key=key, .threadid=threadid }, sizeof(op_t));
+}
+
+#define ENUMERATE(name) #name,
+static char* state_names[NUM_SYSCALLS] = {
+    THREAD_STATE_LIST(ENUMERATE)
+};
+#undef ENUMERATE
+
+static void* spoof_mutex([[gnu::unused]] wrapper_alias_e name, va_list args, [[gnu::unused]] u64* ctxlen) {
+  u64* result = va_arg(args, u64*);
+  void* ptr = va_arg(args, void*);
+  lock = (name == LOCK_MUTEX);
+  if (op_queue[op_idx].action == LOCK_MUTEX || op_queue[op_idx].action == RELEASE_MUTEX)
+    op_idx += 1;
+  *result = (u64)ptr;
+  return NULL;
+}
+
+static void* spoof_list(wrapper_alias_e name, va_list args, [[gnu::unused]] u64* ctxlen) {
+  i32* result = va_arg(args, i32*);
+  i64 key;
+  *result = 0;
+  assert(lock, &suite->results[0], "s", "FAIL - Operation performed outside of a mutex protected section");
+  switch (name) {
+  case LIST_INSERT_THREAD:
+    key = va_arg(args, i64);
+    u32 threadid = va_arg(args, u32);
+    *result = (i32)threadid;
+    if (assert(op_queue[op_idx].action == LIST_INSERT_THREAD, &suite->results[2], "s",
+	       "FAIL - Encountered unexpected insert operation")) {
+      queue_head_t* queue = (queue_head_t*)key;
+      assert(queue == &ready_list || (queue >= futex_hashtab && queue < &futex_hashtab[NUM_HASHTAB_BINS]), &suite->results[2], "s",
+	     "FAIL - Got queue address that was not a member of the futex hash table");
+      assert(key == op_queue[op_idx].key, &suite->results[2], "s",
+	     "FAIL - Provided queue was not the expected bin associated with the key");
+      assert(threadid == op_queue[op_idx].threadid, &suite->results[2], "s", "FAIL - Incorrect thread was added to the futex queue");
+    }
+    break;
+  case LIST_DEQUEUE_KEY:
+    key = va_arg(args, i64);
+    if (assert(op_queue[op_idx].action == LIST_DEQUEUE_KEY, &suite->results[2], "s", "FAIL - Encountered unexpected dequeue operation")) {
+      queue_head_t* queue = (queue_head_t*)key;
+      assert(queue >= futex_hashtab && queue < &futex_hashtab[NUM_HASHTAB_BINS], &suite->results[2], "s",
+	     "FAIL - Got queue address that was not a member of the futex hash table");
+      assert(key == op_queue[op_idx].key, &suite->results[2], "s",
+	     "FAIL - Provided queue was not the expected bin associated with the key");
+      *result = (i32)op_queue[op_idx].threadid;
+    }
+    break;
+  default: break;
+  }
+  op_idx += 1;
+  return NULL;
+}
+
+static void* spoof_bad(wrapper_alias_e name, va_list args, [[gnu::unused]] u64* ctxlen) {
+  i32* result = va_arg(args, i32*);
+  *result = 0;
+  assert(lock, &suite->results[0], "s", "FAIL - Operation performed outside of a mutex protected section");
+  assert(0, &suite->results[2], "sss", "FAIL - Unexpected list operation performed on thread - '", state_names[name], "'");
+  return NULL;
+}
+
+static void run_enqueue_test(void* addr, u32 tid, override_t* shadows) {
+  i32 result;
+  reset_test(shadows);
+  thread_table[tid].state = TH_RUNNING;
+  append_op(LOCK_MUTEX, 0, 0);
+  append_op(LIST_INSERT_THREAD, (i64)&futex_hashtab[HASH(addr)], tid);
+  append_op(RELEASE_MUTEX, 0, 0);
+  result = enqueue_futex(addr, tid);
+
+  assert(thread_table[tid].state == TH_WAITING, &suite->results[1], "sss",
+	 "FAIL - Thread state was ", state_names[thread_table[tid].state], " after enqueue");
+  assert(shadows[LIST_INSERT_THREAD].numcalls == 1, &suite->results[2], "s", "FAIL - Thread was not inserted into a queue");
+  assert(result == (i32)tid, &suite->results[3], "sd", "FAIL - Expected thread id return, got ", result);
+}
+
+static void run_dequeue_test(void* addr, u32 count, override_t* shadows) {
+  i32 result;
+  reset_test(shadows);
+  for (i32 i=0; i<NUM_THREADS; i++) thread_table[i].state = TH_WAITING;
+  append_op(LOCK_MUTEX, 0, 0);
+  for (u32 i=0; i<count; i++) {
+    append_op(LIST_DEQUEUE_KEY, (i64)&futex_hashtab[HASH(addr)], i);
+    append_op(LIST_INSERT_THREAD, (i64)&ready_list, i);
+  }
+  append_op(RELEASE_MUTEX, 0, 0);
+  result = dequeue_futex(addr, count);
+
+  for (u32 i=0; i<count; i++)
+    assert(thread_table[i].state == TH_READY, &suite->results[1], "sss",
+	   "FAIL - Thread state was ", state_names[thread_table[i].state], " after dequeue");
+  assert(shadows[LIST_DEQUEUE_KEY].numcalls > 0, &suite->results[2], "s", "FAIL - Threads were not removed from the futex queue");
+  assert(result == (i32)count, &suite->results[3], "s", "FAIL - Return did not match number of threads removed from futex");
+  assert(shadows[LIST_INSERT_THREAD].numcalls > count - 1, &suite->results[4], "s", "FAIL - Not enough threads were released from queue");
+  assert(shadows[LIST_INSERT_THREAD].numcalls < count + 1, &suite->results[4], "s", "FAIL - Function readied more threads than expected");
+}
+
+static void futex_tests([[gnu::unused]] override_t* shadows) {
+  shadows[LOCK_MUTEX].precall = register_action(LOCK_MUTEX, spoof_mutex, NULL);
+  shadows[RELEASE_MUTEX].precall = register_action(RELEASE_MUTEX, spoof_mutex, NULL);
+  shadows[LIST_INSERT_THREAD].precall = register_action(LIST_INSERT_THREAD, spoof_list, NULL);
+  shadows[LIST_DEQUEUE_KEY].precall = register_action(LIST_DEQUEUE_KEY, spoof_list, NULL);
+  shadows[LIST_DEQUEUE_THREAD].precall = register_action(LIST_DEQUEUE_THREAD, spoof_bad, NULL);
+  shadows[LIST_REMOVE_THREAD].precall = register_action(LIST_REMOVE_THREAD, spoof_bad, NULL);
+  
+  char test_key[NUM_THREADS];
+  i32 result;
+  /* -------------- Enqueue Tests ------------------- */
+  suite = &suites[0];
+
+  result = enqueue_futex(&test_key, NUM_THREADS);
+  assert(result == -1, &suite->results[4], "sd", "FAIL - Expected error return on invalid thread id, got ", result);
+  
+  for (u32 i=0; i<NUM_THREADS; i++)
+    run_enqueue_test(&test_key[i], i, shadows);
+
+
+  /* -------------- Dequeue Tests ------------------- */
+  suite = &suites[1];
+
+  for (u32 i=1; i<NUM_THREADS; i++)
+    run_dequeue_test(&test_key[i], i, shadows);
+}
+
+#endif
+#endif

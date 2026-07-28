@@ -1,0 +1,73 @@
+#ifdef UTEST
+#include <complete.h>
+#if MILESTONE_5 == 1
+#include <blib.h>
+#include <testing.h>
+#include <queues.h>
+
+REGISTER(QUEUED_RESCHED, 5, resched_queue_tests, queue_suites, 1);
+
+[[gnu::unused]]
+static test_suite_t queue_suites[] = {
+  {
+    .section = "Basic",
+    .prompts = {
+      "Resumed thread removed from queue",
+      "Readied thread placed on queue"
+    }
+  }
+};
+
+static i64 spoof_ctxsw_queued([[gnu::unused]] wrapper_alias_e name, ...) {
+  EXPAND_ARGS((u32*), (result));
+  *result = old_id;
+  return 1;
+}
+
+static i64 spoof_list_insert([[gnu::unused]] wrapper_alias_e name, ...) {
+  EXPAND_ARGS((u32*, void*, u32, i64), (result, list, threadid, key));
+  assert(list == &ready_list, &queue_suites[0].results[1], "s", "FAIL - Expected to add thread to ready_list");
+  assert(threadid == old_id, &queue_suites[0].results[1], "s", "FAIL - Got unexpected thread id for insertion");
+  assert(key == thread_table[old_id].priority, &queue_suites[0].results[1], "s", "FAIL - Got unexpected key on insertion");
+  *result = old_id;
+  return 1;
+}
+
+static i64 spoof_list_remove([[gnu::unused]] wrapper_alias_e name, ...) {
+  EXPAND_ARGS((u32*, void*), (result, list));
+  assert(list == &ready_list, &queue_suites[0].results[0], "s", "FAIL - Expected to dequeue thread from ready_list");
+  *result = new_id;
+  return 1;
+}
+
+static void resched_queue_tests([[gnu::unused]] override_t* shadows) {
+  shadows[CTXSW].precall = spoof_ctxsw_queued;
+  shadows[GET_CURRENT_THREAD].precall = spoof_get_current_thread;
+  shadows[SET_CURRENT_THREAD].precall = spoof_set_current_thread;
+  shadows[LIST_REMOVE_THREAD].precall = spoof_list_remove;
+  shadows[LIST_DEQUEUE_THREAD].precall = spoof_list_remove;
+  shadows[LIST_INSERT_THREAD].precall = spoof_list_insert;
+  
+  setup_test(0, 1, TH_RUNNING, shadows);
+  thread_table[old_id].priority = 58;
+  resched();
+  assert(shadows[LIST_REMOVE_THREAD].numcalls + shadows[LIST_DEQUEUE_THREAD].numcalls > 0,
+	 &queue_suites[0].results[0], "s", "FAIL - Thread was not removed from queue");
+  assert(shadows[LIST_REMOVE_THREAD].numcalls + shadows[LIST_DEQUEUE_THREAD].numcalls < 2,
+	 &queue_suites[0].results[0], "s", "FAIL - Too many threads removed from queue");
+  assert(shadows[LIST_INSERT_THREAD].numcalls == 1,
+	 &queue_suites[0].results[1], "s", "FAIL - No threads added to queue");
+
+  setup_test(0, 1, TH_SUSPEND, shadows);
+  thread_table[old_id].priority = 13;
+  resched();
+  assert(shadows[LIST_REMOVE_THREAD].numcalls + shadows[LIST_DEQUEUE_THREAD].numcalls > 0,
+	 &queue_suites[0].results[0], "s", "FAIL - Thread was not removed from queue");
+  assert(shadows[LIST_REMOVE_THREAD].numcalls + shadows[LIST_DEQUEUE_THREAD].numcalls < 2,
+	 &queue_suites[0].results[0], "s", "FAIL - Too many threads removed from queue");
+  assert(shadows[LIST_INSERT_THREAD].numcalls == 0,
+	 &queue_suites[0].results[1], "s", "FAIL - Non-running thread added to queue");
+}
+
+#endif
+#endif

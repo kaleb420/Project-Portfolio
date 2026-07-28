@@ -1,0 +1,198 @@
+#ifdef UTEST
+#include <complete.h>
+#if MILESTONE_4 == 1
+#include <blib.h>
+#include <testing.h>
+
+REGISTER(RESUME, 4, resume_tests, resume_suites, 1);
+REGISTER(SUSPEND, 4, suspend_tests, suspend_suites, 1);
+REGISTER(JOIN, 4, join_tests, join_suites, 1);
+
+
+static test_suite_t resume_suites[] = {
+  {
+    .section = "General",
+    .prompts = {
+      "Rejects invalid threads",
+      "Sets resumed thread state",
+      "Performs rescheduling",
+      "Returns threadid"
+    }
+  }
+};
+
+static test_suite_t suspend_suites[] = {
+  {
+    .section = "General",
+    .prompts = {
+      "Rejects invalid threads",
+      "Sets suspended thread state",
+      "Performs rescheduling",
+      "Returns threadid"
+    }
+  }
+};
+
+static test_suite_t join_suites[] = {
+  {
+    .section = "General",
+    .prompts = {
+      "Rejects invalid threads",
+      "Sets completed thread state",
+      "Reschedules blocking thread",
+      "Returns thread's result",
+    }
+  }
+};
+
+
+#define ENUMERATE(name) #name,
+static char* state_names[NUM_SYSCALLS] = {
+    THREAD_STATE_LIST(ENUMERATE)
+};
+#undef ENUMERATE
+
+static override_t* shadows;
+static u32 rescheds = 0;
+
+[[gnu::unused]]
+static i64 spoof_list_insert([[gnu::unused]] wrapper_alias_e name, ...) {
+  return 1;
+}
+
+[[gnu::unused]]
+static i64 spoof_list_dequeue([[gnu::unused]] wrapper_alias_e name, ...) {
+  return 1;
+}
+
+[[gnu::unused]]
+static i64 spoof_list_remove([[gnu::unused]] wrapper_alias_e name, ...) {
+  return 1;
+}
+
+static i64 spoof_resched([[gnu::unused]] wrapper_alias_e name, ...) {
+  rescheds += 1;
+  return 1;
+}
+
+[[gnu::unused]]
+static i64 spoof_enqueue_futex([[gnu::unused]] wrapper_alias_e name, ...) {
+  thread_table[0].state = TH_DEFUNCT;
+  return 1;
+}
+
+static i64 spoof_resched_join(wrapper_alias_e, ...);
+static i64 spoof_resched_join_done([[gnu::unused]] wrapper_alias_e name, ...) {
+  rescheds += 1;
+  shadows[RESCHED].precall = spoof_resched_join;
+  for (u32 i=0; i<NUM_THREADS; i++)
+    thread_table[i].state = TH_DEFUNCT;
+  return 1;
+}
+
+static i64 spoof_resched_join([[gnu::unused]] wrapper_alias_e name, ...) {
+  rescheds += 1;
+  shadows[RESCHED].precall = spoof_resched_join_done;
+  return 1;
+}
+
+static void setup_tests(void) {
+  shadows[RESCHED].precall = spoof_resched;
+  IF_MS(5, shadows[LIST_INSERT_THREAD].precall = spoof_list_insert);
+  IF_MS(5, shadows[LIST_DEQUEUE_THREAD].precall = spoof_list_dequeue);
+  IF_MS(5, shadows[LIST_REMOVE_THREAD].precall = spoof_list_remove);
+}
+
+static void clear_threads(void) {
+  init_threads();
+  for (u32 i=0; i<NUM_THREADS; i++)
+    thread_table[i].retval = (u8)(NUM_THREADS + 2 + (i * 3));
+}
+
+static bool isthreadid = true;
+static u8 get_result(u32 state) {
+  return (isthreadid ? (u8)state : thread_table[state].retval);
+}
+
+#define asbit(x) (1 << x)
+static void run_error_tests(threadstate_e expect, i64 (*test_fn)(u32), test_suite_t* suite, u32 allowed, u32 resched_count) {
+  i64 result;
+
+  /* Check too large threadid */
+  shadows[RESCHED].numcalls = 0;
+  result = test_fn(NUM_THREADS);
+
+  assert(result == -1, &suite->results[0], "sd", "FAIL - Expected return -1, got ", result);
+
+  /* Check all thread states */
+  for (u32 state=0; state < NUM_STATES; state++) {
+    clear_threads();
+    rescheds = 0;
+    thread_table[state].state = state;   // Using the 'state' variable here two ways, as the state value, and a proxy random index
+    result = test_fn(state);
+    if (!(asbit(state) & allowed)) {
+      assert(result == -1, &suite->results[0], "sdss",
+	     "FAIL - Returned ", result, " when thread was ", state_names[state]);
+      assert(rescheds == 0, &suite->results[0], "ss",
+	     "FAIL - Resched called when thread was ", state_names[state]);
+      assert(thread_table[state].state == state, &suite->results[0], "ss",
+	     "FAIL - State was changed when thread was ", state_names[state]);
+    }
+    else {
+      assert(get_result(state) == result, &suite->results[3], "sdsd", "FAIL - Expected return of ", get_result(state), " got ", result);
+      assert(thread_table[state].state == expect, &suite->results[1], "ssss",
+	     "FAIL - State was ", state_names[thread_table[state].state], " expected ", state_names[expect]);
+      if (state != TH_DEFUNCT)
+	assert(rescheds == resched_count, &suite->results[2], "ss",
+	       "FAIL - Thread was not rescheduled when ", state_names[state]);
+    }
+  }
+}
+
+static void resume_tests([[gnu::unused]] override_t* sh) {
+  shadows = sh;
+  isthreadid = true;
+  setup_tests();
+  run_error_tests(TH_READY, resume, &resume_suites[0], asbit(TH_SUSPEND), 1);
+}
+
+static void suspend_tests([[gnu::unused]] override_t* sh) {
+  shadows = sh;
+  isthreadid = true;
+  setup_tests();
+  run_error_tests(TH_SUSPEND, suspend, &suspend_suites[0], asbit(TH_RUNNING) | asbit(TH_READY), 1);
+}
+
+static void join_tests([[gnu::unused]] override_t* sh) {
+  i64 (*test_fn)(u32) = join;
+  shadows = sh;
+  setup_tests();
+  isthreadid = false;
+#if MILESTONE_7 == 1
+  shadows[RESCHED].precall = spoof_resched_join_done;
+  shadows[ENQUEUE_FUTEX].precall = spoof_enqueue_futex;
+  run_error_tests(TH_FREE, join, &join_suites[0], ~(u32)asbit(TH_FREE), 1);
+#else
+  shadows[RESCHED].precall = spoof_resched_join;
+  run_error_tests(TH_FREE, join, &join_suites[0], ~(u32)asbit(TH_FREE), 2);
+#endif
+
+
+  shadows[RESCHED].numcalls = 0;
+  thread_table[0].state = TH_DEFUNCT;
+  test_fn(0);
+#if MILESTONE_7 == 1
+  assert(shadows[ENQUEUE_FUTEX].numcalls > 0, &join_suites[0].results[2], "s", "FAIL - Thread did not use futex for blocking");
+  test_fn = kill;
+  thread_table[0].state = TH_RUNNING;
+  thread_table[1].parent = 0;
+  thread_table[1].state = TH_WAITING;
+  test_fn(0);
+  assert(shadows[DEQUEUE_FUTEX].numcalls > 0, &join_suites[0].results[2], "s", "FAIL - Queue was not cleared on thread kill");
+#else
+  assert(shadows[RESCHED].numcalls == 0, &join_suites[0].results[2], "s", "FAIL - Thread was reschedules when already TH_DEFUNCT");
+#endif
+}
+
+#endif
+#endif

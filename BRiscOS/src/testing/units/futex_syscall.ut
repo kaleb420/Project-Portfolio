@@ -1,0 +1,75 @@
+#ifdef UTEST
+#include <complete.h>
+#if MILESTONE_7 == 1
+#include <blib.h>
+#include <futex.h>
+#include <testing.h>
+REGISTER(FUTEX_SYSCALL, 7, futex_tests, suites, 1);
+//          NAME MS        FUNC  SUITES, NUM_SUITES
+
+
+static test_suite_t suites[] = {
+  {
+    .section = "Basic",
+    .prompts = {
+      "Enqueues on FUTEX_WAIT",
+      "Dequeues on FUTEX_WAKE",
+      "Reschedules thread",
+      "Returns related operation result"
+    }
+  },
+};
+
+i64 spoof_resched([[gnu::unused]] wrapper_alias_e name, ...) {
+  return 1;
+}
+
+static u32 threadid;
+i64 spoof_current_thread([[gnu::unused]] wrapper_alias_e name, ...) {
+  EXPAND_ARGS((u32*), (result));
+  *result = threadid;
+  return 1;
+}
+
+i64 spoof_list(wrapper_alias_e name, ...) {
+  EXPAND_ARGS((u32*, u64, u32), (result, key, val));
+  if (name == ENQUEUE_FUTEX) {
+    *result = val;
+  }
+  else {
+    *result = 3;
+  }
+  return 1;
+}
+
+static void futex_tests([[gnu::unused]] override_t* shadows) {
+  i64 (*fn)(void*, u64, i64) = futex;
+  shadows[RESCHED].precall = spoof_resched;
+  shadows[GET_CURRENT_THREAD].precall = spoof_current_thread;
+  shadows[ENQUEUE_FUTEX].precall = spoof_list;
+  shadows[DEQUEUE_FUTEX].precall = spoof_list;
+
+  i32 test_futex;
+  i64 result;
+  threadid = 12;
+  result = fn(&test_futex, FUTEX_WAIT, 0);
+  assert(result == 12, &suites[0].results[3], "s" ,"FAIL - Received unexpected return value from WAIT");
+  assert(shadows[RESCHED].numcalls > 0, &suites[0].results[2], "s", "FAIL - Thread was not rescheduled");
+  assert(shadows[RESCHED].numcalls < 2, &suites[0].results[2], "s", "FAIL - Thread was rescheduled too many times");
+  assert(shadows[ENQUEUE_FUTEX].numcalls > 0, &suites[0].results[0], "s", "FAIL - Thread was not enqueued to a futex");
+  assert(shadows[ENQUEUE_FUTEX].numcalls < 2, &suites[0].results[0], "s", "FAIL - Enqueue invoked too many times");
+  assert(shadows[DEQUEUE_FUTEX].numcalls == 0, &suites[0].results[0], "s", "FAIL - Threads dequeued during WAIT");
+
+  shadows[RESCHED].numcalls = shadows[DEQUEUE_FUTEX].numcalls = shadows[ENQUEUE_FUTEX].numcalls = 0;
+  threadid = 8;
+  result = fn(&test_futex, FUTEX_WAKE, 0);
+  assert(result == 3, &suites[0].results[3], "s" ,"FAIL - Received unexpected return value from WAKE");
+  assert(shadows[RESCHED].numcalls > 0, &suites[0].results[2], "s", "FAIL - Thread was not rescheduled");
+  assert(shadows[RESCHED].numcalls < 2, &suites[0].results[2], "s", "FAIL - Thread was rescheduled too many times");
+  assert(shadows[DEQUEUE_FUTEX].numcalls > 0, &suites[0].results[1], "s", "FAIL - Thread was not enqueued to a futex");
+  assert(shadows[DEQUEUE_FUTEX].numcalls < 2, &suites[0].results[1], "s", "FAIL - Enqueue invoked too many times");
+  assert(shadows[ENQUEUE_FUTEX].numcalls == 0, &suites[0].results[1], "s", "FAIL - Threads enqueued during WAKE");
+}
+
+#endif
+#endif

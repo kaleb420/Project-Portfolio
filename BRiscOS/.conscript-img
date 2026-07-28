@@ -1,0 +1,50 @@
+import os, shutil
+Import("env")
+
+def error(code, msg):
+    print(msg)
+    Exit(code)
+
+milestone = env["milestone"]
+kdirs = ("device", "core", "lib", os.path.join("core", "asm"), "syscall")
+udirs = ("apps", "lib", os.path.join("lib", "asm"))
+sdirs = ("lib", os.path.join("lib", "asm"))
+
+files = {lib[0]: [Glob(os.path.join("src", lib, d, "*.[cs]")) for d in dirs] for dirs,lib in
+         [(kdirs, "kernel"), (udirs, "user"), (sdirs, "shared")]}
+
+env.AppendUnique(CPPPATH=(os.path.join("src", "shared", "include"),
+                    os.path.join("src", "testing", "units")))
+kenv, uenv, senv = [env.Clone() for _ in range(3)]
+
+kenv.AppendUnique(CPPPATH=(os.path.join("src", "kernel", "include"),))
+uenv.AppendUnique(CPPPATH=(os.path.join("src", "user", "include"),))
+
+if int(milestone) == 0:
+    env.Append(LINKFLAGS="--wrap=handle_exception")
+
+kobjs, uobjs, sobjs = kenv.Object(files["k"]), uenv.Object(files["u"]), senv.Object(files["s"])
+
+img    = env.Program("kernel.elf", kobjs + uobjs + sobjs)
+build = env.Alias("build", img)
+
+if env.GetOption("mode") == "loaded":
+    loader = env.Command(target="#.loader/efi/boot", source=[], action=Mkdir("$TARGET"))
+    env.Depends(img, loader)
+
+    loadObj  = env.Command(target="#.loader/efi/kernel.bin", source=img,
+                           action=f"{env['ARCH']}-objcopy -O binary ${{SOURCE}} .loader/efi/kernel.bin")
+    loadBoot = env.Command(target="#.loader/u-boot.bin", source=".setup/u-boot.bin",
+                           action=Copy(".loader/u-boot.bin", ".setup/u-boot.bin"))
+    loadScr  = env.Command(target="#.loader/efi/boot/boot.scr", source=".setup/boot.scr",
+                           action=Copy(".loader/efi/boot/boot.scr", ".setup/boot.scr"))
+
+    env.Depends(build, loadObj + loadBoot + loadScr)
+    image = env.Command(target="run", source=build, action=f"{env['QEMU']} {env['qflags']} {env['bflags']}")
+else:
+    image = env.Command(target="run", source=img, action=f"{env['QEMU']} {env['qflags']} -bios none -kernel ${{SOURCE}}")
+
+env.Alias("run", image)
+
+env.Clean(img, "#.build")
+env.Clean(img, "#.loader")

@@ -1,0 +1,95 @@
+#ifdef UTEST
+#include <complete.h>
+#if MILESTONE_6 == 1
+#include <blib.h>
+#include <testing.h>
+#include <threads.h>
+
+REGISTER(TIMER, 6, timer_tests, suites, 1);
+
+static test_suite_t suites[] = {
+  {
+    .section = "General",
+    .prompts = {
+      "Reschedules the thread",
+      "Resumes sleeping threads",
+      "Resumes multiple sleeping threads"
+    }
+  }
+};
+
+static i32 numdequeue = 0;
+static i64 spoof_dequeue([[gnu::unused]] wrapper_alias_e name, ...) {
+  EXPAND_ARGS((i32*), (result));
+  *result = --numdequeue;
+  return 1;
+}
+
+static i64 spoof_insert([[gnu::unused]] wrapper_alias_e name, ...) {
+  EXPAND_ARGS((u32*, queue_head_t*, u32, i64), (result, list, id, key));
+  assert(id == (u32)numdequeue, &suites[0].results[1], "s", "FAIL - Resumed thread different from expected value");
+  assert(key == thread_table[id].priority, &suites[0].results[1], "s", "FAIL - Priority was not passed as resumed thread's key");
+  return 1;
+}
+
+static i64 spoof_resched([[gnu::unused]] wrapper_alias_e name, ...) {
+  return 1;
+}
+
+/*
+  Override: list_dequeue_therad, list_insert_thead, resched
+*/
+
+static void timer_tests([[gnu::unused]] override_t* shadows) {
+  shadows[LIST_DEQUEUE_THREAD].precall = spoof_dequeue;
+  shadows[LIST_INSERT_THREAD].precall  = spoof_insert;
+  shadows[RESCHED].precall = spoof_resched;
+  thread_table[5].priority = 43;
+  thread_table[4].priority = 8;
+  thread_table[3].priority = 81;
+  thread_table[2].priority = 19;
+  thread_table[1].priority = 99;
+  thread_table[0].priority = 582;
+
+  thread_table[5].state = thread_table[4].state = thread_table[3].state = thread_table[2].state = \
+    thread_table[1].state = thread_table[0].state = TH_SLEEP;
+ 
+
+  numdequeue = 0;
+  shadows[RESCHED].numcalls = 0;
+  handle_timer();
+
+  assert(shadows[RESCHED].numcalls > 0, &suites[0].results[0], "s", "FAIL - Threads were not rescheduled");
+  assert(shadows[RESCHED].numcalls < 2, &suites[0].results[0], "s", "FAIL - Rescheduling invoked multiple times");
+  assert(shadows[LIST_DEQUEUE_THREAD].numcalls > 0, &suites[0].results[1], "s", "FAIL - No calls made to dequeue");
+  assert(shadows[LIST_DEQUEUE_THREAD].numcalls < 2, &suites[0].results[1], "s", "FAIL - Too many calls made to dequeue"); 
+  assert(shadows[LIST_INSERT_THREAD].numcalls < 1, &suites[0].results[1], "s", "FAIL - Too many threads readied");
+
+  numdequeue = 1;
+  shadows[RESCHED].numcalls = shadows[LIST_DEQUEUE_THREAD].numcalls = shadows[LIST_INSERT_THREAD].numcalls = 0;
+  handle_timer();
+
+  assert(shadows[RESCHED].numcalls > 0, &suites[0].results[0], "s", "FAIL - Threads were not rescheduled");
+  assert(shadows[RESCHED].numcalls < 2, &suites[0].results[0], "s", "FAIL - Rescheduling invoked multiple times");
+  assert(shadows[LIST_DEQUEUE_THREAD].numcalls > 1, &suites[0].results[1], "s", "FAIL - No calls made to dequeue");
+  assert(shadows[LIST_DEQUEUE_THREAD].numcalls < 3, &suites[0].results[1], "s", "FAIL - Too many calls made to dequeue");
+  assert(shadows[LIST_INSERT_THREAD].numcalls > 0, &suites[0].results[1], "s", "FAIL  Thread not property readied");
+  assert(shadows[LIST_INSERT_THREAD].numcalls < 2, &suites[0].results[1], "s", "FAIL - Too many threads readied");
+  assert(thread_table[0].state == TH_READY, &suites[0].results[1], "s", "FAIL - Thread state was not set to ready");
+
+  numdequeue = 6;
+  shadows[RESCHED].numcalls = shadows[LIST_DEQUEUE_THREAD].numcalls = shadows[LIST_INSERT_THREAD].numcalls = 0;
+  handle_timer();
+
+  assert(shadows[RESCHED].numcalls > 0, &suites[0].results[0], "s", "FAIL - Threads were not rescheduled");
+  assert(shadows[RESCHED].numcalls < 2, &suites[0].results[0], "s", "FAIL - Rescheduling invoked multiple times");
+  assert(shadows[LIST_DEQUEUE_THREAD].numcalls > 6, &suites[0].results[2], "s", "FAIL - No calls made to dequeue");
+  assert(shadows[LIST_DEQUEUE_THREAD].numcalls < 8, &suites[0].results[2], "s", "FAIL - Too many calls made to dequeue");
+  assert(shadows[LIST_INSERT_THREAD].numcalls > 5, &suites[0].results[2], "s", "FAIL  Thread not property readied");
+  assert(shadows[LIST_INSERT_THREAD].numcalls < 7, &suites[0].results[2], "s", "FAIL - Too many threads readied");
+  assert(thread_table[0].state == TH_READY, &suites[0].results[2], "s", "FAIL - Thread state was not set to ready");
+}
+
+
+#endif
+#endif

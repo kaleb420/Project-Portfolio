@@ -1,0 +1,167 @@
+#ifdef UTEST
+#include <complete.h>
+#if MILESTONE_6 == 1
+#include <blib.h>
+#include <testing.h>
+
+REGISTER(SLEEP, 6, sleep_tests, sleep_suites, 1);
+REGISTER(UNSLEEP, 6, unsleep_tests, unsleep_suites, 1);
+
+static test_suite_t sleep_suites[] = {
+  {
+    .section = "General",
+    .prompts = {
+      "Rejects invalid threads",
+      "Sets thread state",
+      "Queues thread to sleep list",
+      "Reschedules the thread",
+      "Returns the thread id",
+    }
+  }
+};
+
+static test_suite_t unsleep_suites[] = {
+  {
+    .section = "General",
+    .prompts = {
+      "Rejects invalid threads",
+      "Sets thread state",
+      "Queues thread to ready list",
+      "Reschedules the thread",
+      "Returns the thread id",
+      "Removes the sleep list",
+    }
+  }
+};
+
+static u32 expected_tid;
+static u64 expected_delay;
+static test_suite_t* suite;
+static queue_head_t* remove_list, *insert_list;
+static i64 spoof_remove([[gnu::unused]] wrapper_alias_e name, ...) {
+  EXPAND_ARGS((i32*, queue_head_t*, u32), (result, list, id));
+  remove_list = list;
+  *result = (i32)id;
+  return 1;
+}
+
+static i64 spoof_insert([[gnu::unused]] wrapper_alias_e name, ...) {
+  EXPAND_ARGS((i32*, queue_head_t*, u32, u64), (result, list, id, key));
+  insert_list = list;
+  assert(id == expected_tid, &suite->results[2], "s", "FAIL - Thread id passed to queue did not match sleeping thread");
+  assert(key == expected_delay, &suite->results[2], "s", "FAIL - Key passed to queue did not match argument");
+  *result = (i32)id;
+  return 1;
+}
+
+static i64 spoof_resched([[gnu::unused]] wrapper_alias_e name, ...) {
+  return 1;
+}
+
+
+static void setup_tests(override_t* shadows, test_suite_t* s) {
+  shadows[RESCHED].precall = spoof_resched;
+  shadows[LIST_INSERT_THREAD].precall = spoof_insert;
+  shadows[LIST_REMOVE_THREAD].precall = spoof_remove;
+  suite = s;
+}
+
+static void run_sleep_test(u32 id, u64 delay, override_t* shadows) {
+  i64 (*fn)(u32, u64) = sleep;
+  expected_tid = id;
+  expected_delay = delay;
+  remove_list = insert_list = NULL;
+  thread_table[id].state = TH_READY;
+  shadows[RESCHED].numcalls = shadows[LIST_INSERT_THREAD].numcalls = shadows[LIST_REMOVE_THREAD].numcalls = 0;
+  i64 result = fn(id, delay);
+  assert(result == id, &suite->results[4], "s", "FAIL - Return value did not match related thead id");
+  assert(shadows[RESCHED].numcalls > 0, &suite->results[3], "s", "FAIL - Thread was not rescheduled");
+  assert(shadows[RESCHED].numcalls < 2, &suite->results[3], "s", "FAIL - Thread was rescheduled too many times");
+  assert(insert_list != NULL, &suite->results[2], "s", "FAIL - Thread was not enqueued");
+  assert(insert_list == &sleep_list, &suite->results[2], "s", "FAIL - Thread was not added to the sleep list");
+  assert(thread_table[id].state == TH_SLEEP, &suite->results[1], "s", "FAIL - Thread was not set to TH_SLEEP");
+}
+
+static void run_unsleep_test(u32 id, override_t* shadows) {
+  i64 (*fn)(u32) = unsleep;
+  expected_tid = id;
+  remove_list = insert_list = NULL;
+  thread_table[id].state = TH_SLEEP;
+  shadows[RESCHED].numcalls = shadows[LIST_INSERT_THREAD].numcalls = shadows[LIST_REMOVE_THREAD].numcalls = 0;
+  i64 result = fn(id);
+  assert(result == id, &suite->results[4], "s", "FAIL - Return value did not match related thead id");
+  assert(shadows[RESCHED].numcalls > 0, &suite->results[3], "s", "FAIL - Thread was not rescheduled");
+  assert(shadows[RESCHED].numcalls < 2, &suite->results[3], "s", "FAIL - Thread was rescheduled too many times");
+  assert(insert_list != NULL, &suite->results[2], "s", "FAIL - Thread was not enqueued");
+  assert(insert_list == &ready_list, &suite->results[2], "s", "FAIL - Thread was not added to the sleep list");
+  assert(remove_list != NULL, &suite->results[5], "s", "FAIL - Thread was not removed from sleep list");
+  assert(remove_list == &sleep_list, &suite->results[5], "s", "FAIL - Thread was removed from the wrong list");
+  assert(thread_table[id].state == TH_READY, &suite->results[1], "s", "FAIL - Thread was not set to TH_SLEEP");
+}
+
+static void sleep_tests([[gnu::unused]] override_t* shadows) {
+  i64 (*fn)(u32, u64) = sleep;
+  i64 result;
+  setup_tests(shadows, &sleep_suites[0]);
+
+  result = fn(NUM_THREADS, 12);
+  assert(result == -1, &suite->results[0], "s", "FAIL - Returned non-error when given an invalid thread id");
+
+  thread_table[10].state = TH_FREE;
+  result = fn(10, 82);
+  assert(result == -1, &suite->results[0], "s", "FAIL - Returned non-error when given a thread is TH_FREE");
+
+  thread_table[10].state = TH_DEFUNCT;
+  result = fn(10, 82);
+  assert(result == -1, &suite->results[0], "s", "FAIL - Returned non-error when given a thread is TH_DEFUNCT");
+
+  thread_table[10].state = TH_SUSPEND;
+  result = fn(10, 82);
+  assert(result == -1, &suite->results[0], "s", "FAIL - Returned non-error when given a thread is TH_SUSPEND");
+
+  thread_table[10].state = TH_SLEEP;
+  result = fn(10, 82);
+  assert(result == -1, &suite->results[0], "s", "FAIL - Returned non-error when given a thread is TH_SLEEP");
+
+  for (u32 i=0; i<NUM_THREADS; i++)
+    run_sleep_test(i, i * 87, shadows);
+  
+  
+}
+
+
+static void unsleep_tests([[gnu::unused]] override_t* shadows) {
+  i64 (*fn)(u32) = unsleep;
+  i64 result;
+  setup_tests(shadows, &unsleep_suites[0]);
+
+  result = fn(NUM_THREADS);
+  assert(result == -1, &suite->results[0], "s", "FAIL - Returned non-error when given an invalid thread id");
+
+  thread_table[10].state = TH_FREE;
+  result = fn(10);
+  assert(result == -1, &suite->results[0], "s", "FAIL - Returned non-error when given a thread is TH_FREE");
+
+  thread_table[10].state = TH_DEFUNCT;
+  result = fn(10);
+  assert(result == -1, &suite->results[0], "s", "FAIL - Returned non-error when given a thread is TH_DEFUNCT");
+
+  thread_table[10].state = TH_SUSPEND;
+  result = fn(10);
+  assert(result == -1, &suite->results[0], "s", "FAIL - Returned non-error when given a thread is TH_SUSPEND");
+
+  thread_table[10].state = TH_READY;
+  result = fn(10);
+  assert(result == -1, &suite->results[0], "s", "FAIL - Returned non-error when given a thread is TH_READY");
+
+  thread_table[10].state = TH_RUNNING;
+  result = fn(10);
+  assert(result == -1, &suite->results[0], "s", "FAIL - Returned non-error when given a thread is TH_RUNNING");
+
+  for (u32 i=0; i<NUM_THREADS; i++)
+    run_unsleep_test(i, shadows);
+}
+
+
+#endif
+#endif

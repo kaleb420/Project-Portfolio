@@ -1,0 +1,184 @@
+#ifdef UTEST
+#include <blib.h>
+#include <testing.h>
+
+REGISTER(DELTA_LIST, 6, delta_tests, delta_suites, 3);
+
+static test_suite_t delta_suites[] = {
+  {
+    .section = "Insert",
+    .prompts = {
+      "Inserts into queue",
+      "Queue maintains links",
+      "Keys maintain delta order"
+    }
+  },
+  {
+    .section = "Dequeue",
+    .prompts = {
+      "Removed from queue",
+      "Queue maintains links",
+      "Keys maintain delta order"
+    }
+  },
+  {
+    .section = "Remove",
+    .prompts = {
+      "Dequeued from queue",
+      "Queue maintains links",
+      "Keys maintain delta order"
+    }
+  }
+};
+
+
+static void validate_delta(queue_head_t* list, const i32* order, i32 len, test_suite_t* suite) {
+  if (len > 0)
+    if (assert(list->head < NUM_THREADS, &suite->results[1], "s", "FAIL - Queue head does not reference the correct thread id") == 0)
+      return;
+
+  queue_t* iter = &queue_table[list->head];
+  for (i32 i=0; i<len; i++) {
+    assert(iter->key == order[i], &suite->results[2], "sds", "FAIL - Key in position ", i, " does not match expected delta value");
+    iter = iter->q_next;
+  }
+}
+
+static void delta_tests([[gnu::unused]] override_t* shadows) {
+  queue_head_t list = (queue_head_t) { .sortby = SORT_DELTA };
+  i32 result;
+
+  /* --------------------- INSERT -------------------------- */
+
+  validate_list(&list, (const u32[]){ 0 }, 0, &delta_suites[0], 0);
+
+  result = list_insert_thread(&list, 5, 42);
+  assert(result == 5, &delta_suites[0].results[0], "sd", "FAIL - Expected return of 5, got ", result);
+  validate_list(&list, (const u32[]){ 5 }, 1, &delta_suites[0], 0);
+  validate_delta(&list, (const i32[]){ 42 }, 1, &delta_suites[0]);
+
+  result = list_insert_thread(&list, 4, 50);
+  assert(result == 4, &delta_suites[0].results[0], "sd", "FAIL - Expected return of 4, got ", result);
+  validate_list(&list, (const u32[]){ 5, 4 }, 2, &delta_suites[0], 0);
+  validate_delta(&list, (const i32[]){ 42, 8 }, 2, &delta_suites[0]);
+
+  result = list_insert_thread(&list, 9, 12);
+  assert(result == 9, &delta_suites[0].results[0], "sd", "FAIL - Expected result of 9, got ", result);
+  validate_list(&list, (const u32[]){ 9, 5, 4 }, 3, &delta_suites[0], 0);
+  validate_delta(&list, (const i32[]){ 12, 30, 8 }, 3, &delta_suites[0]);
+
+  result = list_insert_thread(&list, 1, 0);
+  assert(result == 1, &delta_suites[0].results[0], "sd", "FAIL - Expected result of 1, got ", result);
+  validate_list(&list, (const u32[]){ 1, 9, 5, 4 }, 4, &delta_suites[0], 0);
+  validate_delta(&list, (const i32[]){ 0, 12, 30, 8 }, 4, &delta_suites[0]);
+
+  result = list_insert_thread(&list, 10, 42);
+  assert(result == 10, &delta_suites[0].results[0], "sd", "FAIL - Expected result of 10, got ", result);
+  validate_list(&list, (const u32[]){ 1, 9, 5, 10, 4 }, 5, &delta_suites[0], 0);
+  validate_delta(&list, (const i32[]){ 0, 12, 30, 0, 8 }, 5, &delta_suites[0]);
+
+  /* --------------------- DEQUEUE -------------------------- */
+  /*  Creates List: 12 -> 2 -> 4 -> 15 -> 8  */
+  setup_removal_test(&list, SORT_DELTA);
+  queue_table[12].key = 14;
+  queue_table[2].key = 9;
+  queue_table[4].key = 0;
+  queue_table[15].key = 23;
+  queue_table[8].key = 24;
+
+  result = list_dequeue_thread(&list);
+  assert(result == -1, &delta_suites[1].results[0], "s", "FAIL - Got premature return of thread, should be -1");
+  validate_list(&list, (const u32[]){ 12, 2, 4, 15, 8 }, 5, &delta_suites[1], 0);
+  validate_delta(&list, (const i32[]){ 4, 9, 0, 23, 24 }, 5, &delta_suites[1]);
+
+  result = list_dequeue_thread(&list);
+  assert(result == -1, &delta_suites[1].results[0], "s", "FAIL - Got premature return of thread, should be -1");
+  validate_list(&list, (const u32[]){ 12, 2, 4, 15, 8 }, 5, &delta_suites[1], 0);
+  validate_delta(&list, (const i32[]){ -6, 9, 0, 23, 24 }, 5, &delta_suites[1]);
+
+  result = list_dequeue_thread(&list);
+  assert(result == 12, &delta_suites[1].results[0], "s", "FAIL - Expected thread id return value on negative key");
+  validate_list(&list, (const u32[]){ 2, 4, 15, 8 }, 4, &delta_suites[1], 0);
+  validate_delta(&list, (const i32[]){ 3, 0, 23, 24 }, 4, &delta_suites[1]);
+
+  result = list_dequeue_thread(&list);
+  assert(result == -1, &delta_suites[1].results[0], "s", "FAIL - Got premature return of thread, should be -1");
+  validate_list(&list, (const u32[]){ 2, 4, 15, 8 }, 4, &delta_suites[1], 0);
+  validate_delta(&list, (const i32[]){ -7, 0, 23, 24 }, 4, &delta_suites[1]);
+
+  result = list_dequeue_thread(&list);
+  assert(result == 2, &delta_suites[1].results[0], "s", "FAIL - Expected thread id return value on negative key");
+  validate_list(&list, (const u32[]){ 4, 15, 8 }, 3, &delta_suites[1], 0);
+  validate_delta(&list, (const i32[]){ -7, 23, 24 }, 3, &delta_suites[1]);
+
+  result = list_dequeue_thread(&list);
+  assert(result == 4, &delta_suites[1].results[0], "s", "FAIL - Expected thread id return value on negative key");
+  validate_list(&list, (const u32[]){ 15, 8 }, 2, &delta_suites[1], 0);
+  validate_delta(&list, (const i32[]){ 16, 24 }, 2, &delta_suites[1]);
+
+  result = list_dequeue_thread(&list);
+  assert(result == -1, &delta_suites[1].results[0], "s", "FAIL - Got premature return of thread, should be -1");
+  validate_list(&list, (const u32[]){ 15, 8 }, 2, &delta_suites[1], 0);
+  validate_delta(&list, (const i32[]){ 6, 24 }, 2, &delta_suites[1]);
+
+  result = list_dequeue_thread(&list);
+  assert(result == -1, &delta_suites[1].results[0], "s", "FAIL - Got premature return of thread, should be -1");
+  validate_list(&list, (const u32[]){ 15, 8 }, 2, &delta_suites[1], 0);
+  validate_delta(&list, (const i32[]){ -4, 24 }, 2, &delta_suites[1]);
+
+  result = list_dequeue_thread(&list);
+  assert(result == 15, &delta_suites[1].results[0], "s", "FAIL - Expected thread id return value on negative key");
+  validate_list(&list, (const u32[]){ 8 }, 1, &delta_suites[1], 0);
+  validate_delta(&list, (const i32[]){ 20 }, 1, &delta_suites[1]);
+
+  result = list_dequeue_thread(&list);
+  assert(result == -1, &delta_suites[1].results[0], "s", "FAIL - Got premature return of thread, should be -1");
+  validate_list(&list, (const u32[]){ 8 }, 1, &delta_suites[1], 0);
+  validate_delta(&list, (const i32[]){ 10 }, 1, &delta_suites[1]);
+
+  result = list_dequeue_thread(&list);
+  assert(result == -1, &delta_suites[1].results[0], "s", "FAIL - Got premature return of thread, should be -1");
+  validate_list(&list, (const u32[]){ 8 }, 1, &delta_suites[1], 0);
+  validate_delta(&list, (const i32[]){ 0 }, 1, &delta_suites[1]);
+
+  result = list_dequeue_thread(&list);
+  assert(result == 8, &delta_suites[1].results[0], "s", "FAIL - Expected thread id return value on negative key");
+  validate_list(&list, (const u32[]){ 0 }, 0, &delta_suites[1], 0);
+
+  /* --------------------- REMOVE -------------------------- */
+  /*  Creates List: 12 -> 2 -> 4 -> 15 -> 8  */
+  setup_removal_test(&list, SORT_DELTA);
+  queue_table[12].key = 14;
+  queue_table[2].key = 9;
+  queue_table[4].key = 0;
+  queue_table[15].key = 23;
+  queue_table[8].key = 24;
+
+  result = list_remove_thread(&list, 12);
+  assert(result == 12, &delta_suites[2].results[0], "sd", "FAIL - Got unexpected return ", result);
+  validate_list(&list, (const u32[]){ 2, 4, 15, 8 }, 4, &delta_suites[2], 0);
+  validate_delta(&list, (const i32[]){ 23, 0, 23, 24 }, 4, &delta_suites[2]);
+
+  result = list_remove_thread(&list, 8);
+  assert(result == 8, &delta_suites[2].results[0], "sd", "FAIL - Got unexpected return ", result);
+  validate_list(&list, (const u32[]){ 2, 4, 15 }, 3, &delta_suites[2], 0);
+  validate_delta(&list, (const i32[]){ 23, 0, 23 }, 3, &delta_suites[2]);
+
+  result = list_remove_thread(&list, 4);
+  assert(result == 4, &delta_suites[2].results[0], "sd", "FAIL - Got unexpected return ", result);
+  validate_list(&list, (const u32[]){ 2, 15 }, 2, &delta_suites[2], 0);
+  validate_delta(&list, (const i32[]){ 23, 23 }, 2, &delta_suites[2]);
+
+  result = list_remove_thread(&list, 2);
+  assert(result == 2, &delta_suites[2].results[0], "sd", "FAIL - Got unexpected return ", result);
+  validate_list(&list, (const u32[]){ 15 }, 1, &delta_suites[2], 0);
+  validate_delta(&list, (const i32[]){ 46 }, 1, &delta_suites[2]);
+
+  result = list_remove_thread(&list, 15);
+  assert(result == 15, &delta_suites[2].results[0], "sd", "FAIL - Got unexpected return ", result);
+  validate_list(&list, (const u32[]){ 0 }, 0, &delta_suites[2], 0);
+
+}
+
+
+#endif

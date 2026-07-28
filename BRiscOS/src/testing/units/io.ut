@@ -1,0 +1,371 @@
+#ifdef UTEST
+#include <complete.h>
+#if MILESTONE_2 == 1
+#include <blib.h>
+#include <testing.h>
+#include <devices.h>
+#include <guard.h>
+#include <wrapper_defs.h>
+
+
+REGISTER(OPEN, 2, open_tests, open_suites, 1);
+REGISTER(CLOSE, 2, close_tests, close_suites, 1);
+REGISTER(READ, 2, read_tests, read_suites, 1);
+REGISTER(WRITE, 2, write_tests, write_suites, 1);
+//          NAME MS        FUNC  SUITES, NUM_SUITES
+
+
+device_t spoof_dev;
+static test_suite_t* suite;
+
+typedef struct {
+  const char* name;
+  u64 len;
+  u64 handle;
+  device_t* dev;
+  const char* buffer;
+  bool called;
+} record_t;
+
+static record_t call_data[4];
+static i64 spoof_open([[gnu::unused]] device_t* dev, [[gnu::unused]] const char* name, [[gnu::unused]] u64 len) {
+  memcpy(&call_data[0], &(record_t) { .called = true, .dev = dev, .len = len, .name = name }, sizeof(record_t));
+  return 12;
+}
+
+static i64 spoof_close([[gnu::unused]] device_t* dev, [[gnu::unused]] u64 handle) {
+  memcpy(&call_data[1], &(record_t) { .called = true, .dev = dev, .handle = handle }, sizeof(record_t));
+  return 0;
+}
+
+static i64 spoof_read([[gnu::unused]] device_t* dev, [[gnu::unused]] u64 handle, [[gnu::unused]] char* buffer, [[gnu::unused]] u64 len) {
+  memcpy(&call_data[2], &(record_t) { .called = true, .dev = dev, .handle = handle, .buffer = buffer, .len = len }, sizeof(record_t));
+  return 30;
+}
+
+static i64 spoof_write([[gnu::unused]] device_t* dev, [[gnu::unused]] u64 handle, [[gnu::unused]] const char* buffer, [[gnu::unused]] u64 len) {
+  memcpy(&call_data[3], &(record_t) { .called = true, .dev = dev, .handle = handle, .buffer = buffer, .len = len }, sizeof(record_t));
+  return 88;
+}
+
+static i64 filled_device_getter([[gnu::unused]] wrapper_alias_e name, ...) {
+  EXPAND_ARGS((device_t**, const char*), (result, namespace));
+  spoof_dev.open = spoof_open;
+  spoof_dev.close = spoof_close;
+  spoof_dev.read = spoof_read;
+  spoof_dev.write = spoof_write;
+  *result = &spoof_dev;
+  return 1;
+}
+
+static i64 empty_device_getter([[gnu::unused]] wrapper_alias_e name, ...) {
+  EXPAND_ARGS((device_t**, const char*), (result, namespace));
+  memset(&spoof_dev, 0, sizeof(device_t));
+  *result = &spoof_dev;
+  return 1;
+}
+
+static i64 null_getter([[gnu::unused]] wrapper_alias_e name, ...) {
+  EXPAND_ARGS((device_t**, const char*), (result, namespace));
+  *result = NULL;
+  return 1;
+}
+
+static void validate_call(u32 callid, result_t* result, record_t* record) {
+  assert(call_data[callid].called, result, "s", "FAIL - Device function was not called");
+  assert(record->name == NULL || test_strcmp(call_data[callid].name, record->name) == 0, result,
+	 "s", "FAIL - System call didn't pass the correct name to device");
+  assert(call_data[callid].len == record->len, result, "s", "FAIL - System call did not pass the correct length to device");
+  assert(call_data[callid].dev == record->dev, result, "s", "FAIL - System call did not pass the correct device reference to device");
+  assert(call_data[callid].handle == record->handle, result, "s", "FAIL - System call did not pass the correct handle to device");
+  assert(call_data[callid].buffer == record->buffer, result, "s", "FAIL - System call did not forward the buffer to device");
+}
+
+static test_suite_t open_suites[] = {
+  {
+    .section = "Basic",
+    .prompts = {
+      "Returns Error on bad device name",
+      "Returns Error when out of handles",
+      "Calls device open function",
+      "Opens one device on success",
+      "Does not attempt to call NULL",
+      "Returns correct handle",
+      "Returns correct device"
+    }
+  }
+};
+
+static void open_tests([[gnu::unused]] override_t* shadows) {
+  i64 hdl1, hdl2, hdl3, hdl4, hdl5;
+  i64 (*test_open)(const char* path, u64 len) = open;
+  suite = &open_suites[0];
+
+  shadows[GET_DEVICE_BY_NAME].precall = filled_device_getter;
+
+  /* Test normal device get ------------------------------------- */
+
+  memset(call_data, 0, sizeof(record_t) * 4);
+  hdl1 = test_open("foobar", 6);
+  i32 count = 0;
+  for (i32 i=0; i<NUM_HANDLES; i++) {
+    if (handle_table[i].used == 1)
+      count += 1;
+  }
+
+  validate_call(0, &suite->results[2], &(record_t) { .dev = &spoof_dev, .name = "foobar", .len = 6 });
+  assert(count > 0, &suite->results[3], "s", "FAIL - No entries in handle table marked as open");
+  assert(count < 2, &suite->results[3], "s", "FAIL - Too many entries in handle table marked as open");
+  if (assert(hdl1 < NUM_HANDLES, &suite->results[6], "s", "FAIL - Returned handle was larger than table")) {
+    assert(handle_table[hdl1].device != NULL, &suite->results[6], "s", "FAIL - Device in table is NULL");
+    assert(handle_table[hdl1].device == &spoof_dev, &suite->results[6], "s", "FAIL - Incorrect device in table entry");
+    assert(handle_table[hdl1].handle == 12, &suite->results[5], "s", "FAIL - Table value does not match value returned by device");
+  }
+  /* ------------------------------------------------------------- */
+
+  
+  /* Test second normal device get ------------------------------- */
+
+  hdl2 = test_open(UART, (u64)test_strlen(UART));
+  count = 0;
+  for (i32 i=0; i<NUM_HANDLES; i++) {
+    if (handle_table[i].used == 1)
+      count += 1;
+  }
+  assert(count > 1, &suite->results[3], "s", "FAIL - No entries in handle table marked as open");
+  assert(count < 3, &suite->results[3], "s", "FAIL - Too many entries in handle table marked as open");
+  assert(hdl1 != hdl2, &suite->results[3], "s", "FAIL - Second opened device had same external handle as first device");
+  if (assert(hdl2 < NUM_HANDLES, &suite->results[6], "s", "FAIL - Returned handle was larger than table")) {
+    assert(handle_table[hdl2].device != NULL, &suite->results[6], "s", "FAIL - Device in table is NULL");
+    assert(handle_table[hdl2].device == &spoof_dev, &suite->results[6], "s", "FAIL - Incorrect device in table entry");
+    assert(handle_table[hdl2].handle == 12, &suite->results[5], "s", "FAIL - Table value does not match value returned by device");
+  }
+  /* ------------------------------------------------------------- */
+
+
+  /* Test devce with no open function ---------------------------- */
+
+  shadows[GET_DEVICE_BY_NAME].precall = empty_device_getter;
+  TRY {
+    hdl3 = test_open(UART, (u64)test_strlen(UART));
+  }
+  CATCH({ assert(0, &suite->results[4], "s", "FAIL - Attempting to open UART resulted memory exception"); });
+  assert(hdl3 != -1, &suite->results[4], "s", "FAIL - Returned -1 instead of skipping open call");
+
+  assert(hdl1 != hdl3 && hdl2 != hdl3, &suite->results[3], "s", "FAIL - Second opened device had same external handle as first device");
+  if (assert(hdl3 < NUM_HANDLES, &suite->results[6], "s", "FAIL - Returned handle was larger than table")) {
+    assert(handle_table[hdl3].device != NULL, &suite->results[6], "s", "FAIL - Device in table is NULL");
+    assert(handle_table[hdl3].device == &spoof_dev, &suite->results[6], "s", "FAIL - Incorrect device in table entry");
+  }
+  /* ------------------------------------------------------------- */
+
+  
+  /* Test errors ------------------------------------------------- */
+  
+  shadows[GET_DEVICE_BY_NAME].precall = null_getter;
+  TRY {
+    hdl4 = test_open(UART, (u64)test_strlen(UART));
+  }
+  CATCH({ assert(0, &suite->results[0], "s", "FAIL - Attemted to open a non-existent device"); });
+  assert(hdl4 == -1, &suite->results[0], "s", "FAIL - Returned index instead of error");
+
+  shadows[GET_DEVICE_BY_NAME].precall = filled_device_getter;
+  for (i32 i=0; i<NUM_HANDLES; i++)
+    handle_table[i].used = 1;
+  hdl5 = test_open(UART, (u64)test_strlen(UART));
+  assert(hdl5 == -1, &suite->results[1], "s", "FAIL - Returned handle when no handles were unused");
+  /* ------------------------------------------------------------- */
+}
+
+
+static test_suite_t close_suites[] = {
+  {
+    .section = "Basic",
+    .prompts = {
+      "Returns Error on bad handle",
+      "Returns Error on unused device", 
+      "Calls device close function",
+      "Marks entry unused on success",
+      "Does not attempt to call NULL"
+    }
+  }
+};
+
+static void close_tests([[gnu::unused]] override_t* shadows) {
+  i64 result;
+  device_t* dev;
+  i64 (*test_close)(u64 desc) = close;
+  shadows[GET_DEVICE_BY_NAME].precall = empty_device_getter;
+  suite = &close_suites[0];
+
+  /* Test bad device close -------------------------------------- */
+
+  memset(handle_table, 0, sizeof(handle_entry_t) * NUM_HANDLES);
+  result = -1;
+  TRY {
+    result = test_close(0);
+  }
+  CATCH({ assert(0, &suite->results[4], "s", "FAIL - Attempted to close an empty device"); });
+  assert(result == -1, &suite->results[1], "s", "FAIL - Returned non-error with unknown device");
+
+  memset(handle_table, 0, sizeof(handle_entry_t) * NUM_HANDLES);
+  result = -1;
+  TRY {
+    result = test_close(NUM_HANDLES + 10);
+  }
+  CATCH({ assert(0, &suite->results[4], "s", "FAIL - Attempted to close an invalid device handle"); });
+  assert(result == -1, &suite->results[0], "s", "FAIL - Returned non-error with invalid device");
+
+  empty_device_getter(NUM_WRAPPERS, &dev, "spoof");
+  handle_table[13] = (handle_entry_t) { .handle = 18, .device = dev, .used = 1 };
+  result = -1;
+  TRY {
+    result = test_close(13);
+  }
+  CATCH({ assert(0, &suite->results[4], "s", "FAIL - Attempted to close a device with no close"); });
+  assert(1, &suite->results[4], "s", "");
+  assert(handle_table[13].used == 0, &suite->results[3], "s", "FAIL - Record not marked unused when no close function exists");
+  /* ------------------------------------------------------------- */
+
+
+  /* Test basic device close ------------------------------------- */
+
+  
+  filled_device_getter(NUM_WRAPPERS, &dev, "spoof");
+  handle_table[10] = (handle_entry_t) { .handle = 18, .device = dev, .used = 1 };
+  result = -1;
+  
+  memset(call_data, 0, sizeof(record_t) * 4);
+  result = test_close(10);
+  validate_call(1, &suite->results[2], &(record_t) { .dev = &spoof_dev, .handle=18 });
+
+  assert(handle_table[10].used == 0, &suite->results[3], "s", "FAIL - Record still marked as used after close");
+  /* ------------------------------------------------------------- */
+}
+
+
+static test_suite_t read_suites[] = {
+  {
+    .section = "Basic",
+    .prompts = {
+      "Returns Error on bad handle",
+      "Returns Error on no read handler",
+      "Returns Error on unused device",
+      "Calls device read function",
+      "Returns correct read length"
+    }
+  }
+};
+
+static void read_tests([[gnu::unused]] override_t* shadows) {
+  i64 result = -1;
+  char buffer[1024];
+  i64 (*test_read)(u64, char*, u64) = read;
+  suite = &read_suites[0];
+
+  /* Test bad arguments ------------------------------------------ */
+
+  null_getter(NUM_WRAPPERS, &spoof_dev, "");
+  TRY {
+    result = test_read(NUM_DEVS + 8, buffer, 1024);
+  }
+  CATCH({ assert(0, &suite->results[0], "s", "FAIL - Attemted to read a non-existent handle"); });
+  assert(result == -1, &suite->results[0], "s", "FAIL - Returned non-error when passing bad handle as argument");
+
+  memcpy(&handle_table[5], &(handle_entry_t) { .handle = 8, .device = NULL, .used = 1 }, sizeof(handle_entry_t));
+  TRY {
+    result = test_read(5, buffer, 1024);
+  }
+  CATCH({ assert(0, &suite->results[0], "s", "FAIL - Attemted to read a non-existent device"); });
+  assert(result == -1, &suite->results[0], "s", "FAIL - Returned non-error when passing handle with NULL device");
+  
+  empty_device_getter(NUM_WRAPPERS, &spoof_dev, "");
+  handle_table[5].device = &spoof_dev;
+  TRY {
+    result = test_read(5, buffer, 1024);
+  }
+  CATCH({ assert(0, &suite->results[1], "s", "FAIL - Attemted to read from a device without a read handler"); });
+  assert(result == -1, &suite->results[1], "s", "FAIL - Returned non-error when passing bad handle as argument");
+
+  filled_device_getter(NUM_WRAPPERS, &spoof_dev, "");
+  memcpy(&handle_table[5], &(handle_entry_t) { .handle = 8, .device = &spoof_dev, .used = 0 }, sizeof(handle_entry_t));
+  TRY {
+    result = test_read(5, buffer, 1024);
+  }
+  CATCH({ assert(0, &suite->results[2], "s", "FAIL - Attemted to read from an unused handle"); });
+  assert(1, &suite->results[2], "s", "");
+  assert(result == -1, &suite->results[1], "s", "FAIL - Returned non-error when reading from an unused handle");
+
+  /* ------------------------------------------------------------- */
+  
+  handle_table[5].used = 1;
+  memset(call_data, 0, sizeof(record_t) * 4);
+  result = test_read(5, buffer, 1024);
+  validate_call(2, &suite->results[3], &(record_t) { .dev = &spoof_dev, .handle=8, .buffer=buffer, .len=1024 });
+  assert(result == 30, &suite->results[4], "sds", "FAIL - Returned ", result, ", expected provided length");
+}
+
+
+static test_suite_t write_suites[] = {
+  {
+    .section = "Basic",
+    .prompts = {
+      "Returns Error on bad handle",
+      "Returns Error on no write handler",
+      "Returns Error on unused device",
+      "Calls device write function",
+      "Returns correct write length"
+    }
+  }
+};
+
+static void write_tests([[gnu::unused]] override_t* shadows) {
+  i64 result = -1;
+  char buffer[1024];
+  i64 (*test_write)(u64, const char*, u64) = write;
+  suite = &write_suites[0];
+
+  /* Test bad arguments ------------------------------------------ */
+
+  null_getter(NUM_WRAPPERS, &spoof_dev, "");
+  TRY {
+    result = test_write(NUM_DEVS + 8, buffer, 1024);
+  }
+  CATCH({ assert(0, &suite->results[0], "s", "FAIL - Attemted to write to non-existent handle"); });
+  assert(result == -1, &suite->results[0], "s", "FAIL - Returned non-error when passing bad handle as argument");
+
+  memcpy(&handle_table[5], &(handle_entry_t) { .handle = 8, .device = NULL, .used = 1 }, sizeof(handle_entry_t));
+  TRY {
+    result = test_write(5, buffer, 1024);
+  }
+  CATCH({ assert(0, &suite->results[0], "s", "FAIL - Attemted to write to non-existent device"); });
+  assert(result == -1, &suite->results[0], "s", "FAIL - Returned non-error when passing handle with NULL device");
+  
+  empty_device_getter(NUM_WRAPPERS, &spoof_dev, "");
+  handle_table[5].device = &spoof_dev;
+  TRY {
+    result = test_write(5, buffer, 1024);
+  }
+  CATCH({ assert(0, &suite->results[1], "s", "FAIL - Attemted to write to a device without a write handler"); });
+  assert(result == -1, &suite->results[1], "s", "FAIL - Returned non-error when passing bad handle as argument");
+
+  filled_device_getter(NUM_WRAPPERS, &spoof_dev, "");
+  memcpy(&handle_table[5], &(handle_entry_t) { .handle = 8, .device = &spoof_dev, .used = 0 }, sizeof(handle_entry_t));
+  TRY {
+    result = test_write(5, buffer, 1024);
+  }
+  CATCH({ assert(0, &suite->results[2], "s", "FAIL - Attemted to write to an unused handle"); });
+  assert(1, &suite->results[2], "s", "");
+  assert(result == -1, &suite->results[1], "s", "FAIL - Returned non-error when writing to an unused handle");
+
+  /* ------------------------------------------------------------- */
+  
+  handle_table[5].used = 1;
+  memset(call_data, 0, sizeof(record_t) * 4);
+  result = test_write(5, buffer, 1024);
+  validate_call(3, &suite->results[3], &(record_t) { .dev = &spoof_dev, .handle=8, .buffer=buffer, .len=1024 });
+  assert(result == 88, &suite->results[4], "sds", "FAIL - Returned ", result, ", expected provided length");
+}
+
+#endif
+#endif

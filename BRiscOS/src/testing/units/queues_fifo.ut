@@ -1,0 +1,189 @@
+#ifdef UTEST
+#include <blib.h>
+#include <testing.h>
+
+REGISTER(FIFO_LIST, 7, fifo_tests, fifo_suites, 4);
+
+static test_suite_t fifo_suites[] = {
+  {
+    .section = "Insert",
+    .prompts = {
+      "Inserts into queue",
+      "Queue maintains links",
+      "Keys maintain fifo order"
+    }
+  },
+  {
+    .section = "Dequeue",
+    .prompts = {
+      "Removed from queue",
+      "Queue maintains links",
+      "Keys maintain fifo order"
+    }
+  },
+  {
+    .section = "Remove Thread",
+    .prompts = {
+      "Dequeued from queue",
+      "Queue maintains links",
+      "Keys maintain fifo order"
+    }
+  },
+  {
+    .section = "Dequeue Key",
+    .prompts = {
+      "Removes correct thread",
+      "Queue maintains links",
+      "Keys maintain fifo order",
+    }
+  }
+};
+
+
+static void fifo_tests([[gnu::unused]] override_t* shadows) {
+  queue_head_t list = (queue_head_t) { .sortby = SORT_FIFO };
+  i32 result;
+
+  /* --------------------- INSERT -------------------------- */
+
+  validate_list(&list, (const u32[]){ 0 }, 0, &fifo_suites[0], 0);
+
+
+  result = list_insert_thread(&list, 5, 832);
+  assert(result == 5, &fifo_suites[0].results[0], "sd", "FAIL - Expected return of 5, got ", result);
+  validate_list(&list, (const u32[]){ 5 }, 1, &fifo_suites[0], 0);
+  validate_delta(&list, (const i32[]){ 832 }, 1, &fifo_suites[0]);
+
+  result = list_insert_thread(&list, 12, 55);
+  assert(result == 12, &fifo_suites[0].results[0], "sd", "FAIL - Expected return of 12, got ", result);
+  validate_list(&list, (const u32[]){ 5, 12 }, 2, &fifo_suites[0], 0);
+  validate_delta(&list, (const i32[]){ 832, 55 }, 2, &fifo_suites[0]);
+
+  result = list_insert_thread(&list, 2, 832);
+  assert(result == 2, &fifo_suites[0].results[0], "sd", "FAIL - Expected return of 2, got ", result);
+  validate_list(&list, (const u32[]){ 5, 12, 2 }, 3, &fifo_suites[0], 0);
+  validate_delta(&list, (const i32[]){ 832, 55, 832 }, 3, &fifo_suites[0]);
+
+  result = list_insert_thread(&list, 8,   5);
+  assert(result == 8, &fifo_suites[0].results[0], "sd", "FAIL - Expected return of 8, got ", result);
+  validate_list(&list, (const u32[]){ 5, 12, 2, 8 }, 4, &fifo_suites[0], 0);
+  validate_delta(&list, (const i32[]){ 832, 55, 832, 5 }, 4, &fifo_suites[0]);
+
+  result = list_insert_thread(&list, 0,   5);
+  assert(result == 0, &fifo_suites[0].results[0], "sd", "FAIL - Expected return of 0, got ", result);
+  validate_list(&list, (const u32[]){ 5, 12, 2, 8, 0 }, 5, &fifo_suites[0], 0);
+  validate_delta(&list, (const i32[]){ 832, 55, 832, 5, 5 }, 5, &fifo_suites[0]);
+
+  result = list_insert_thread(&list, 4,  55);
+  assert(result == 4, &fifo_suites[0].results[0], "sd", "FAIL - Expected return of 4, got ", result);
+  validate_list(&list, (const u32[]){ 5, 12, 2, 8, 0, 4 }, 6, &fifo_suites[0], 0);
+  validate_delta(&list, (const i32[]){ 832, 55, 832, 5, 5, 55 }, 6, &fifo_suites[0]);
+
+  /* --------------------- DEQUEUE -------------------------- */
+  /*  Creates List: 12 -> 2 -> 4 -> 15 -> 8  */
+  setup_removal_test(&list, SORT_FIFO);
+  queue_table[12].key = 383;
+  queue_table[2].key = 28;
+  queue_table[4].key = 0;
+  queue_table[15].key = 0;
+  queue_table[8].key = 1023;
+
+  result = list_dequeue_thread(&list);
+  assert(result == 12, &fifo_suites[1].results[0], "sd", "FAIL - Expected thread id return of 12, got ", result);
+  validate_list(&list, (const u32[]){ 2, 4, 15, 8 }, 4, &fifo_suites[1], 0);
+  validate_delta(&list, (const i32[]){ 28, 0, 0, 1023 }, 4, &fifo_suites[1]);
+
+  result = list_dequeue_thread(&list);
+  assert(result == 2, &fifo_suites[1].results[0], "sd", "FAIL - Expected thread id return of 2, got ", result);
+  validate_list(&list, (const u32[]){ 4, 15, 8 }, 3, &fifo_suites[1], 0);
+  validate_delta(&list, (const i32[]){ 0, 0, 1023 }, 3, &fifo_suites[1]);
+
+  result = list_dequeue_thread(&list);
+  assert(result == 4, &fifo_suites[1].results[0], "sd", "FAIL - Expected thread id return of 4, got ", result);
+  validate_list(&list, (const u32[]){ 15, 8 }, 2, &fifo_suites[1], 0);
+  validate_delta(&list, (const i32[]){ 0, 1023 }, 2, &fifo_suites[1]);
+
+  result = list_dequeue_thread(&list);
+  assert(result == 15, &fifo_suites[1].results[0], "sd", "FAIL - Expected thread id return of 15, got ", result);
+  validate_list(&list, (const u32[]){ 8 }, 1, &fifo_suites[1], 0);
+  validate_delta(&list, (const i32[]){ 1023 }, 1, &fifo_suites[1]);
+
+  result = list_dequeue_thread(&list);
+  assert(result == 8, &fifo_suites[1].results[0], "sd", "FAIL - Expected thread id return of 8, got ", result);
+  validate_list(&list, (const u32[]){ 0 }, 0, &fifo_suites[1], 0);
+
+  /* --------------------- REMOVE THREAD -------------------------- */
+  /*  Creates List: 12 -> 2 -> 4 -> 15 -> 8  */
+  setup_removal_test(&list, SORT_FIFO);
+  queue_table[12].key = 18;
+  queue_table[2].key = 19;
+  queue_table[4].key = 18;
+  queue_table[15].key = 54;
+  queue_table[8].key = 54;
+
+  result = list_remove_thread(&list, 12);
+  assert(result == 12, &fifo_suites[2].results[0], "sd", "FAIL - Expected thread id return of 12, got ", result);
+  validate_list(&list, (const u32[]){ 2, 4, 15, 8 }, 4, &fifo_suites[2], 0);
+  validate_delta(&list, (const i32[]){ 19, 18, 54, 54 }, 4, &fifo_suites[2]);
+
+  result = list_remove_thread(&list, 4);
+  assert(result == 4, &fifo_suites[2].results[0], "sd", "FAIL - Expected thread id return of 4, got ", result);
+  validate_list(&list, (const u32[]){ 2, 15, 8 }, 3, &fifo_suites[2], 0);
+  validate_delta(&list, (const i32[]){ 19, 54, 54 }, 3, &fifo_suites[2]);
+
+  result = list_remove_thread(&list, 15);
+  assert(result == 15, &fifo_suites[2].results[0], "sd", "FAIL - Expected thread id return of 15, got ", result);
+  validate_list(&list, (const u32[]){ 2, 8 }, 2, &fifo_suites[2], 0);
+  validate_delta(&list, (const i32[]){ 19, 54 }, 2, &fifo_suites[2]);
+
+  result = list_remove_thread(&list, 2);
+  assert(result == 2, &fifo_suites[2].results[0], "sd", "FAIL - Expected thread id return of 2, got ", result);
+  validate_list(&list, (const u32[]){ 8 }, 1, &fifo_suites[2], 0);
+  validate_delta(&list, (const i32[]){ 54 }, 1, &fifo_suites[2]);
+
+  result = list_remove_thread(&list, 8);
+  assert(result == 8, &fifo_suites[2].results[0], "sd", "FAIL - Expected thread id return of 8, got ", result);
+  validate_list(&list, (const u32[]){ 0 }, 0, &fifo_suites[2], 0);
+
+  /* --------------------- REMOVE KEY -------------------------- */
+  /*  Creates List: 12 -> 2 -> 4 -> 15 -> 8  */
+  setup_removal_test(&list, SORT_FIFO);
+  queue_table[12].key = 18;
+  queue_table[2].key = 19;
+  queue_table[4].key = 18;
+  queue_table[15].key = 54;
+  queue_table[8].key = 54;
+
+  result = list_dequeue_key(&list, 400);
+  assert(result == -1, &fifo_suites[3].results[0], "s", "FAIL - Got non-error return when given a key not in the list");
+  validate_list(&list, (const u32[]){ 12, 2, 4, 15, 8 }, 5, &fifo_suites[3], 0);
+  validate_delta(&list, (const i32[]){ 18, 19, 18, 54, 54 }, 5, &fifo_suites[3]);
+  
+  result = list_dequeue_key(&list, 18);
+  assert(result == 12, &fifo_suites[3].results[0], "sd", "FAIL - Expected thread id return of 12, got ", result);
+  validate_list(&list, (const u32[]){ 2, 4, 15, 8 }, 4, &fifo_suites[3], 0);
+  validate_delta(&list, (const i32[]){ 19, 18, 54, 54 }, 4, &fifo_suites[3]);
+
+  result = list_dequeue_key(&list, 18);
+  assert(result == 4, &fifo_suites[3].results[0], "sd", "FAIL - Expected thread id return of 4, got ", result);
+  validate_list(&list, (const u32[]){ 2, 15, 8 }, 3, &fifo_suites[3], 0);
+  validate_delta(&list, (const i32[]){ 19, 54, 54 }, 3, &fifo_suites[3]);
+
+  result = list_dequeue_key(&list, 54);
+  assert(result == 15, &fifo_suites[3].results[0], "sd", "FAIL - Expected thread id return of 15, got ", result);
+  validate_list(&list, (const u32[]){ 2, 8 }, 2, &fifo_suites[3], 0);
+  validate_delta(&list, (const i32[]){ 19, 54 }, 2, &fifo_suites[3]);
+
+  result = list_dequeue_key(&list, 19);
+  assert(result == 2, &fifo_suites[3].results[0], "sd", "FAIL - Expected thread id return of 2, got ", result);
+  validate_list(&list, (const u32[]){ 8 }, 1, &fifo_suites[3], 0);
+  validate_delta(&list, (const i32[]){ 54 }, 1, &fifo_suites[3]);
+
+  result = list_dequeue_key(&list, 54);
+  assert(result == 8, &fifo_suites[3].results[0], "sd", "FAIL - Expected thread id return of 8, got ", result);
+  validate_list(&list, (const u32[]){ 0 }, 0, &fifo_suites[3], 0);
+
+}
+
+
+#endif

@@ -1,0 +1,188 @@
+#ifdef UTEST
+#include <complete.h>
+#if MILESTONE_5 == 1
+#include <blib.h>
+#include <testing.h>
+
+REGISTER(PRIORITY_LIST, 5, list_tests, list_suites, 3);
+static test_suite_t list_suites[] = {
+  {
+    .section = "Insert",
+    .prompts = {
+      "Rejects invalid threads",
+      "Success returns thread id",
+      "Inserts into ready queue",
+      "Queue maintains links",
+      "Queue orders by key"
+    }
+  },
+  {
+    .section = "Dequeue",
+    .prompts = {
+      "Rejects invalid threads",
+      "Success returns thread id",
+      "Thread removed from queue",
+      "Queue maintains links",
+    }
+  },
+  {
+    .section = "Remove",
+    .prompts = {
+      "Rejects invalid threads",
+      "Success returns thread id",
+      "Thread removed from queue",
+      "Queue maintains links",
+    }
+  }
+};
+
+
+
+#define IDX_OF(x) (u32)(x - queue_table)
+static i32 validate_list(queue_head_t* list, const u32* order, i32 len, test_suite_t* suite, u8 toffset) {
+  i32 result = 1;
+  assert(list->count == len, &suite->results[toffset], "s", "FAIL - Queue count does not reflect actual length of queue");
+  if (len > 0)
+    if (assert(list->head == order[0], &suite->results[toffset], "s", "FAIL - Queue head does not reference the correct thread id") == 0)
+      return 0;
+
+  queue_t* iter = &queue_table[list->head];
+  for (i32 i=0; i<len; i++) {
+    result &= assert(IDX_OF(iter) == order[i], &suite->results[toffset + 1], "s",
+		     "FAIL - Element in queue is not correctly ordered");
+    result &= assert(IDX_OF(iter->q_next) == order[(i+1)%len], &suite->results[toffset + 1], "s",
+		     "FAIL - q_next does not point to expected instance");
+    result &= assert(IDX_OF(iter->q_prev) == order[(len+i-1)%len], &suite->results[toffset + 1], "s",
+		     "FAIL - q_prev does not point to expected instance");
+    iter = iter->q_next;
+  }
+  return result;
+}
+
+/*  Creates List: 12 -> 2 -> 4 -> 15 -> 8  */
+static void setup_removal_test(queue_head_t* list, algorithm_e sortby) {
+  list->count = 5;
+  list->head = 12;
+  list->sortby = sortby;
+
+  memcpy(&queue_table[12], &(queue_t) { .q_next = &queue_table[2],  .q_prev = &queue_table[8],  .key = 9  }, sizeof(queue_t));
+  memcpy(&queue_table[2],  &(queue_t) { .q_next = &queue_table[4],  .q_prev = &queue_table[12], .key = 27 }, sizeof(queue_t));
+  memcpy(&queue_table[4],  &(queue_t) { .q_next = &queue_table[15], .q_prev = &queue_table[2],  .key = 28 }, sizeof(queue_t));
+  memcpy(&queue_table[15], &(queue_t) { .q_next = &queue_table[8],  .q_prev = &queue_table[4],  .key = 28 }, sizeof(queue_t));
+  memcpy(&queue_table[8],  &(queue_t) { .q_next = &queue_table[12], .q_prev = &queue_table[15], .key = 30 }, sizeof(queue_t));
+}
+
+static void list_tests([[gnu::unused]] override_t* shadows) {
+  queue_head_t list = (queue_head_t) { .sortby = SORT_PRIORITY };
+  i32 result;
+
+  /* --------------------- INSERT -------------------------- */
+
+  validate_list(&list, (const u32[]){ 0 }, 0, &list_suites[0], 2);
+
+  result = list_insert_thread(&list, 5, 0);
+  assert(result == 5, &list_suites[0].results[1], "sd", "FAIL - Expected thread id 5, got ", result);
+  validate_list(&list, (const u32[]){ 5 }, 1, &list_suites[0], 2);
+
+  result = list_insert_thread(&list, 8, 1);
+  assert(result == 8, &list_suites[0].results[1], "sd", "FAIL - Expected thread id 8, got ", result);
+  validate_list(&list, (const u32[]){ 5, 8 }, 2, &list_suites[0], 2);
+
+  result = list_insert_thread(&list, 2, 2);
+  assert(result == 2, &list_suites[0].results[1], "sd", "FAIL - Expected thread id 2, got ", result);
+  validate_list(&list, (const u32[]){ 5, 8, 2 }, 3, &list_suites[0], 2);
+
+  result = list_insert_thread(&list, 4, 3);
+  assert(result == 4, &list_suites[0].results[1], "sd", "FAIL - Expected thread id 4, got ", result);
+  validate_list(&list, (const u32[]){ 5, 8, 2, 4 }, 4, &list_suites[0], 2);
+
+  result = list_insert_thread(&list, 1, 1);
+  assert(result == 1, &list_suites[0].results[1], "sd", "FAIL - Expected thread id 1, got ", result);
+  assert(validate_list(&list, (const u32[]){ 5, 8, 1, 2, 4 }, 5, &list_suites[0], 2), &list_suites[0].results[4], "s",
+	 "FAIL - Queue did not reflect insertion of middle priority");
+
+  result = list_insert_thread(&list, NUM_THREADS, 0);
+  assert(result == -1, &list_suites[0].results[0], "s", "FAIL - Inserting too large threadid returns non-error");
+
+
+  /* --------------------- DEQUEUE -------------------------- */
+  /*  Creates List: 12 -> 2 -> 4 -> 15 -> 8  */
+  setup_removal_test(&list, SORT_PRIORITY);
+
+  result = list_dequeue_thread(&list);
+  assert(result == 12, &list_suites[1].results[1], "sd", "FAIL - Expected thread id 12, got ", result);
+  validate_list(&list, (const u32[]){ 2, 4, 15, 8 }, 4, &list_suites[1], 2);
+  assert(queue_table[12].q_next == NULL && queue_table[12].q_prev == NULL, &list_suites[1].results[2], "s",
+	 "FAIL - Removed thread table entry pointers not set to NULL");
+
+  result = list_dequeue_thread(&list);
+  assert(result == 2, &list_suites[1].results[1], "sd", "FAIL - Expected thread id 2, got ", result);
+  validate_list(&list, (const u32[]){ 4, 15, 8 }, 3, &list_suites[1], 2);
+  assert(queue_table[2].q_next == NULL && queue_table[2].q_prev == NULL, &list_suites[1].results[2], "s",
+	 "FAIL - Removed thread table entry pointers not set to NULL");
+
+  result = list_dequeue_thread(&list);
+  assert(result == 4, &list_suites[1].results[1], "sd", "FAIL - Expected thread id 4, got ", result);
+  validate_list(&list, (const u32[]){ 15, 8 }, 2, &list_suites[1], 2);
+  assert(queue_table[4].q_next == NULL && queue_table[4].q_prev == NULL, &list_suites[1].results[2], "s",
+	 "FAIL - Removed thread table entry pointers not set to NULL");
+
+  result = list_dequeue_thread(&list);
+  assert(result == 15, &list_suites[1].results[1], "sd", "FAIL - Expected thread id 15, got ", result);
+  validate_list(&list, (const u32[]){ 8 }, 1, &list_suites[1], 2);
+  assert(queue_table[15].q_next == NULL && queue_table[15].q_prev == NULL, &list_suites[1].results[2], "s",
+	 "FAIL - Removed thread table entry pointers not set to NULL");
+
+  result = list_dequeue_thread(&list);
+  assert(result == 8, &list_suites[1].results[1], "sd", "FAIL - Expected thread id 8, got ", result);
+  validate_list(&list, (const u32[]){ 8 }, 0, &list_suites[1], 2);
+  assert(queue_table[8].q_next == NULL && queue_table[8].q_prev == NULL, &list_suites[1].results[2], "s",
+	 "FAIL - Removed thread table entry pointers not set to NULL");
+
+  result = list_dequeue_thread(&list);
+  assert(result == -1, &list_suites[1].results[0], "s", "FAIL - Removing thread from empty list returns non-error");
+
+
+  /* --------------------- REMOVE -------------------------- */
+  /*  Creates List: 12 -> 2 -> 4 -> 15 -> 8  */
+  setup_removal_test(&list, SORT_PRIORITY);
+
+  result = list_remove_thread(&list, 12);
+  assert(result == 12, &list_suites[2].results[1], "sd", "FAIL - Expected thread id 12, got ", result);
+  validate_list(&list, (const u32[]){ 2, 4, 15, 8 }, 4, &list_suites[2], 2);
+  assert(queue_table[12].q_next == NULL && queue_table[12].q_prev == NULL, &list_suites[2].results[2], "s",
+	 "FAIL - Removed thread table entry pointers not set to NULL");
+
+  result = list_remove_thread(&list, 8);
+  assert(result == 8, &list_suites[2].results[1], "sd", "FAIL - Expected thread id 8, got ", result);
+  validate_list(&list, (const u32[]){ 2, 4, 15 }, 3, &list_suites[2], 2);
+  assert(queue_table[8].q_next == NULL && queue_table[8].q_prev == NULL, &list_suites[2].results[2], "s",
+	 "FAIL - Removed thread table entry pointers not set to NULL");
+
+  result = list_remove_thread(&list, 4);
+  assert(result == 4, &list_suites[2].results[1], "sd", "FAIL - Expected thread id 4, got ", result);
+  validate_list(&list, (const u32[]){ 2, 15 }, 2, &list_suites[2], 2);
+  assert(queue_table[4].q_next == NULL && queue_table[4].q_prev == NULL, &list_suites[2].results[2], "s",
+	 "FAIL - Removed thread table entry pointers not set to NULL");
+
+  result = list_remove_thread(&list, 2);
+  assert(result == 2, &list_suites[2].results[1], "sd", "FAIL - Expected thread id 2, got ", result);
+  validate_list(&list, (const u32[]){ 15 }, 1, &list_suites[2], 2);
+  assert(queue_table[2].q_next == NULL && queue_table[2].q_prev == NULL, &list_suites[2].results[2], "s",
+	 "FAIL - Removed thread table entry pointers not set to NULL");
+
+  result = list_remove_thread(&list, 20);
+  assert(result == -1, &list_suites[2].results[0], "s", "FAIL - Removing invalid thread from list returns non-error");
+
+  result = list_remove_thread(&list, 15);
+  assert(result == 15, &list_suites[2].results[1], "sd", "FAIL - Expected thread id 15, got ", result);
+  validate_list(&list, (const u32[]){ 15 }, 0, &list_suites[2], 2);
+  assert(queue_table[15].q_next == NULL && queue_table[15].q_prev == NULL, &list_suites[2].results[2], "s",
+	 "FAIL - Removed thread table entry pointers not set to NULL");
+
+  result = list_remove_thread(&list, 0);
+  assert(result == -1, &list_suites[2].results[0], "s", "FAIL - Removing thread from empty list returns non-error");
+}
+
+#endif
+#endif

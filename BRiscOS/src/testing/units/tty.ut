@@ -1,0 +1,394 @@
+#ifdef UTEST
+#include <complete.h>
+#if MILESTONE_9 == 1
+#include <blib.h>
+#include <testing.h>
+#include <actionqueue.h>
+
+REGISTER(TTY_DEV, 9, tty_tests, suites, 5);
+//          NAME MS        FUNC  SUITES, NUM_SUITES
+
+
+static test_suite_t suites[] = {
+  {
+    .section = "General",
+    .prompts = {
+      "Only invokes TTY internals"
+    }
+  },
+  {
+    .section = "Gets",
+    .prompts = {
+      "Critical sections are mutex protected",
+      "Awaits character when buffer is empty",
+      "Modifies tty input buffer",
+      "Writes data to buffer argument",
+      "Returns number of read on newline",
+      "Returns number of read on count",
+      "Correctly handles uart delegation"
+    }
+  },
+  {
+    .section = "Puts",
+    .prompts = {
+      "Critical sections are mutex protected",
+      "Awaits space if buffer is full",
+      "Modifies tty output buffer",
+      "Returns number of chracters written",
+      "Correctly handles uart delegation"
+    }
+  },
+  {
+    .section = "Handler RX",
+    .prompts = {
+      "TTY_ECHO adds character to output buffer",
+      "Adjusts tty input buffer",
+      "TTY_ECHO requests UART interrupts",
+      "Newline resumes waiting threads"
+    }
+  },
+  {
+    .section = "Handler TX",
+    .prompts = {
+      "Adjusts tty output buffer",
+      "Resumes waiting threads",
+      "Halts interrupts on empty",
+      "Correctly handles uart delegation"
+    }
+  },
+};
+
+static void illegal_handler([[gnu::unused]] device_t* dev) {
+  assert(0, &suites[0].results[0], "s", "FAIL - Direct call made to .handler function of device");
+}
+static i64 illegal_open([[gnu::unused]] device_t* dev, [[gnu::unused]] const char* path, [[gnu::unused]] u64 handle) {
+  assert(0, &suites[0].results[0], "s", "FAIL - Direct call made to .open function of device");
+  return 1;
+}
+static i64 illegal_close([[gnu::unused]] device_t* dev, [[gnu::unused]] u64 handle) {
+  assert(0, &suites[0].results[0], "s", "FAIL - Direct call made to .close function of device");
+  return 1;
+}
+static i64 illegal_read([[gnu::unused]] device_t* dev, [[gnu::unused]] u64 handle,
+			[[gnu::unused]] char* buffer,  [[gnu::unused]] u64 offset) {
+  assert(0, &suites[0].results[0], "s", "FAIL - Direct call made to .read function of device");
+  return 1;
+}
+static i64 illegal_write([[gnu::unused]] device_t* dev,      [[gnu::unused]] u64 handle,
+			 [[gnu::unused]] const char* buffer, [[gnu::unused]] u64 offset) {
+  assert(0, &suites[0].results[0], "s", "FAIL - Direct call made to .write function of device");
+  return 1;
+}
+
+
+static bool lock = false;
+static u32 suite_id = 0;
+static test_suite_t* suite;
+static void* spoof_mutex([[gnu::unused]] wrapper_alias_e name, va_list args, [[gnu::unused]] u64* ctxlen) {
+  u64* result = va_arg(args, u64*);
+  void* ptr = va_arg(args, void*);
+  lock = (name == LOCK_MUTEX);
+  *result = (u64)ptr;
+  return NULL;
+}
+
+static u32 chardev_len = 0;
+static char* spoof_chardev = "Some string\nContent containing70\n Some text\n";
+static tty_t tty;
+
+static void set_tty_in(u32 head, u32 count, u32 avail, const char* buffer, i64 len) {
+  tty.in.head = head % TTY_BUFFLEN;
+  tty.in.count = count;
+  tty.in.avail = avail;
+  chardev_len = (u32)len - avail;
+  for (i64 i=0; i<len; i++)
+    if (i < count)
+      tty.in.buffer[(i+head) % TTY_BUFFLEN] = buffer[i];
+    else
+      spoof_chardev[i-avail] = buffer[i];
+}
+
+static u32 drain = 0;
+static void set_tty_out(u32 head, u32 count, const char* buffer) {
+  tty.out.head = head % TTY_BUFFLEN;
+  tty.out.count = count;
+  tty.out.avail = TTY_BUFFLEN - count;
+  for (i64 i=0; i<count; i++)
+    tty.out.buffer[(i+head) % TTY_BUFFLEN] = buffer[i];
+}
+
+static i64 spoof_enqueue([[gnu::unused]] wrapper_alias_e name, ...) {
+  assert(lock, &suite->results[0], "s", "FAIL - Enqueue appears outside of mutex lock");
+  return 1;
+}
+
+static bool expect_dequeue = false;
+static i64 spoof_dequeue([[gnu::unused]] wrapper_alias_e name, ...) {
+  assert(lock, &suite->results[0], "s", "FAIL - Dequeue appears outside of mutex lock");
+  if (suite == &suites[3])
+    assert(expect_dequeue, &suite->results[3], "s", "FAIL - Dequeue appears before newline character");
+  return 1;
+}
+
+static i64 spoof_current_thread([[gnu::unused]] wrapper_alias_e name, ...) {
+  EXPAND_ARGS((u32*), (result));
+  *result = 5;
+  return 1;
+}
+
+static i64 spoof_resched([[gnu::unused]] wrapper_alias_e name, ...) {
+  assert(!lock, &suite->results[0], "s", "FAIL - Resched appears inside of mutex lock");
+  if (suite == &suites[1]) {
+    for (u32 i=0; i<chardev_len; i++) {
+      tty.in.avail += 1;
+      tty.in.buffer[(tty.in.head + tty.in.count++) % TTY_BUFFLEN] = spoof_chardev[i];
+    }
+  }
+  else {
+    drain = 50;
+    tty.out.head = (tty.out.head + drain) % TTY_BUFFLEN;
+    tty.out.avail = drain;
+    tty.out.count -= drain;
+  }
+  return 1;
+}
+
+static void test_gets(override_t* shadows, device_t* dev, u32 head, u32 count, u32 avail, const char* input, u32 bufflen) {
+  u8* uart_proxy = (u8*)dev->origin->addr;
+  char buffer[1024] = {0};
+  i64 len = 0, term = 0;
+  for (len=0; input[len] != '\0'; len++);
+  for (term=0; input[term] != '\n' && term < len; term++);
+
+  i64 expect = (term < bufflen ? term + 1 : bufflen);
+  u32 testid = (term < bufflen ? 4 : 5);
+  
+  set_tty_in(head, count, avail, input, len);
+  memset(uart_proxy, 0, sizeof(char) * 8);
+  memset(buffer, 0, sizeof(char) * 1024);
+  head = (head + (u32)expect) % TTY_BUFFLEN;
+  shadows[ENQUEUE_FUTEX].numcalls = shadows[DEQUEUE_FUTEX].numcalls = shadows[RESCHED].numcalls = 0;
+
+  i64 result = tty_gets(dev, 0, buffer, bufflen);
+
+  assert(!(uart_proxy[1] & 0x2), &suite->results[6], "s", "FAIL - UART was set to trigger send readyinterrupts");
+  assert(test_strcmp(buffer, input) == 0, &suite->results[3], "s", "FAIL - Read buffer did not contain contents of tty buffer");
+  assert(result == expect, &suite->results[testid], "s", "FAIL - Return value did not match number of characters read");
+  assert(tty.in.avail == len - expect, &suite->results[2], "s", "FAIL - Available characters was not decremented");
+  assert(tty.in.count == len - expect, &suite->results[2], "s", "FAIL - Count of characters was not decremented");
+  assert(tty.in.head == head, &suite->results[2], "s", "FAIL - Ring buffer head was not incrememted");
+}
+
+void test_puts(override_t* shadows, device_t* dev, u32 head, const char* prefix, u32 count, const char* buffer, u32 len) {
+  u8* uart_proxy = (u8*)dev->origin->addr;
+  set_tty_out(head, count, prefix);
+  shadows[ENQUEUE_FUTEX].numcalls = shadows[DEQUEUE_FUTEX].numcalls = shadows[RESCHED].numcalls = 0;
+  
+  i64 result = tty_puts(dev, 0, buffer, len);
+  count = count - drain;
+  head = head + drain;
+  assert(uart_proxy[1] & 0x2, &suite->results[4], "s", "FAIL - UART was not set to receive interrupts for outgoing characters");
+  assert(result == len, &suite->results[3], "sds", "FAIL - Got unexpected return when sending ", len, " characters");
+  assert(tty.out.avail == TTY_BUFFLEN - len - count, &suite->results[2], "s", "FAIL - Available characters were not decremented on write");
+  assert(tty.out.count == len + count, &suite->results[2], "s", "FAIL - Ring buffer count did not match number of characters in buffer");
+  assert(tty.out.head == head % TTY_BUFFLEN, &suite->results[2], "s",
+	 "FAIL - Ring head was modified during append");
+  
+  for (u32 i=0; i<count; i++)
+    assert(tty.out.buffer[(head+i) % TTY_BUFFLEN] == prefix[i+drain], &suite->results[2], "s",
+	   "FAIL - Ring buffer contents don't match provided string");
+  for (u32 i=0; i<len; i++)
+    assert(tty.out.buffer[(head+count+i) % TTY_BUFFLEN] == buffer[i], &suite->results[2], "s",
+	   "FAIL - Ring buffer contents don't match provided string");
+}
+
+void test_handler(override_t* shadows, device_t* dev, char ch, u32 in_head, u32 in_count, u32 out_head, u32 out_count) {
+  expect_dequeue = (ch == '\n');
+  shadows[ENQUEUE_FUTEX].numcalls = shadows[DEQUEUE_FUTEX].numcalls = shadows[RESCHED].numcalls = 0;
+  set_tty_in(in_head, in_count, 0, "", 0);
+  set_tty_out(out_head, out_count, "");
+  u32 out_avail = tty.out.avail;
+  
+  handle_tty(dev);
+  
+  assert(tty.in.head == (in_head % TTY_BUFFLEN), &suite->results[1], "s", "FAIL - Head was changed unnecessarily");
+  assert(tty.in.count == in_count + 1, &suite->results[1], "s", "FAIL - Count was not incremented");
+  assert(tty.in.avail == in_count + (ch == '\n' ? 1 : 0), &suite->results[1], "s", "FAIL - Avail was not incremented");
+  assert(tty.in.buffer[tty.in.head + in_count] == ch, &suite->results[1], "s", "FAIL - New character was not found at tail of buffer");
+
+  assert(tty.out.head == (out_head % TTY_BUFFLEN), &suite->results[0], "s", "FAIL - Head was changed unnecessarily");
+  bool echo = tty.flags & TTY_ECHO;
+  assert(tty.out.count == out_count + (echo ? 1 : 0), &suite->results[0], "s", "FAIL - Count did not match expected value");
+  assert(tty.out.avail == out_avail - (echo ? 1 : 0), &suite->results[0], "s", "FAIL - Avail did not match expected value");
+  if (echo)
+    assert(tty.out.buffer[tty.out.head + out_count] == ch, &suite->results[0], "s",
+	   "FAIL - New character was not found at tail of buffer");
+}
+
+void test_handler_tx(override_t* shadows, device_t* dev, char ch, u32 out_head, u32 out_count) {
+  u32 out_avail = TTY_BUFFLEN - out_count;
+  tty.out.head = out_head;
+  tty.out.buffer[tty.out.head] = ch;
+  tty.out.count = out_count + 1;
+  tty.out.avail = out_avail;
+  shadows[DEQUEUE_FUTEX].numcalls = 0;
+  
+  handle_tty(dev);
+
+  assert(tty.out.count == out_count, &suite->results[0], "s", "FAIL - Count was not decremented correctly");
+  assert(tty.out.avail == out_avail + 1, &suite->results[0], "s", "FAIL - Avail was not incremented correctly");
+  assert(tty.out.head == (out_head + 1) % TTY_BUFFLEN, &suite->results[0], "s", "FAIL - Head was not adjusted on removal");
+  assert(shadows[DEQUEUE_FUTEX].numcalls == 1, &suite->results[1], "s", "FAIL - Awaiting threads were not dequeued from futex");
+}
+
+static void tty_tests([[gnu::unused]] override_t* shadows) {
+  u8 uart_proxy[8];
+  device_t uart_device = {
+    .addr = uart_proxy,
+    .handler = illegal_handler,
+    .open = illegal_open,
+    .close = illegal_close,
+    .read = illegal_read,
+    .write = illegal_write,
+    .delegate = 1
+  };
+  device_t dev = {
+    .addr = (u8*)&uart_device,
+    .handler = illegal_handler,
+    .open = illegal_open,
+    .close = illegal_close,
+    .read = illegal_read,
+    .write = illegal_write,
+    .origin = &uart_device,
+    .context = &tty
+  };
+
+  shadows[LOCK_MUTEX].precall = register_action(LOCK_MUTEX, spoof_mutex, NULL);
+  shadows[RELEASE_MUTEX].precall = register_action(RELEASE_MUTEX, spoof_mutex, NULL);
+  shadows[ENQUEUE_FUTEX].precall = spoof_enqueue;
+  shadows[DEQUEUE_FUTEX].precall = spoof_dequeue;
+  shadows[GET_CURRENT_THREAD].precall = spoof_current_thread;
+  shadows[RESCHED].precall = spoof_resched;
+  
+  /* ---------------  Gets Test ----------------- */
+  suite_id = 1;
+  suite = &suites[suite_id];
+
+  for (u32 i=0; i<TTY_BUFFLEN * 2; i++) {
+    test_gets(shadows, &dev, i, 1, 1, "A", 1);
+    assert(shadows[ENQUEUE_FUTEX].numcalls == 0 && shadows[DEQUEUE_FUTEX].numcalls == 0, &suites->results[1], "s",
+	   "FAIL - Blocked thread when characters were already ready");
+  }
+
+  for (u32 i=0; i<TTY_BUFFLEN * 2; i++) {
+    test_gets(shadows, &dev, i, 0, 0, "B", 1);
+    assert(shadows[ENQUEUE_FUTEX].numcalls == 1, &suite->results[1], "s",
+	   "FAIL - Function did not wait when no characters were available");
+    assert(shadows[DEQUEUE_FUTEX].numcalls == 0, &suite->results[1], "s", "FAIL - Function dequeued thread from futex");
+    assert(shadows[RESCHED].numcalls == 1, &suite->results[1], "s",
+	   "FAIL - Thread was not rescheduled when no characters were available");
+  }
+
+  for (u32 i=0; i<TTY_BUFFLEN * 2; i++) {
+    test_gets(shadows, &dev, i, 0, 0, "Hello Test\n", 1024);
+    assert(shadows[ENQUEUE_FUTEX].numcalls == 1, &suite->results[1], "s",
+	   "FAIL - Function did not wait when no characters were available");
+    assert(shadows[DEQUEUE_FUTEX].numcalls == 0, &suite->results[1], "s", "FAIL - Function dequeued thread from futex");
+    assert(shadows[RESCHED].numcalls == 1, &suite->results[1], "s",
+	   "FAIL - Thread was not rescheduled when no characters were available");
+  }
+
+
+  /* ---------------  Puts Test ----------------- */
+  suite_id = 2;
+  suite = &suites[suite_id];
+
+  for (u32 i=0; i<TTY_BUFFLEN * 2; i++) {
+    test_puts(shadows, &dev, i, "", 0, "A", 1);
+    assert(shadows[ENQUEUE_FUTEX].numcalls == 0 && shadows[DEQUEUE_FUTEX].numcalls == 0, &suite->results[1], "s",
+	   "FAIL - Blocked thread when space was already available");
+  }
+
+  for (u32 i=0; i<TTY_BUFFLEN * 2; i++) {
+    test_puts(shadows, &dev, i, "hello", 5, "A", 1);
+    assert(shadows[ENQUEUE_FUTEX].numcalls == 0 && shadows[DEQUEUE_FUTEX].numcalls == 0, &suite->results[1], "s",
+	   "FAIL - Blocked thread when space was already available");
+  }
+
+  for (u32 i=0; i<TTY_BUFFLEN * 2; i++) {
+    test_puts(shadows, &dev, i, "hello", 5, " foobar", 7);
+    assert(shadows[ENQUEUE_FUTEX].numcalls == 0 && shadows[DEQUEUE_FUTEX].numcalls == 0, &suite->results[1], "s",
+	   "FAIL - Blocked thread when space was already available");
+  }
+
+  char buffer[TTY_BUFFLEN];
+  for (i32 i=0; i<TTY_BUFFLEN; i++)
+    buffer[i] = 'a' + (char)(i % 24);
+  
+  for (u32 i=0; i<TTY_BUFFLEN * 2; i++) {
+    test_puts(shadows, &dev, i, buffer, TTY_BUFFLEN, "A", 1);
+    assert(shadows[ENQUEUE_FUTEX].numcalls == 1, &suite->results[1], "s",
+	   "FAIL - Function did not wait when space was not available");
+    assert(shadows[DEQUEUE_FUTEX].numcalls == 0, &suite->results[1], "s", "FAIL - Function dequeued thread from futex");
+    assert(shadows[RESCHED].numcalls == 1, &suite->results[1], "s",
+	   "FAIL - Thread was not rescheduled when space was not available");
+
+  }
+
+
+  /* ---------------------- RX Tests ---------------------- */
+  suite_id = 3;
+  suite = &suites[suite_id];
+
+  tty.flags |= TTY_ECHO;
+
+
+  for (u32 i=0; i<TTY_BUFFLEN * 2; i++) {
+    char ch = (char)('a' + (i % 24));
+    uart_proxy[2] = 0x4;
+    uart_proxy[0] = ch;
+
+    test_handler(shadows, &dev, ch, i, 0, i + 23, 0);
+    assert(uart_proxy[1] & 0x2, &suite->results[2], "s", "FAIL - UART was not set to receive interrupts for outgoing characters");
+  }
+
+  for (u32 i=0; i<TTY_BUFFLEN * 2; i++) {
+    char ch = '\n';
+    uart_proxy[2] = 0x4;
+    uart_proxy[0] = ch;
+
+    test_handler(shadows, &dev, ch, i, 0, i, 0);
+    assert(uart_proxy[1] & 0x2, &suite->results[2], "s", "FAIL - UART was not set to receive interrupts for outgoing characters");
+  }
+
+
+  /* ---------------------- TX Tests ---------------------- */
+  suite_id = 4;
+  suite = &suites[suite_id];
+
+  
+
+  uart_proxy[2] = 0x2;
+  u32 out_count = 0;
+  for (u32 i=0; i<TTY_BUFFLEN * 2; i++) {
+    char ch = (char)('A' + (i % 24));
+    uart_proxy[1] = 0x2;
+    test_handler_tx(shadows, &dev, ch, i % TTY_BUFFLEN, out_count);
+    assert(!(uart_proxy[1] & 0x2), &suite->results[2], "s", "FAIL - UART interrupts were not disabled when no characters remain"); 
+    assert(uart_proxy[0] == ch, &suite->results[3], "s", "FAIL - Character was not sent to UART");
+  }
+
+  out_count = 1;
+  for (u32 i=0; i<TTY_BUFFLEN * 2; i++) {
+    char ch = (char)('A' + (i % 24));
+    uart_proxy[1] = 0x2;
+    test_handler_tx(shadows, &dev, ch, i % TTY_BUFFLEN, out_count);
+    assert(uart_proxy[1] & 0x2, &suite->results[2], "s", "FAIL - UART interrupts disabled while characters still exist");
+    assert(uart_proxy[0] == ch, &suite->results[3], "s", "FAIL - Character was not sent to UART");
+  }
+  
+  assert(1, &suites[0].results[0], "s", "");
+}
+
+#endif
+#endif

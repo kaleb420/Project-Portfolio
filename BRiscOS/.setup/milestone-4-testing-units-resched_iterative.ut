@@ -1,0 +1,170 @@
+#ifdef UTEST
+#include <complete.h>
+#if MILESTONE_4 == 1
+#include <blib.h>
+#include <threads.h>
+#include <testing.h>
+#include <guard.h>
+#if MILESTONE_5 == 1
+#include <queues.h>
+#endif
+
+#define T_NULL_THREAD 0xFFFFFFFF
+
+REGISTER(RESCHED, 4, resched_tests, suites, 2);
+
+[[gnu::unused]]
+static test_suite_t suites[] = {
+  {
+    .section = "Scheduling Cases",
+    .prompts = {
+      "Only one thread READY",
+      "Sequential thread ids",
+      "Non-sequential thread ids",
+      "Old thread id larger than new thread id"
+    }
+  },
+  {
+    .section = "State",
+    .prompts = {
+      "Set new current thread",
+      "Previous thread's state set",
+      "Next thread's set to running",
+      "'ctxsw' invoked with correct threads"
+    }
+  }
+};
+
+static u32 curr_id, old_id, new_id;
+
+#if MILESTONE_5 == 1
+static i64 spoof_list([[gnu::unused]] wrapper_alias_e name, ...) {
+  EXPAND_ARGS((u32*), (result));
+  *result = (name == LIST_INSERT_THREAD ? old_id : new_id);
+  return 1;
+}
+#endif
+
+static i64 spoof_ctxsw([[gnu::unused]] wrapper_alias_e name, ...) {
+  EXPAND_ARGS((u32*, thread_mem_t*,thread_mem_t*), (result, new, old));
+  assert(&thread_table[new_id].memorymap == new, &suites[1].results[3], "s", "FAIL - Incorrect new memory map passed to ctxsw");
+  assert(&thread_table[old_id].memorymap == old, &suites[1].results[3], "s", "FAIL - Incorrect old memory map passed to ctxsw");
+  *result = old_id;
+  return 1;
+}
+
+static i64 spoof_get_current_thread([[gnu::unused]] wrapper_alias_e name, ...) {
+  EXPAND_ARGS((u32*), (result));
+  *result = curr_id;
+  return 1;
+}
+
+static i64 spoof_set_current_thread([[gnu::unused]] wrapper_alias_e name, ...) {
+  EXPAND_ARGS((u32*, u32), (result, tid));
+  curr_id = tid;
+  assert(tid == new_id, &suites[1].results[0], "sdsd", "FAIL - Did not get the expected thread id: expected ", new_id, " got ", tid);
+  *result = old_id;
+  return 1;
+}
+
+
+static void setup_test(u32 old, u32 new, threadstate_e old_state, override_t* shadows) {
+  curr_id = old_id = old;
+  new_id = new;
+
+  shadows[CTXSW].numcalls = 0;
+  memset(thread_table, 0, sizeof(thread_t) * NUM_THREADS);
+#if MILESTONE_5 == 1
+  init_queues();
+  shadows[LIST_INSERT_THREAD].numcalls = 0;
+  shadows[LIST_REMOVE_THREAD].numcalls = shadows[LIST_DEQUEUE_THREAD].numcalls = 0;
+#endif
+  thread_table[old].state = old_state;
+  if (new != T_NULL_THREAD) {
+    thread_table[new].state = TH_READY;
+  }
+}
+
+static void run_test(u32 test, threadstate_e state, override_t* shadows) {
+  TRY {
+    resched();
+    if (state == TH_RUNNING && new_id != T_NULL_THREAD)
+      assert(thread_table[old_id].state == TH_READY, &suites[1].results[1], "s", "FAIL - State was not READY after switch");
+    else
+      assert(thread_table[old_id].state == state, &suites[1].results[1], "s", "FAIL - State was changed incorrectly");
+    if (new_id != T_NULL_THREAD) {
+      assert(thread_table[new_id].state == TH_RUNNING, &suites[1].results[2], "s", "FAIL - State not set to TH_RUNNING before switch");
+      assert(shadows[CTXSW].numcalls == 1, &suites[1].results[3], "s", "FAIL - Function not called");
+    }
+    assert(curr_id == (new_id == T_NULL_THREAD ? old_id : new_id), &suites[0].results[test], "s", "FAIL - Switched to incorrect thread");
+  }
+  CATCH({ assert(0, &suites[0].results[test], "s", "FAIL - Illegal memory access during test"); });
+}
+
+static void resched_tests([[gnu::unused]] override_t* shadows) {
+  shadows[CTXSW].precall = spoof_ctxsw;
+  shadows[GET_CURRENT_THREAD].precall = spoof_get_current_thread;
+  shadows[SET_CURRENT_THREAD].precall = spoof_set_current_thread;
+  IF_MS(5, shadows[LIST_INSERT_THREAD].precall = spoof_list);
+  IF_MS(5, shadows[LIST_REMOVE_THREAD].precall = spoof_list);
+  IF_MS(5, shadows[LIST_DEQUEUE_THREAD].precall = spoof_list);
+
+  /*  Test single thread  */
+  for (u32 i=0; i<NUM_THREADS; i++) {
+    setup_test(i, T_NULL_THREAD, TH_RUNNING, shadows);
+    run_test(0, TH_RUNNING, shadows);
+  }
+
+  /* Test sequential threads */
+  for (u32 i=0; i<NUM_THREADS-1; i++) {
+    setup_test(i, i+1, TH_RUNNING, shadows);
+    run_test(1, TH_RUNNING, shadows);
+
+    setup_test(i, i+1, TH_SUSPEND, shadows);
+    run_test(1, TH_SUSPEND, shadows);
+
+    for (u32 j=2; j<NUM_THREADS-1; j++) {
+      setup_test(i, i+1, TH_RUNNING, shadows);
+      thread_table[(i+j)%NUM_THREADS].state = TH_READY;
+      run_test(1, TH_RUNNING, shadows);
+
+      setup_test(i, i+1, TH_SUSPEND, shadows);
+      thread_table[(i+j)%NUM_THREADS].state = TH_READY;
+      run_test(1, TH_SUSPEND, shadows);
+    }
+  }
+
+  /* Test non-sequential threads */
+  for (u32 i=0; i<NUM_THREADS-1; i++) {
+    u32 idx2 = (i + 3) % NUM_THREADS;
+    setup_test(i, idx2, TH_RUNNING, shadows);
+    run_test(2, TH_RUNNING, shadows);
+
+    setup_test(i, idx2, TH_SUSPEND, shadows);
+    run_test(2, TH_SUSPEND, shadows);
+
+    for (u32 j=4; j<NUM_THREADS-1; j++) {
+      setup_test(i, idx2, TH_RUNNING, shadows);
+      thread_table[(i+j)%NUM_THREADS].state = TH_READY;
+      run_test(2, TH_RUNNING, shadows);
+
+      setup_test(i, idx2, TH_SUSPEND, shadows);
+      thread_table[(i+j)%NUM_THREADS].state = TH_READY;
+      run_test(1, TH_SUSPEND, shadows);
+    }
+  }
+
+  /* Test reverse order threads */
+  for (u32 i=0; i<NUM_THREADS-1; i++) {
+    for (u32 j=i+1; j<NUM_THREADS; j++) {
+      setup_test(j, i, TH_RUNNING, shadows);
+      run_test(3, TH_RUNNING, shadows);
+
+      setup_test(j, i, TH_SUSPEND, shadows);
+      run_test(3, TH_SUSPEND, shadows);
+    }
+  }
+}
+
+#endif
+#endif

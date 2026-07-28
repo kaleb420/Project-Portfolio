@@ -1,0 +1,56 @@
+import os, shutil
+Import("env")
+
+wraps      = ("supervisor_start", "handle_exception", "delegate_clk", "user_start",                                         # Milestone  0
+              "init_uart", "init_external", "get_device_by_name", "get_device_by_handle",                                   # Milestone  1
+              "handle_syscall",                                                                                             # Milestone  2
+              "shell", "echo", "hello",                                                                                     # Milestone  3
+              "get_current_thread", "set_current_thread", "ctxsw", "resched", "join", "resume", "create", "init_threads",   # Milestone  4
+              "init_queues", "list_insert_thread", "list_dequeue_thread", "list_dequeue_key", "list_remove_thread",         # Milestone  5
+              "handle_timer", "init_timer",                                                                                 # Milestone  6
+              "enqueue_futex", "dequeue_futex", "lock_mutex", "release_mutex", "init_futex",                                # Milestone  7
+              "init_heap",                                                                                                  # Milestone  8
+              "init_tty",                                                                                                   # Milestone  9
+              "init_ramdisk", "init_fs"                                                                                     # Milestone 10
+              )
+wrap_flags = " ".join([f"--wrap={n}" for n in wraps])
+
+def error(code, msg):
+    print(msg)
+    Exit(code)
+
+milestone, test_milestone = env.get("milestone", 0), env.get("tmilestone", 0)
+kdirs = ("device", "core", "lib", os.path.join("core", "asm"), "syscall")
+udirs = ("apps", "lib", os.path.join("lib", "asm"))
+sdirs = ("lib", os.path.join("lib", "asm"))
+
+files = {lib[0]: [Glob(os.path.join("src", lib, d, "*.[cs]")) for d in dirs] for dirs,lib in
+         [(kdirs, "kernel"), (udirs, "user"), (sdirs, "shared")]}
+files["t"] = [Glob(os.path.join("src", "testing", "*.c"))]
+
+env.AppendUnique(CPPPATH=(os.path.join("src", "shared", "include"),
+                    os.path.join("src", "testing", "units"),
+                    os.path.join("src", "testing", "include")))
+env.AppendUnique(CFLAGS="-DUTEST")
+kenv, uenv, senv, tenv = [env.Clone() for _ in range(4)]
+
+kenv.AppendUnique(CPPPATH=(os.path.join("src", "kernel", "include"),))
+uenv.AppendUnique(CPPPATH=(os.path.join("src", "user", "include"),))
+tenv.AppendUnique(CFLAGS=(f"-DMILESTONE={milestone}", f"-DTEST_MILESTONE={test_milestone}"))
+tenv.AppendUnique(CPPPATH=(os.path.join("src", "kernel", "include"),
+                           os.path.join("src", "user", "include")))
+tenv.AppendUnique(LINKFLAGS=wrap_flags)
+
+if int(milestone) == 0:
+    env.Append(LINKFLAGS="--wrap=handle_exception")
+    tenv.Append(LINKFLAGS="--wrap=handle_exception")
+
+kobjs, uobjs, sobjs, tobjs = kenv.Object(files["k"]), uenv.Object(files["u"]), \
+        senv.Object(files["s"]), tenv.Object(files["t"])
+
+img = tenv.Program("kernel.elf", kobjs + uobjs + sobjs + tobjs)
+
+image = env.Command(target="test", source=img, action=f"{env['QEMU']} {env['qflags']} -bios none -kernel ${{SOURCE}}")
+
+env.Alias("test", image)
+

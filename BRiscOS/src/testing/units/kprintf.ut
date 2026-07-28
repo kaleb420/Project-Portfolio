@@ -1,0 +1,150 @@
+#ifdef UTEST
+#include <blib.h>
+#include <testing.h>
+REGISTER(KPRINTF, 1, unit_tests, suites, 4);
+//          NAME MS        FUNC  SUITES, NUM_SUITES
+
+
+static test_suite_t suites[] = {
+  {
+    .section = "Basic",
+    .prompts = {
+      "UART Invoked",
+      "Output Matches",
+      "Handles %% case"
+    }
+  },
+  {
+    .section = "Integers",
+    .prompts = {
+      "UART Invoked",
+      "Correctly handles 0",
+      "Prints positive",
+      "Prints negative"
+    }
+  },
+  {
+    .section = "Hexidecimals",
+    .prompts = {
+      "UART Invoked",
+      "Correctly handles 0",
+      "0x Prefix Exists",
+      "Output Matches"
+    }
+  },
+  {
+    .section = "Mixed",
+    .prompts = {
+      "UART Invoked",
+      "Text with integer",
+      "Text with int and hex"
+    }
+  }
+};
+
+
+typedef struct {
+  u32 count;
+  char str[1024];
+} test_string;
+
+static bool called;
+static test_string test_buffer;
+static void (*conditional_check)(void);
+static i64 spoof_stdout([[gnu::unused]] device_t* dev, [[gnu::unused]] u64 handle, const char* buffer, u64 len) {
+  called = true;
+
+  for (u32 i=0; i<len && i + test_buffer.count < 1023; i++) {
+    test_buffer.str[test_buffer.count++] = buffer[i];
+  }
+
+  if (conditional_check) {
+    conditional_check();
+  }
+  return (i64)len;
+}
+
+static void check_percent(void) {
+  assert(test_buffer.str[0] == '%',                              &suites[0].results[2], "s", "FAIL - No percent symbol printed");
+  assert(test_buffer.str[0] == '%' && test_buffer.str[1] != '%', &suites[0].results[2], "s", "FAIL - Extra percent symbol printed");
+  assert(test_buffer.count == 1, &suites[0].results[2], "sdsd", "FAIL - Too many characters, expected ", 1, " got ", test_buffer.count);
+}
+
+static void check_hex_prefix(void) {
+  assert(test_buffer.str[0] == '0' && test_buffer.str[1] == 'x', &suites[2].results[2], "s", "FAIL - output did not include 0x prefix");
+}
+
+static void _reset(void (*cond)(void)) {
+  called = false;
+  conditional_check = cond;
+  test_buffer.count = 0;
+  memset(&test_buffer, 0, 1024);
+}
+
+static void unit_tests([[gnu::unused]] override_t* shadows) {
+  init_external();
+  init_uart(UART);
+  override_device(UART, NULL, spoof_stdout);
+
+  _reset(NULL);
+  kprintf("unit test string\n");
+  assert(called, &suites[0].results[0], "s", "FAIL - UART was not called");
+  assert(test_strcmp(test_buffer.str, "unit test string\n") == 0, &suites[0].results[1], "s",
+	 "FAIL - Output string did not match expected text");
+
+  _reset(check_percent);
+  kprintf("%%");
+  assert(called, &suites[0].results[0], "s", "FAIL - UART was not called");
+  assert(test_strcmp(test_buffer.str, "%") == 0, &suites[0].results[2], "s",
+	 "FAIL - Output string did not match expected text");
+
+  _reset(NULL);
+  kprintf("%d", 0);
+  assert(called, &suites[1].results[0], "s", "FAIL - UART was not called with string '0'");
+  assert(test_strcmp(test_buffer.str, "0") == 0, &suites[1].results[1], "s",
+	 "FAIL - Output string did not match expected text");
+
+  _reset(NULL);
+  kprintf("%d", 150);
+  assert(called, &suites[1].results[0], "s", "FAIL - UART was not called with string '150'");
+  assert(test_strcmp(test_buffer.str, "150") == 0, &suites[1].results[2], "s",
+	 "FAIL - Output string did not match expected text");
+
+  _reset(NULL);
+  kprintf("%d", -12);
+  assert(called, &suites[1].results[0], "s", "FAIL - UART was not called with string '-12'");
+  assert(test_strcmp(test_buffer.str, "-12") == 0, &suites[1].results[3], "s",
+	 "FAIL - Output string did not match expected text");
+
+  _reset(check_hex_prefix);
+  kprintf("%x", 0);
+  assert(called, &suites[2].results[0], "s", "FAIL - UART was not called with string '0'");
+  assert(test_strcmp(test_buffer.str, "0x0") == 0, &suites[2].results[1], "s",
+	 "FAIL - Output string did not match expected text");
+
+  _reset(NULL);
+  kprintf("%x", 0x58ac);
+  assert(called, &suites[2].results[0], "s", "FAIL - UART was not called with hex template");
+  assert(test_strcmp(test_buffer.str, "0x58ac") == 0, &suites[2].results[3], "s",
+	 "FAIL - Output string did not match expected text");
+
+  _reset(NULL);
+  kprintf("%x", -1);
+  assert(called, &suites[2].results[0], "s", "FAIL - UART was not called with negative number");
+  assert(test_strcmp(test_buffer.str, "0xffffffff") == 0, &suites[2].results[3], "s",
+	 "FAIL - Output string did not match expected text");
+
+  _reset(NULL);
+  kprintf("Integer: %d", 58);
+  assert(called, &suites[3].results[0], "s", "FAIL - UART was not called with integer");
+  assert(test_strcmp(test_buffer.str, "Integer: 58") == 0, &suites[3].results[1], "s",
+	 "FAIL - Output string did not match expected text");
+
+  _reset(NULL);
+  kprintf("Mixed text %d %% [%x]\n", 832, 0x12345acf);
+  assert(called, &suites[3].results[0], "s", "FAIL - UART was not called with mixed values");
+  assert(test_strcmp(test_buffer.str, "Mixed text 832 % [0x12345acf]\n") == 0, &suites[3].results[2], "s",
+	 "FAIL - Output string did not match expected text");
+}
+
+#endif
