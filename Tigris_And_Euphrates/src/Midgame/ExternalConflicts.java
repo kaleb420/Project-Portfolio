@@ -10,35 +10,31 @@ public class ExternalConflicts extends Conflicts{
 
     public HashMap<Player, ArrayList<int[]>> tilesInvolved=new HashMap<>();
 
-    public ExternalConflicts(Map map, HashMap<String, Player> players, Helper helper) {
-        super(map, players, helper);
+    public ExternalConflicts(Map map, Adjust_Map adjustMap, HashMap<String, Player> players, Helper helper) {
+        super(map, adjustMap, players, helper);
     }
 
     /**
-     * In the case temples were removed, every leader in the kingdom needs to be checked to ensure it's
-     * still adjacent to a temple
-     * @param location of the tile being removed
+     * This is the end of the conflict, the winner gets x amount of points to the associated color cube,
+     * the tiles are removed from the kingdom, causing all locations on the map needing to be checked again,
+     * and become empty
+     * @param winner player who won the conflict
+     * @param loser player who lost the conflict
+     * @param tile the color of the leaders fighting
+     * @param points how many points the winner will get
      */
-    public void removeLeaderCheck(int[] location){
-        ArrayList<int[]> adjacentSpaces=searchAlgorithms.adjacency(location);
-        boolean adjacentToTempleWithTreasure=false;
-        for (int[] adjacentSpace : adjacentSpaces){
-            int row=adjacentSpace[0];
-            int column=adjacentSpace[1];
-            if (map.board[row][column].length()==2) { // tile with leader on it
-                for (int[] adj : searchAlgorithms.adjacency(adjacentSpace)){ // check the adjacent tiles to check if there is a temple with treasure, if there is the leader stays
-                    row=adj[0];
-                    column=adj[1];
-                    if (map.board[row][column].equals(map.templeWithTreasure)) {
-                        adjacentToTempleWithTreasure=true;
-                    }
-                }
-                if (!adjacentToTempleWithTreasure) { // if it isn't next to a temple with treasure the leader gets removed
-                    map.board[row][column] = map.empty; // set it to empty but doesn't update leader information, may cause a bug later but realistically shouldn't
-                    break;
-                }
-            }
-        }
+    @Override
+    public void endConflict(Player winner, Player loser, char tile, int points){
+        if (tile=='T')
+            winner.cubes.redCubes+=points+1; // +1 for removing the leader
+        else if (tile=='M')
+            winner.cubes.greenCubes+=points+1;
+        else if (tile=='F')
+            winner.cubes.blueCubes+=points+1;
+        else if (tile=='S')
+            winner.cubes.blackCubes+=points+1;
+        removeTilesFromKingdom(loser);
+        clearConflict();
     }
 
     /**
@@ -53,11 +49,12 @@ public class ExternalConflicts extends Conflicts{
             int row=tilesInvolved.get(loser).get(i)[0];
             int column=tilesInvolved.get(loser).get(i)[1];
             if (map.board[row][column].equals(map.temple)){
-                removeLeaderCheck(new int[]{row, column});
+                helper.removeLeaderCheck(new int[]{row, column});
             }
             if (!map.board[row][column].equals(map.templeWithTreasure))
                 map.board[row][column]=map.empty;
         }
+
     }
 
     /**
@@ -66,14 +63,17 @@ public class ExternalConflicts extends Conflicts{
      * @param location the tile that started the conflict was placed
      */
     public void externalConflictManager(int[] location){
+        System.out.println("An external conflict has started.");
         int row=location[0];
         int column=location[1];
+        String originalTile=helper.getTile(location);
         map.board[row][column]=map.conflict;
         for (String leader : sameColorLeadersInSameKingdom.keySet()){
             Player player=players.get(helper.translateCharToLeader(leader.charAt(0)));
             tilesInvolved.put(player, new ArrayList<>());
         }
-        checkWinner();
+        conflictManager();
+        map.board[row][column]=String.valueOf(originalTile.charAt(0));
     }
 
     /**
@@ -84,15 +84,13 @@ public class ExternalConflicts extends Conflicts{
      * @return true if a conflict started, false if one didn't start
      */
     public boolean externalConflictCheck(int[] location){
-        int row=location[0];
-        int column=location[1];
-        String tile=map.board[row][column];
         getLeadersInKingdom(location);
-        if (startConflict(location))
+        if (getSameColorLeaders(location))
             externalConflictManager(location);
+        boolean conflictStarted=sameColorLeadersInSameKingdom.size()>=2;
+        clearConflict();
         tilesInvolved.clear();
-        map.board[row][column]=String.valueOf(tile.charAt(0));
-        return leadersInKingdom.size()>=2;
+        return conflictStarted;
     }
 
     /**
@@ -105,13 +103,11 @@ public class ExternalConflicts extends Conflicts{
      */
     @Override
     public int getStrength(Player player, int[] location, char color){
-        int row=location[0];
-        int column=location[1];
-        if (map.board[row][column].charAt(0)==color || (map.board[row][column].equals(map.templeWithTreasure) && color==map.temple.charAt(0))) // temple with treasures count for temple conflicts
-            tilesInvolved.get(player).add(location);
-        ArrayList<int[]> adjacentSpaces=searchAlgorithms.adjacency(location);
-        for (int[] adjacentSpace : adjacentSpaces){
-            getStrength(player, adjacentSpace, color);
+        ArrayList<int[]> kingdom=searchAlgorithms.BFSSearchKingdom(location);
+        for (int[] space : kingdom) {
+            String tile=helper.getTile(space);
+            if (tile.charAt(0) == color || (tile.equals(map.templeWithTreasure) && color == map.temple.charAt(0))) // temple with treasures count for temple conflicts
+                tilesInvolved.get(player).add(space);
         }
         return tilesInvolved.get(player).size();
     }

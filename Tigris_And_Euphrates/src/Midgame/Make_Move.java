@@ -20,6 +20,8 @@ public class Make_Move {
     ExternalConflicts externalConflicts;
     InternalConflicts internalConflicts;
     List<String> factions;
+    Adjust_Map adjustMap;
+    Collect_Treasure collectTreasure;
 
     public Make_Move(Map map, HashMap<String, Player> players, Helper helper){
         this.map=map;
@@ -30,9 +32,11 @@ public class Make_Move {
         this.catastrophe=new Catastrophe(map, helper);
         this.replaceAndRefresh=new Replace_And_Refresh(helper);
         this.monument=new Monument(map, players, helper);
-        externalConflicts=new ExternalConflicts(map, players, helper);
-        internalConflicts=new InternalConflicts(map, players, helper);
+        this.adjustMap=new Adjust_Map(map, players, helper);
+        externalConflicts=new ExternalConflicts(map, adjustMap, players, helper);
+        internalConflicts=new InternalConflicts(map, adjustMap, players, helper);
         this.factions=new LinkedList<>(List.of(map.lions, map.archers, map.pots, map.bulls));
+        this.collectTreasure=new Collect_Treasure(players, map, helper);
     }
 
     /**
@@ -43,9 +47,7 @@ public class Make_Move {
      * @param location the tile was placed
      */
     public void cubesAndExternalConflictCheck(Player player, int[] location){
-        int row=location[0];
-        int column=location[1];
-        String tile=map.board[row][column];
+        String tile= helper.getTile(location);
         if (!externalConflicts.externalConflictCheck(location)) {
             if (tile.equals(map.temple))
                 player.cubes.getRedCube(map, location);
@@ -69,6 +71,7 @@ public class Make_Move {
         System.out.println("3: Place a catastrophe tile.");
         System.out.println("4: Replace up to six of your tiles.");
         helper.printPieces(player.pieces);
+        helper.printCubes(player);
         map.printMap();
         String input=helper.scan.nextLine();
         int[] location;
@@ -76,6 +79,8 @@ public class Make_Move {
             case "1":
                 location=placeTile.placeTile(player);
                 cubesAndExternalConflictCheck(player, location);
+                monument.monumentCheck(location);
+
                 break;
             case "2":
                 location=leader.leader(player);

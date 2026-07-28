@@ -24,13 +24,12 @@ public class Place_Tile {
      * @return true if the tile is not a river, or is a river and a farm, false otherwise.
      */
     public boolean riverCheck(int[] location, String tile){
-        int row=location[0];
-        int column=location[1];
-        if (map.board[row][column].equals(map.river) && !tile.equals(map.farm)){
+        String currentTile=helper.getTile(location);
+        if (currentTile.equals(map.river) && !tile.equals(map.farm)){
             System.out.println("Only farms can be placed on river tiles.");
             return false;
         }
-        else if (!map.board[row][column].equals(map.river) && tile.equals(map.farm)){
+        else if (!currentTile.equals(map.river) && tile.equals(map.farm)){
             System.out.println("You can only place farms on river tiles.");
             return false;
         }
@@ -39,7 +38,9 @@ public class Place_Tile {
 
     /**
      * Responsible for giving the player tiles on a map to choose from, calls chooseLocation to ask the
-     * player where they would like to put a tile, and then what tile they want to place.
+     * player where they would like to put a tile, what tile they want to place, ensuring that tile is
+     * a valid tile to place in that location, removing that tile from the players.pieces, and returning
+     * the location the new piece was placed
      */
     public int[] placeTile(Player player){
         int[] location=helper.chooseLocation();
@@ -49,10 +50,12 @@ public class Place_Tile {
             i++;
         }
         System.out.println("Choose the number corresponding to the tile you'd like to use.");
-        String tile=player.pieces.get(helper.tryParseInt()-1);
+        int tileNumber=helper.tryParseInt()-1;
+        String tile=player.pieces.get(tileNumber);
         if (!riverCheck(location, tile) && !helper.isEmpty(location[0], location[1])){
-            placeTile(player);
+            return placeTile(player);
         }
+        player.pieces.remove(tileNumber);
         adjustMap.placePiece(location, tile);
         return location;
     }

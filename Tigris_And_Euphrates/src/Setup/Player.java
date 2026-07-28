@@ -30,8 +30,6 @@ public class Player {
     Helper helper;
     HashMap<String, Player> players;
     public Adjust_Map adjustMap;
-    InternalConflicts internalConflicts;
-    ExternalConflicts externalConflicts;
 
     public Player(Bag bag, Map map, String faction){
         this.bag=bag;
@@ -49,8 +47,7 @@ public class Player {
         blackLocation[1]=-1;
         this.faction=faction;
         helper=new Helper(map);
-        internalConflicts=new InternalConflicts(map, players, helper);
-        externalConflicts=new ExternalConflicts(map, players, helper);
+        cubes=new Cubes(map, players);
     }
 
     /**

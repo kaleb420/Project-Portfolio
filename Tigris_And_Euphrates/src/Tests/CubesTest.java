@@ -23,18 +23,18 @@ class CubesTest {
 
         players = new HashMap<>();
 
-        Player bulls = new Player(bag, map, "Bulls");
+        Player bulls = new Player(bag, map, map.bulls);
 
-        Player lions = new Player(bag, map, "Lions");
+        Player lions = new Player(bag, map, map.lions);
 
-        Player archers = new Player(bag, map, "Archers");
+        Player archers = new Player(bag, map, map.archers);
 
-        Player pots = new Player(bag, map, "Pots");
+        Player pots = new Player(bag, map, map.pots);
 
-        players.put("Bulls", bulls);
-        players.put("Lions", lions);
-        players.put("Archers", archers);
-        players.put("Pots", pots);
+        players.put(map.bulls, bulls);
+        players.put(map.lions, lions);
+        players.put(map.archers, archers);
+        players.put(map.pots, pots);
 
         bulls.setPlayers(players);
         lions.setPlayers(players);
@@ -46,41 +46,41 @@ class CubesTest {
     @Test
     void getRedCube_incrementsBullPlayer() {
 
-        map.board[2][2] = "BR";
+        map.board[2][2] = "BT";
 
         cubes.getRedCube(map, new int[]{2,2});
 
-        assertEquals(1, players.get("Bulls").cubes.redCubes);
+        assertEquals(1, players.get(map.bulls).cubes.redCubes);
     }
 
     @Test
     void getBlueCube_incrementsLionPlayer() {
 
-        map.board[2][2] = "LB";
+        map.board[2][2] = "LF";
 
         cubes.getBlueCube(map, new int[]{2,2});
 
-        assertEquals(1, players.get("Lions").cubes.blueCubes);
+        assertEquals(1, players.get(map.lions).cubes.blueCubes);
     }
 
     @Test
     void getGreenCube_incrementsArcherPlayer() {
 
-        map.board[2][2] = "AG";
+        map.board[2][2] = "AM";
 
         cubes.getGreenCube(map, new int[]{2,2});
 
-        assertEquals(1, players.get("Archers").cubes.greenCubes);
+        assertEquals(1, players.get(map.archers).cubes.greenCubes);
     }
 
     @Test
     void getBlackCube_incrementsPotPlayer() {
 
-        map.board[2][2] = "PK";
+        map.board[2][2] = "PS";
 
         cubes.getBlackCube(map, new int[]{2,2});
 
-        assertEquals(1, players.get("Pots").cubes.blackCubes);
+        assertEquals(1, players.get(map.pots).cubes.blackCubes);
     }
 
     @Test
@@ -90,9 +90,9 @@ class CubesTest {
 
         cubes.getRedCube(map, new int[]{2,2});
 
-        assertEquals(0, players.get("Bulls").cubes.redCubes);
-        assertEquals(0, players.get("Lions").cubes.redCubes);
-        assertEquals(0, players.get("Archers").cubes.redCubes);
-        assertEquals(0, players.get("Pots").cubes.redCubes);
+        assertEquals(0, players.get(map.bulls).cubes.redCubes);
+        assertEquals(0, players.get(map.lions).cubes.redCubes);
+        assertEquals(0, players.get(map.archers).cubes.redCubes);
+        assertEquals(0, players.get(map.pots).cubes.redCubes);
     }
 }

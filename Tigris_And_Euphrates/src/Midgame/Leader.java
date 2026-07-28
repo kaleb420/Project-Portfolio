@@ -14,14 +14,12 @@ public class Leader {
     Map map;
     Helper helper;
     Adjust_Map adjustMap;
-    InternalConflicts internalConflicts;
     Search_Algorithms searchAlgorithms;
 
     public Leader(Map map, Helper helper, HashMap<String, Player> players){
         this.map=map;
         this.helper=helper;
         adjustMap=new Adjust_Map(map, players, helper);
-        internalConflicts=new InternalConflicts(map, players, helper);
         this.searchAlgorithms=new Search_Algorithms(map);
     }
 
@@ -31,32 +29,26 @@ public class Leader {
      * @return true if it is a valid placement, otherwise false
      */
     public boolean leaderPlacedNextToTemple(int[] location){
-        ArrayList<int[]> adjacentSpaces=searchAlgorithms.adjacency(location);
+        ArrayList<int[]> adjacentSpaces=searchAlgorithms.getAdjacent(location);
         for (int[] adjacentSpace : adjacentSpaces) {
-            int row=adjacentSpace[0];
-            int column=adjacentSpace[1];
-            if (map.board[row][column].equals(map.temple) || map.board[row][column].equals(map.templeWithTreasure))
+            String tile=helper.getTile(adjacentSpace);
+            if (tile.equals(map.temple) || tile.equals(map.templeWithTreasure))
                 return true;
         }
-        searchAlgorithms.clearVisited();
         System.out.println("That leader is not placed next to a temple.");
         return false;
     }
 
     /**
      * Searches the region to determine if it has a leader, if it does then that region is a kingdom
-     * @param location a square adjacent to the leader being placed
+     * @param kingdom the kingdom as if the leader were placed
      * @return true if that region is a kingdom, false otherwise
      */
-    public boolean kingdomDetector(int[] location){
-        int row=location[0];
-        int column=location[1];
-        if (map.board[row][column].length()==2)
-            return true;
-        ArrayList<int[]> adjacentSpaces=searchAlgorithms.adjacency(location);
-        for (int[] adjacentSpace : adjacentSpaces){
-            System.out.println(Arrays.toString(adjacentSpace));
-            return kingdomDetector(adjacentSpace);
+    public boolean kingdomDetector(ArrayList<int[]> kingdom){
+        for (int[] space : kingdom){
+            String tile=helper.getTile(space);
+            if (tile.length()==2)
+                return true;
         }
         return false;
     }
@@ -66,19 +58,49 @@ public class Leader {
      * adjacent square then there is no risk of the leader uniting two kingdoms, if there is two viable
      * adjacent squares then a helper function must be called to determine if there is a leader in that
      * region
-     * @param location the leader was placed
+     * @param adjacentSpaces to the leader
      * @return true if it does unite two kingdoms, false otherwise
      */
-    public boolean uniteTwoKingdomsStart(int[] location){
-        ArrayList<int[]> adjacentSpaces=searchAlgorithms.adjacency(location);
+    public boolean uniteTwoKingdomsStart(ArrayList<int[]> adjacentSpaces){
         if (adjacentSpaces.size()==1 || adjacentSpaces.isEmpty())
             return false;
         boolean isKingdom=true;
         for (int[] adjacentSpace : adjacentSpaces){
-            isKingdom=isKingdom && kingdomDetector(adjacentSpace);
+            isKingdom=isKingdom && kingdomDetector(searchAlgorithms.BFSSearchKingdom(adjacentSpace));
         }
-        searchAlgorithms.clearVisited();
         return isKingdom;
+    }
+
+    /**
+     * Helper function to compare if a tile from a kingdom has the same tile as the coordinate
+     * @param kingdom being analyzed
+     * @param coordinate being compared to
+     * @return true if it does contain the tile, false otherwise
+     */
+    public boolean containsCoordinate(ArrayList<int[]> kingdom, int[] coordinate){
+        for (int[] space : kingdom){
+            if (Arrays.equals(space, coordinate))
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * Function that determines if a leader has two adjacent spaces to it, but those spaces are a part of the
+     * same kingdom, therefore, it is not uniting two kingdoms
+     * @param adjacentSpaces to the leader
+     * @return true if they are the same kingdoms, false otherwise
+     */
+    public boolean isSameKingdom(ArrayList<int[]> adjacentSpaces){
+        if (adjacentSpaces.size()<2) {
+            return false;
+        }
+        ArrayList<int[]> kingdom=searchAlgorithms.BFSSearchKingdom(adjacentSpaces.getFirst());
+        boolean different=true;
+        for (int i = 1; i < adjacentSpaces.size(); i++) {
+            different=different && containsCoordinate(kingdom, adjacentSpaces.get(i));
+        }
+        return different;
     }
 
     /**
@@ -90,11 +112,14 @@ public class Leader {
     public boolean leaderErrorCheck(int[] location, char input){
         return switch (input) {
             case 'T', 'M', 'F', 'S' -> {
-                if (!helper.isEmpty(location[0], location[1]) || !leaderPlacedNextToTemple(location)) {
+                ArrayList<int[]> adjacentSpaces=searchAlgorithms.getAdjacent(location);
+                if (!helper.isEmpty(location[0], location[1])) {
                     System.out.println("That tile is not an empty space.");
                     yield false;
                 }
-                else if (uniteTwoKingdomsStart(location)) {
+                else if (!leaderPlacedNextToTemple(location))
+                    yield false;
+                else if (uniteTwoKingdomsStart(adjacentSpaces) && !isSameKingdom(adjacentSpaces)) {
                     System.out.println("That location would cause the leader to unite two kingdoms.");
                     yield false;
                 }

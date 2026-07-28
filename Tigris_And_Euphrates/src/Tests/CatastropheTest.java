@@ -28,7 +28,7 @@ class CatastropheTest {
         System.setIn(new ByteArrayInputStream(input.getBytes()));
         catastrophe.placeCatastrophe(player);
         assertEquals(1, player.catastrophe);
-        ArrayList<int[]> adjacentSpaces=searchAlgorithms.adjacency(new int[]{4,5}); // next to catastrophe space
+        ArrayList<int[]> adjacentSpaces=searchAlgorithms.getAdjacent(new int[]{4,5}); // next to catastrophe space
         assertTrue(adjacentSpaces.isEmpty()); // adjacency should not include catastrophe tiles
     }
 

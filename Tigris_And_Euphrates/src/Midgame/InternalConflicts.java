@@ -9,8 +9,20 @@ import java.util.HashMap;
 
 public class InternalConflicts extends Conflicts{
 
-    public InternalConflicts(Map map, HashMap<String, Player> players, Helper helper) {
-        super(map, players, helper);
+    public InternalConflicts(Map map, Adjust_Map adjustMap, HashMap<String, Player> players, Helper helper) {
+        super(map, adjustMap, players, helper);
+    }
+
+    /**
+     * The winner gets one red cube for winning an internal conflict
+     * @param winner who won the conflict
+     * @param loser irrelevant
+     * @param tile irrelevant
+     * @param points irrelevant
+     */
+    @Override
+    public void endConflict(Player winner, Player loser, char tile, int points){
+        winner.cubes.redCubes++;
     }
 
     /**
@@ -23,14 +35,12 @@ public class InternalConflicts extends Conflicts{
     @Override
     public int getStrength(Player player, int[] location, char color){
         int temples=0;
-        ArrayList<int[]> adjacentSpaces=searchAlgorithms.adjacency(location);
+        ArrayList<int[]> adjacentSpaces=searchAlgorithms.getAdjacent(location);
         for (int[] adjacentSpace : adjacentSpaces){
-            int row=adjacentSpace[0];
-            int column=adjacentSpace[1];
-            if (map.board[row][column].equals(map.temple) || map.board[row][column].equals(map.templeWithTreasure))
+            String tile=helper.getTile(adjacentSpace);
+            if (tile.equals(map.temple) || tile.equals(map.templeWithTreasure))
                 temples++;
         }
-        searchAlgorithms.clearVisited();
         return temples;
     }
 
@@ -43,12 +53,11 @@ public class InternalConflicts extends Conflicts{
     }
 
     /**
-     * This function calls the conflictInformation function from the superclass, then determines if the attacker
-     * or defender won the conflict, then call end conflict with the appropriate variables
+     * For internal conflicts only the conflict manager needs to be called
      */
     public void internalConflictManager(){
-        conflictInformation();
-        checkWinner();
+        System.out.println("An internal conflict has started.");
+        conflictManager();
     }
 
     /**
@@ -57,7 +66,8 @@ public class InternalConflicts extends Conflicts{
      * @param location of the leader just placed
      */
     public void internalConflictCheck(int[] location){
-        if (startConflict(location))
+        if (getSameColorLeaders(location))
             internalConflictManager();
+        clearConflict();
     }
 }

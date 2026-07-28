@@ -12,9 +12,11 @@ public class Helper {
 
     public Scanner scan=new Scanner(System.in);
     Map map;
+    Search_Algorithms searchAlgorithms;
 
     public Helper(Map map){
         this.map=map;
+        this.searchAlgorithms=new Search_Algorithms(map);
     }
 
     /**
@@ -76,6 +78,8 @@ public class Helper {
      * @return true if it is valid, false otherwise
      */
     public boolean tileErrorCheck(String input){
+        if (input.length()!=2)
+            return false;
         if (input.charAt(0)<65 || input.charAt(0)>90){
             System.out.println("First character must be a capital letter corresponding to the board.");
             return false;
@@ -97,17 +101,33 @@ public class Helper {
         System.out.println("Choose the corresponding capital letter and number for where you would like to place a tile.");
         String input=scan.nextLine();
         if (!tileErrorCheck(input)) {
-            chooseLocation();
-            return null;
+            return chooseLocation();
         }
         return inputToLocation(input);
+    }
+
+    public void printCubes(Player player){
+        System.out.println("These are your current cube counts: ");
+        System.out.println(player.faction + " red cubes " + player.cubes.redCubes);
+        System.out.println(player.faction + " green cubes " + player.cubes.greenCubes);
+        System.out.println(player.faction + " blue cubes " + player.cubes.blueCubes);
+        System.out.println(player.faction + " black cubes " + player.cubes.blackCubes);
     }
 
     public void printPieces(ArrayList<String> pieces){
         System.out.println("These are your current tiles.");
         int i=1;
         for (String piece : pieces){
-            System.out.println(i + ": " + piece);
+            String print;
+            if (piece.equals(map.temple))
+                print="Temple";
+            else if (piece.equals(map.market))
+                print="Market";
+            else if (piece.equals(map.farm))
+                print="Farm";
+            else
+                print="Settlement";
+            System.out.println(i + ": " + print);
             i++;
         }
     }
@@ -121,5 +141,63 @@ public class Helper {
             return map.archers;
         else
             return map.pots;
+    }
+
+    /**
+     * In the case temples were removed, the adjacent spaces to the tile need to be checked to ensure
+     * that a leader still has a temple adjacent to it, if it doesn't, then it is removed from the board
+     * @param location of the tile being removed
+     */
+    public void removeLeaderCheck(int[] location){
+        ArrayList<int[]> adjacentSpaces=searchAlgorithms.getAdjacent(location);
+        boolean adjacentToTempleWithTreasure=false;
+        for (int[] adjacentSpace : adjacentSpaces){
+            int row=adjacentSpace[0];
+            int column=adjacentSpace[1];
+            String tile=getTile(adjacentSpace);
+            if (tile.length()==2) { // tile with leader on it
+                for (int[] adj : searchAlgorithms.getAdjacent(adjacentSpace)){ // check the adjacent tiles to check if there is a temple with treasure, if there is the leader stays
+                    tile=getTile(adj);
+                    if (tile.equals(map.templeWithTreasure)) {
+                        adjacentToTempleWithTreasure=true;
+                        break;
+                    }
+                }
+                if (!adjacentToTempleWithTreasure) { // if it isn't next to a temple with treasure the leader gets removed
+                    map.board[row][column] = map.empty; // set it to empty but doesn't update leader information, may cause a bug later but realistically shouldn't
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Determines if the tile being analyzed is a leader, leaders have a string length of 2
+     * @param tile being analyzed
+     * @return true if it is a leader, false otherwise
+     */
+    public boolean isLeader(String tile){
+        return tile.length()==2;
+    }
+
+    /**
+     * Determines if the tile being analyzed is a monument, monuments have a string length of 3
+     * @param tile being analyzed
+     * @return true if it is a monument, false otherwise
+     */
+    public boolean isMonument(String tile){
+        return tile.length()==3;
+    }
+
+    /**
+     * Simple helper function that takes a given location on the map and returns the string value associated
+     * with it
+     * @param location on the board
+     * @return string value of the location on the board
+     */
+    public String getTile(int[] location){
+        int row=location[0];
+        int column=location[1];
+        return map.board[row][column];
     }
 }

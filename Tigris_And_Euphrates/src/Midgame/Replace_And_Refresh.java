@@ -15,13 +15,14 @@ public class Replace_And_Refresh {
      * Discards up to 6 tiles from their pieces, and draws new ones back up to 6.
      */
     public void replace(Player player){
-        while (true) {
+        while (!player.pieces.isEmpty()) {
             helper.printPieces(player.pieces);
             System.out.println("Type in the number correlated to the tile you'd like to remove. If you are done removing tiles type in 0");
-            int number=helper.tryParseInt()-1;
+            int number=helper.tryParseInt();
             if (number==0)
                 break;
-            if (number<player.pieces.size() && number>0){
+            number-=1;
+            if (number<player.pieces.size() && number>=0){
                 player.pieces.remove(number);
             }
         }

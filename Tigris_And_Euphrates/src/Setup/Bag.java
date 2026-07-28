@@ -29,10 +29,10 @@ public class Bag {
      */
     private void remove(String rm){
         switch (rm) {
-            case "Temple" -> temples--;
-            case "Farm" -> farms--;
-            case "Market" -> markets--;
-            case "Settlement" -> settlements--;
+            case  "T"-> temples--;
+            case "F" -> farms--;
+            case "M" -> markets--;
+            case "S" -> settlements--;
         }
     }
 
@@ -42,13 +42,13 @@ public class Bag {
      */
     private void piecesLeft(ArrayList<String> options){
         if (temples!=0)
-            options.add("Temple");
+            options.add("T");
         if (farms!=0)
-            options.add("Farm");
+            options.add("F");
         if (markets!=0)
-            options.add("Market");
+            options.add("M");
         if (settlements!=0)
-            options.add("Settlement");
+            options.add("S");
     }
 
     /**

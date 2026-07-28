@@ -8,9 +8,10 @@ import java.util.HashMap;
 
 public class Map {
 
-    public String[][] board=new String[11][16];
-    public ArrayList<String> availableMonuments=new ArrayList<>();
-    public ArrayList<String> unavailableMonuments=new ArrayList<>();
+    public int rowLength=11;
+    public int columnLength=16;
+    public String[][] board=new String[rowLength][columnLength];
+    public HashMap<String, int[]> monuments=new HashMap<>();
     public int totalTreasures=10;
     public String templeWithTreasure="O";
     public String river="R";
@@ -85,12 +86,12 @@ public class Map {
         board[8][14]=templeWithTreasure;
         board[9][5]=templeWithTreasure;
         board[10][10]=templeWithTreasure;
-        availableMonuments.add("KG (Black and Green)");
-        availableMonuments.add("KR (Black and Red)");
-        availableMonuments.add("KB (Black and Blue)");
-        availableMonuments.add("RB (Red and Blue)");
-        availableMonuments.add("BG (Blue and Green)");
-        availableMonuments.add("GR (Green and Red)");
+        monuments.put("SM", new int[]{-1, -1});
+        monuments.put("ST", new int[]{-1, -1});
+        monuments.put("SF", new int[]{-1, -1});
+        monuments.put("TF", new int[]{-1, -1});
+        monuments.put("FM", new int[]{-1, -1});
+        monuments.put("MT", new int[]{-1, -1});
     }
 
     /**
@@ -109,8 +110,13 @@ public class Map {
                     System.out.print(" " + currChar + " ");
                 else if (j == 0)
                     System.out.print(" " + printNumber + " ");
-                else
-                    System.out.print(" " + board[i-1][j-1] + " ");
+                else {
+                    String print=board[i-1][j-1];
+                    if (print.length()==3 || print.length()==2)
+                        System.out.print(" " + print.substring(0, 2)); // substring if a monument is being printed so it doesn't take up as much space in the print
+                    else
+                        System.out.print(" " + print + " ");
+                }
             }
             System.out.println();
         }

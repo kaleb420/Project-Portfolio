@@ -21,7 +21,7 @@ class BagTest {
     void draw() {
         for (int i = 0; i < 153; i++) {
             String drew=bag.draw();
-            assertTrue(drew.equals("Temple") || drew.equals("Farm") || drew.equals("Market") || drew.equals("Settlement"));
+            assertTrue(drew.equals("T") || drew.equals("F") || drew.equals("M") || drew.equals("S"));
         }
         assertTrue(bag.shuffledBag.isEmpty());
     }

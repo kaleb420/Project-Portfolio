@@ -27,7 +27,7 @@ public class ConflictsTest {
     private static class TestConflict extends Conflicts {
 
         public TestConflict(Map map, HashMap<String, Player> players, Helper helper) {
-            super(map, players, helper);
+            super(map, new Adjust_Map(map, players, helper), players, helper);
         }
 
         @Override
@@ -37,6 +37,11 @@ public class ConflictsTest {
 
         @Override
         void removeTilesFromKingdom(Player loser) {}
+
+        @Override
+        void endConflict(Player winner, Player loser, char tile, int points) {
+
+        }
     }
 
     @BeforeEach
@@ -173,7 +178,7 @@ public class ConflictsTest {
         map.board[5][5] = "BT";
 
         assertFalse(
-                conflict.startConflict(new int[]{5,5})
+                conflict.getSameColorLeaders(new int[]{5,5})
         );
     }
 
@@ -184,7 +189,7 @@ public class ConflictsTest {
         map.board[5][6] = "LT";
 
         assertTrue(
-                conflict.startConflict(new int[]{5,5})
+                conflict.getSameColorLeaders(new int[]{5,5})
         );
 
         assertEquals(2,

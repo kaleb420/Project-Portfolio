@@ -1,6 +1,7 @@
-package Midgame;
+package Tests;
 
 import Helpers.Helper;
+import Midgame.Monument;
 import Setup.Bag;
 import Setup.Map;
 import Setup.Player;
@@ -89,11 +90,14 @@ class MonumentTest {
     @Test
     void searchKingdomLeaders_MatchingLeaderGetsCube() {
 
-        map.board[5][5] = "BT";
+        map.monuments.put("ST", new int[]{5, 5});
+        map.board[5][5] = "ST ";
+        map.board[5][6] = "S";
+        map.board[5][7] = "BT";
 
         monument.searchKingdomLeaders(
                 new int[]{5,5},
-                "TM"
+                "ST"
         );
 
         assertEquals(1, bulls.cubes.redCubes);
@@ -102,14 +106,15 @@ class MonumentTest {
     @Test
     void searchKingdomLeaders_NonMatchingLeaderGetsNothing() {
 
-        map.board[5][5] = "BF";
+        map.board[5][5] = "ST";
+        map.board[5][6]= "BF";
 
         monument.searchKingdomLeaders(
                 new int[]{5,5},
-                "TM"
+                "ST"
         );
 
-        assertEquals(0, bulls.cubes.redCubes);
+        assertEquals(0, bulls.cubes.blueCubes);
     }
 
     //---------------------------------------------------
@@ -119,13 +124,15 @@ class MonumentTest {
     @Test
     void placeMonument_UpdatesBoard() {
 
-        map.availableMonuments.add("TMF");
-
-        String input = "1\n";
+        String input = "SM\n";
         System.setIn(new ByteArrayInputStream(input.getBytes()));
 
         helper = new Helper(map);
         monument = new Monument(map, players, helper);
+        map.board[5][5]="M";
+        map.board[5][6]="M";
+        map.board[6][5]="M";
+        map.board[6][6]="M";
 
         int[][] square = {
                 {5,5},
@@ -136,22 +143,55 @@ class MonumentTest {
 
         monument.placeMonument(square);
 
-        assertEquals("TMF", map.board[5][5]);
-        assertEquals("TMF", map.board[5][6]);
-        assertEquals("TMF", map.board[6][5]);
-        assertEquals("TMF", map.board[6][6]);
+        assertEquals("SM ", map.board[5][5]);
+        assertEquals("SM ", map.board[5][6]);
+        assertEquals("SM ", map.board[6][5]);
+        assertEquals("SM ", map.board[6][6]);
+    }
+
+    @Test
+    void placeMonument_UpdatesBoardFails() {
+
+        String input = "SF\n" + // doesn't work because not the same color as the tiles being flipped
+                "ST\n";
+        System.setIn(new ByteArrayInputStream(input.getBytes()));
+
+        helper = new Helper(map);
+        monument = new Monument(map, players, helper);
+        map.board[5][5]="T";
+        map.board[5][6]="T";
+        map.board[6][5]="T";
+        map.board[6][6]="T";
+
+        int[][] square = {
+                {5,5},
+                {5,6},
+                {6,5},
+                {6,6}
+        };
+
+        monument.placeMonument(square);
+
+        assertEquals("ST ", map.board[5][5]);
+        assertEquals("ST ", map.board[5][6]);
+        assertEquals("ST ", map.board[6][5]);
+        assertEquals("ST ", map.board[6][6]);
     }
 
     @Test
     void placeMonument_RemovesAvailableMonument() {
 
-        map.availableMonuments.add("TMF");
-
-        String input = "1\n";
+        String input = "SM\n";
         System.setIn(new ByteArrayInputStream(input.getBytes()));
 
         helper = new Helper(map);
         monument = new Monument(map, players, helper);
+
+        map.board[1][1]="M";
+        map.board[1][2]="M";
+        map.board[2][1]="M";
+        map.board[2][2]="M";
+
 
         monument.placeMonument(new int[][]{
                 {1,1},
@@ -160,8 +200,8 @@ class MonumentTest {
                 {2,2}
         });
 
-        assertTrue(map.availableMonuments.isEmpty());
-        assertTrue(map.unavailableMonuments.contains("TMF"));
+        assertTrue(map.monuments.containsKey("SM"));
+        assertArrayEquals(new int[]{1, 1}, map.monuments.get("SM"));
     }
 
     //---------------------------------------------------
@@ -171,9 +211,7 @@ class MonumentTest {
     @Test
     void monumentCheck_TopLeftSquarePlacesMonument() {
 
-        map.availableMonuments.add("TMF");
-
-        String input = "1\n";
+        String input = "ST\n";
         System.setIn(new ByteArrayInputStream(input.getBytes()));
 
         helper = new Helper(map);
@@ -186,7 +224,7 @@ class MonumentTest {
 
         monument.monumentCheck(new int[]{5,5});
 
-        assertEquals("TMF", map.board[5][5]);
+        assertEquals("ST ", map.board[5][5]);
     }
 
     @Test
@@ -209,9 +247,7 @@ class MonumentTest {
     @Test
     void endOfTurn_MonumentAwardsCube() {
 
-        map.unavailableMonuments.add("TM");
-
-        monument.checkedMonuments = new java.util.ArrayList<>();
+        map.monuments.put("TM", new int[]{5, 5});
 
         map.board[5][5] = "TM";
         map.board[5][6] = "BT";
@@ -224,16 +260,13 @@ class MonumentTest {
     @Test
     void endOfTurn_CheckedMonumentIgnored() {
 
-        map.unavailableMonuments.add("TM");
+        map.monuments.put("MT", new int[]{5, 5});
 
-        monument.checkedMonuments = new java.util.ArrayList<>();
-        monument.checkedMonuments.add("TM");
-
-        map.board[5][5] = "TM";
+        map.board[5][5] = "MT";
         map.board[5][6] = "BT";
 
         monument.endOfTurn();
 
-        assertEquals(0, bulls.cubes.redCubes);
+        assertEquals(1, bulls.cubes.redCubes);
     }
 }

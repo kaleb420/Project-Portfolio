@@ -23,11 +23,11 @@ public abstract class Conflicts {
     int[] strength=new int[2]; // same as above
     int[][] leaderLocations=new int[2][2]; // same as above
 
-    public Conflicts(Map map, HashMap<String, Player> players, Helper helper){
+    public Conflicts(Map map, Adjust_Map adjustMap, HashMap<String, Player> players, Helper helper){
         this.map=map;
         this.players=players;
         this.helper=helper;
-        this.adjustMap=new Adjust_Map(map, players, helper);
+        this.adjustMap=adjustMap;
         this.searchAlgorithms=new Search_Algorithms(map);
     }
 
@@ -53,6 +53,8 @@ public abstract class Conflicts {
      */
     abstract void removeTilesFromKingdom(Player loser);
 
+    abstract void endConflict(Player winner, Player loser, char tile, int points);
+
     /**
      * Gathers all relevant conflict information and puts them into the appropriate global variables,
      * calls the appropriate function to get the value in the global variable
@@ -61,11 +63,10 @@ public abstract class Conflicts {
         char color=getColorsFighting();
         int i=0;
         for (String leader : leadersFighting.keySet()){
-            System.out.println(helper.translateCharToLeader(leader.charAt(0)));
             playerArray[i]=players.get(helper.translateCharToLeader(leader.charAt(0)));
             leaderLocations[i]=leadersFighting.get(leader);
-            originalStrength[i]=getStrength(playerArray[i], leadersFighting.get(leader), leader.charAt(1));
             searchAlgorithms.clearVisited();
+            originalStrength[i]=getStrength(playerArray[i], leadersFighting.get(leader), leader.charAt(1));
             strength[i]=originalStrength[i];
             i++;
         }
@@ -76,33 +77,11 @@ public abstract class Conflicts {
     }
 
     /**
-     * This is the end of the conflict, the winner gets x amount of points to the associated color cube,
-     * the tiles are removed from the kingdom, causing all locations on the map needing to be checked again,
-     * and become empty
-     * @param winner player who won the conflict
-     * @param loser player who lost the conflict
-     * @param tile the color of the leaders fighting
-     * @param points how many points the winner will get
-     */
-    public void endConflict(Player winner, Player loser, char tile, int points){
-        if (tile=='T')
-            winner.cubes.redCubes+=points+1; // +1 for removing the leader
-        else if (tile=='M')
-            winner.cubes.greenCubes+=points+1;
-        else if (tile=='F')
-            winner.cubes.blueCubes+=points+1;
-        else if (tile=='S')
-            winner.cubes.blackCubes+=points+1;
-        removeTilesFromKingdom(loser);
-        //clearConflict();
-    }
-
-    /**
      * Gets the colors fighting, then collects all relevant conflict information by calling conflictInformation()
      * depending on who wins and loses calls endConflict with appropriate parameters, and removes the leader
      * from the map
      */
-    public void checkWinner() {
+    public void conflictManager() {
         char color=getColorsFighting();
         conflictInformation();
         if (strength[0]>strength[1]) { // if attacker wins
@@ -124,15 +103,11 @@ public abstract class Conflicts {
      * @param location of the tile placed (may be a leader or piece)
      */
     public void getLeadersInKingdom(int[] location){
-        int row=location[0];
-        int column=location[1];
-        String tile=map.board[row][column];
-        if (tile.length()==2){
-            leadersInKingdom.put(tile, location);
-        }
-        ArrayList<int[]> adjacentSpaces=searchAlgorithms.adjacency(location);
-        for (int[] adjacentSpace : adjacentSpaces){
-            getLeadersInKingdom(adjacentSpace);
+        ArrayList<int[]> kingdom=searchAlgorithms.BFSSearchKingdom(location);
+        for (int[] space : kingdom){
+            String tile=helper.getTile(space);
+            if (tile.length()==2)
+                leadersInKingdom.put(tile, space);
         }
     }
 
@@ -164,17 +139,12 @@ public abstract class Conflicts {
     public HashMap<String, int[]> chooseLeadersFighting(){
         if (sameColorLeadersInSameKingdom.size()==2)
             return sameColorLeadersInSameKingdom;
-        for (String leader : leadersInKingdom.keySet()){
-            System.out.println(leader);
-        }
         map.printMap();
         System.out.println("Pick two leaders who are eligible to fight each other, they must be the same color.");
         System.out.print("What is the first leader you would like to pick: ");
         String input=helper.scan.nextLine();
-        System.out.println();
         System.out.print("What is the second leader you would like to pick: ");
         String input2=helper.scan.nextLine();
-        System.out.println();
         HashMap<String, int[]> ret=new HashMap<>();
         try {
             if (input.charAt(1)!=input2.charAt(1)) {
@@ -198,9 +168,8 @@ public abstract class Conflicts {
      * @param location the tile was placed
      * @return true if it starts a conflict, false otherwise
      */
-    public boolean startConflict(int[] location){
+    public boolean getSameColorLeaders(int[] location){
         getLeadersInKingdom(location);
-        searchAlgorithms.clearVisited();
         for (String leader : leadersInKingdom.keySet()){
             for (String leader2 : leadersInKingdom.keySet()){
                 char firstColorIndex=leader.charAt(1);

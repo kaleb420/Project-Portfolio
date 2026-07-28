@@ -11,6 +11,7 @@ public class Adjust_Map {
     Helper helper;
     Map map;
     Monument monument;
+    HashMap<String, Player> players;
 
     /**
      *
@@ -18,11 +19,12 @@ public class Adjust_Map {
     public Adjust_Map(Map map, HashMap<String, Player> players, Helper helper){
         this.map=map;
         this.helper=helper;
+        this.players=players;
         this.monument=new Monument(map, players, helper);
     }
 
     /**
-     * Puts the inputted tile at the inputted location, then calls the templeCheck and ConflictCheck functions
+     * Puts the inputted tile at the inputted location, then calls the monumentCheck and ConflictCheck functions
      * @param location to place tile
      * @param tile type being placed
      */
@@ -30,7 +32,6 @@ public class Adjust_Map {
         int row=location[0];
         int column=location[1];
         map.board[row][column]=String.valueOf(tile.charAt(0));
-        monument.monumentCheck(location);
     }
 
     /**
@@ -59,6 +60,7 @@ public class Adjust_Map {
             int oldColumn=player.blackLocation[1];
             map.board[oldRow][oldColumn]=map.empty;
         }
+        updateLeaderPosition(player, color, new int[]{-1, -1});
     }
 
     /**

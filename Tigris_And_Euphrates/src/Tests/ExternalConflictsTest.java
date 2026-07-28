@@ -36,7 +36,7 @@ class ExternalConflictsTest {
         lion.setPlayers(players);
         bull.setPlayers(players);
         this.adjustMap=new Adjust_Map(map, players, helper);
-        this.externalConflicts=new ExternalConflicts(map, players, helper);
+        this.externalConflicts=new ExternalConflicts(map, adjustMap, players, helper);
         adjustMap.placeLeader(lion, 'T', new int[]{4, 3});
         adjustMap.placeLeader(bull, 'T', new int[]{4, 9});
         map.board[3][4]=map.temple;
@@ -52,12 +52,12 @@ class ExternalConflictsTest {
     @Test
     void removeLeaderCheck() {
         map.printMap();
-        externalConflicts.removeLeaderCheck(new int[]{4, 4});
+        helper.removeLeaderCheck(new int[]{4, 4});
         assertEquals(map.empty, map.board[4][3]); // there is no adjacent temples to this leader
         adjustMap.placeLeader(bull, 'T', new int[]{2, 6});
         int row=bull.redLocation[0];
         int column=bull.redLocation[1];
-        externalConflicts.removeLeaderCheck(new int[]{3, 6}); // adjacent to a temple with treasure, so the leader stays
+        helper.removeLeaderCheck(new int[]{3, 6}); // adjacent to a temple with treasure, so the leader stays
         assertEquals("BT", map.board[row][column]);
     }
 

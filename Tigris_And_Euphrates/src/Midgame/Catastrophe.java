@@ -21,9 +21,18 @@ public class Catastrophe {
     public void placeCatastrophe(Player player){
         if (player.catastrophe<=0){
             System.out.println("You do not have any catastrophe tiles left.");
+            return;
         }
         int[] location=helper.chooseLocation();
+        String tile=helper.getTile(location);
+        if (tile.equals(map.templeWithTreasure)){
+            System.out.println("You cannot place a catastrophe tile on a temple with treasure.");
+            placeCatastrophe(player);
+            return;
+        }
         player.adjustMap.placePiece(location, map.catastrophe);
         player.catastrophe--;
+        if (tile.equals(map.temple))
+            helper.removeLeaderCheck(location);
     }
 }

@@ -35,7 +35,7 @@ class InternalConflictsTest {
         lion.setPlayers(players);
         bull.setPlayers(players);
         this.adjustMap=new Adjust_Map(map, players, helper);
-        this.internalConflict=new InternalConflicts(map, players, helper);
+        this.internalConflict=new InternalConflicts(map, adjustMap, players, helper);
         adjustMap.placeLeader(lion, 'T', new int[]{2, 6});
         adjustMap.placeLeader(bull, 'T', new int[]{4, 6});
         map.board[3][4]=map.temple;
