@@ -1,3 +1,5 @@
+## Introduction
+
 Hello, and welcome to my project portfolio, this is a collection of every project I have ever worked on or been a part of. Any personal projects will be explicitly mentioned as a personal project, if it is not mentioned it can be assumed to be a class project of some form. On this page, a brief description of each project can be found, followed with what I learned and a broad description of how it was implemented. The README of the associated folder will provide an in-depth description about each project and how it was achieved. 
 
 ## B351-Final-Project:
