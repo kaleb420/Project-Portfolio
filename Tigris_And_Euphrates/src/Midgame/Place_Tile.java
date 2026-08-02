@@ -6,6 +6,11 @@ import Setup.Player;
 
 import java.util.HashMap;
 
+/**
+ * This class adds a resource tile to the map. The only restriction is the tile must be empty (or a river),
+ * and if a farm is being placed it is being placed on a river, or if any other resource is placed it cannot
+ * be placed on a river.
+ */
 public class Place_Tile {
 
     Map map;
@@ -52,7 +57,7 @@ public class Place_Tile {
         System.out.println("Choose the number corresponding to the tile you'd like to use.");
         int tileNumber=helper.tryParseInt()-1;
         String tile=player.pieces.get(tileNumber);
-        if (!riverCheck(location, tile) && !helper.isEmpty(location[0], location[1])){
+        if (!riverCheck(location, tile) || !helper.isEmpty(location[0], location[1])){
             return placeTile(player);
         }
         player.pieces.remove(tileNumber);

@@ -4,6 +4,10 @@ import Helpers.Helper;
 import Setup.Map;
 import Setup.Player;
 
+/**
+ * Places a catastrophe piece on the board, given that the player have any pieces still. This tile acts as a
+ * block to kingdoms, kingdoms do not extend past this tile.
+ */
 public class Catastrophe {
 
     Map map;

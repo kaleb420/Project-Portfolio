@@ -1,14 +1,25 @@
 package Midgame;
 
 import Helpers.Helper;
+import Setup.Bag;
 import Setup.Map;
 import Setup.Player;
 
 import java.util.*;
 
+/**
+ * This class is responsible for running the game. gameEngine is continuously ran until the game is over,
+ * either through there only being 1 or 2 treasures left on the map at the end of a players turn. Or when
+ * a player cannot draw up to his full amount of tiles at the end of their turn. On a player's turn they
+ * may place a resource tile, they may place a leader, they may place a catastrophe, or may replace up to
+ * 6 of their tiles "behind their screen". Depending on the associated action the player chose, the associated
+ * class is called. If a resource tile is placed, the cubesAndExternalConflictCheck function is called, and
+ * the monumentCheck function. After a leader is placed, the internalConflictCheck is called.
+ */
 public class Make_Move {
 
     Map map;
+    Bag bag;
     Helper helper;
     HashMap<String, Player> players;
     Place_Tile placeTile;
@@ -23,8 +34,9 @@ public class Make_Move {
     Adjust_Map adjustMap;
     Collect_Treasure collectTreasure;
 
-    public Make_Move(Map map, HashMap<String, Player> players, Helper helper){
+    public Make_Move(Map map, Bag bag, HashMap<String, Player> players, Helper helper){
         this.map=map;
+        this.bag=bag;
         this.players=players;
         this.helper=helper;
         this.placeTile=new Place_Tile(map, helper, players);
@@ -80,11 +92,12 @@ public class Make_Move {
                 location=placeTile.placeTile(player);
                 cubesAndExternalConflictCheck(player, location);
                 monument.monumentCheck(location);
-
+                collectTreasure.collectTreasureCheck(player, location);
                 break;
             case "2":
                 location=leader.leader(player);
                 internalConflicts.internalConflictCheck(location);
+                collectTreasure.collectTreasureCheck(player, location);
                 break;
             case "3":
                 catastrophe.placeCatastrophe(player);
@@ -106,7 +119,7 @@ public class Make_Move {
      * the other condition.
      */
     public void gameEnd(){
-        gameEnd=map.totalTreasures == 2 || map.totalTreasures == 1;
+        gameEnd=map.totalTreasures<=2 || bag.shuffledBag.isEmpty();
     }
 
     public void gameEngine(int playerCount){
@@ -121,8 +134,6 @@ public class Make_Move {
             for (String faction : players.keySet()) { //redraw back up to 6 tiles at the end of each player's turn
                 Player redraw = players.get(faction);
                 replaceAndRefresh.refreshTiles(players.get(faction));
-                if (redraw.pieces.size() != 6)
-                    gameEnd = true;
             }
             gameEnd();
             turn++;

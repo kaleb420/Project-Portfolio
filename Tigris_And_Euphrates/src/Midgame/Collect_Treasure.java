@@ -9,13 +9,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+/**
+ * If two temples with a treasure are a part of the same kingdom, and the player who's turn just ended has a
+ * market leader, then they can collect one of the treasures.
+ */
 public class Collect_Treasure {
 
     HashMap<String, Player> players;
     Map map;
     Search_Algorithms searchAlgorithms;
     Helper helper;
-    ArrayList<int[]> treasureLocations=new ArrayList<>();
+    ArrayList<int[]> treasureLocations=new ArrayList<>(); // locations of treasure within the kingdom
 
     public Collect_Treasure(HashMap<String, Player> players, Map map, Helper helper){
         this.players=players;
@@ -30,7 +34,15 @@ public class Collect_Treasure {
      * @return true if that player's market leader in the kingdom, false otherwise
      */
     public boolean containsMarketLeader(Player player, ArrayList<int[]> kingdom){
-        return kingdom.contains(player.greenLocation);
+        int greenRow=player.greenLocation[0];
+        int greenColumn=player.greenLocation[1];
+        for (int[] space : kingdom){
+            int row=space[0];
+            int column=space[1];
+            if (greenRow==row && greenColumn==column)
+                return true;
+        }
+        return false;
     }
 
     /**
@@ -52,12 +64,13 @@ public class Collect_Treasure {
      * map, if there is none that fit that criteria just pick a random one.
      */
     public void removeTreasure(Player player){
+        System.out.println(treasureLocations.size());
         while (treasureLocations.size()>1){
             int[] toRemove=new int[2];
             for (int[] space : treasureLocations){
                 int row=space[0];
                 int column=space[1];
-                if (row==map.rowLength || column==map.columnLength) {
+                if (row==map.rowLength-1 || column==map.columnLength-1) {
                     toRemove=space;
                     treasureLocations.remove(space);
                 }
@@ -83,9 +96,10 @@ public class Collect_Treasure {
      * If there is a market leader in that kingdom and there are at least two temples with treasures, a
      * treasure may be collected, and collectTreasure may be called
      * @param player who placed the tile
-     * @param kingdom the tile was placed
+     * @param location the tile was placed
      */
-    public void collectTreasureCheck(Player player, ArrayList<int[]> kingdom){
+    public void collectTreasureCheck(Player player, int[] location){
+        ArrayList<int[]> kingdom=searchAlgorithms.BFSSearchKingdom(location);
         if (containsMarketLeader(player, kingdom) && containsMultipleTemplesWithTreasure(kingdom)) {
             removeTreasure(player);
         }

@@ -11,7 +11,8 @@ import java.util.HashMap;
 import java.util.Optional;
 
 /**
- * This class keeps track of the amount of cubes each player has.
+ * This class keeps track of the amount of cubes each player has, while also maintaining the functions that
+ * would result in a player's cube amount to increase from placing a resource tile.
  */
 public class Cubes {
     public int redCubes=0;
@@ -30,6 +31,15 @@ public class Cubes {
         this.searchAlgorithms=new Search_Algorithms(map);
     }
 
+    /**
+     * Get the tiles within the kingdom a resource was placed in, if the resource placed was the same color
+     * as a leader in the same kingdom. That player gets a cube of the associated color added.
+     * @param map board
+     * @param color of the resource being examined
+     * @param location of the resource placed
+     * @return the first char of the leader that has an associated color, or 'z' if there is none (meaning
+     * there is no same color leader, and it's irrelevant)
+     */
     public char cubeGetLeader(Map map, char color, int[] location){
         ArrayList<int[]> kingdom=searchAlgorithms.BFSSearchKingdom(location);
         for (int[] space : kingdom){

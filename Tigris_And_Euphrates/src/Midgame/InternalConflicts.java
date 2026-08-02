@@ -7,6 +7,12 @@ import Setup.Player;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * An internal conflict can only start when a leader has been placed, therefore, it only needs to be checked
+ * after a leader has been placed. Call internalConflictCheck and if getSameColorLeaders returns true, a
+ * conflict has been started and internal conflict manager is called. After an internal conflict has ended,
+ * the loser removes the associated leader from the board, and the winner gains one red cube.
+ */
 public class InternalConflicts extends Conflicts{
 
     public InternalConflicts(Map map, Adjust_Map adjustMap, HashMap<String, Player> players, Helper helper) {

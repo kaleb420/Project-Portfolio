@@ -8,6 +8,9 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Scanner;
 
+/**
+ * All helper functions in this program.
+ */
 public class Helper {
 
     public Scanner scan=new Scanner(System.in);
@@ -41,7 +44,7 @@ public class Helper {
      * @return true if it is an emtpy space, false otherwise
      */
     public boolean isEmpty(int row, int column){
-        if (!map.board[row][column].equals(map.empty)){
+        if (!map.board[row][column].equals(map.empty) && !map.board[row][column].equals(map.river)){
             System.out.println("That is not an empty tile on the map.");
             return false;
         }
@@ -106,18 +109,29 @@ public class Helper {
         return inputToLocation(input);
     }
 
+    /**
+     * Prints the amount of cubes a player has
+     * @param player who needs to have their cubes printed
+     */
     public void printCubes(Player player){
         System.out.println("These are your current cube counts: ");
         System.out.println(player.faction + " red cubes " + player.cubes.redCubes);
         System.out.println(player.faction + " green cubes " + player.cubes.greenCubes);
         System.out.println(player.faction + " blue cubes " + player.cubes.blueCubes);
         System.out.println(player.faction + " black cubes " + player.cubes.blackCubes);
+        System.out.println(player.faction + " wild cubes " + player.cubes.wildCubes);
     }
 
+    /**
+     * Prints the pieces a player has
+     * @param pieces that a player has
+     */
     public void printPieces(ArrayList<String> pieces){
         System.out.println("These are your current tiles.");
         int i=1;
         for (String piece : pieces){
+            if (piece==null) // can be null if they don't redraw to full
+                continue;
             String print;
             if (piece.equals(map.temple))
                 print="Temple";
@@ -132,6 +146,11 @@ public class Helper {
         }
     }
 
+    /**
+     * Translates a character to the appropriate faction
+     * @param leader that needs to be translated
+     * @return the full string of that faction's name
+     */
     public String translateCharToLeader(char leader){
         if (leader=='B')
             return map.bulls;
@@ -155,7 +174,7 @@ public class Helper {
             int row=adjacentSpace[0];
             int column=adjacentSpace[1];
             String tile=getTile(adjacentSpace);
-            if (tile.length()==2) { // tile with leader on it
+            if (isLeader(tile)) {
                 for (int[] adj : searchAlgorithms.getAdjacent(adjacentSpace)){ // check the adjacent tiles to check if there is a temple with treasure, if there is the leader stays
                     tile=getTile(adj);
                     if (tile.equals(map.templeWithTreasure)) {
@@ -178,15 +197,6 @@ public class Helper {
      */
     public boolean isLeader(String tile){
         return tile.length()==2;
-    }
-
-    /**
-     * Determines if the tile being analyzed is a monument, monuments have a string length of 3
-     * @param tile being analyzed
-     * @return true if it is a monument, false otherwise
-     */
-    public boolean isMonument(String tile){
-        return tile.length()==3;
     }
 
     /**

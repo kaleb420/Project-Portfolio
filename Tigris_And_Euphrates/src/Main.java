@@ -9,6 +9,9 @@ import Setup.Player;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * The main file for this project, initializes the players, classes, and scores the game after it has finished.
+ */
 public class Main {
 
     static Bag bag=new Bag();
@@ -35,7 +38,7 @@ public class Main {
         for (String faction : players.keySet()){
             players.get(faction).setPlayers(players);
         }
-        makeMove=new Make_Move(map, players, helper);
+        makeMove=new Make_Move(map, bag, players, helper);
     }
 
     /**
@@ -44,6 +47,7 @@ public class Main {
      */
     public static void scoreGame(){
         HashMap<String, Integer> scores=new HashMap<>();
+        map.printMap();
         for (String faction : players.keySet()){
             Player player=players.get(faction);
             int min=Math.min(player.cubes.redCubes, player.cubes.greenCubes);
@@ -52,9 +56,9 @@ public class Main {
             scores.put(player.faction, min);
         }
         String winning="";
-        double lowest=Double.POSITIVE_INFINITY;
+        int lowest=Integer.MIN_VALUE;
         for (String faction : scores.keySet()){
-            if (lowest>scores.get(faction)){
+            if (lowest<scores.get(faction)){
                 winning=faction;
                 lowest=scores.get(faction);
             }
@@ -80,5 +84,4 @@ public class Main {
         makeMove.gameEngine(playerCount);
         scoreGame();
     }
-
 }

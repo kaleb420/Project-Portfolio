@@ -9,6 +9,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+/**
+ * This class handles all associated actions with monuments. A monument is formed if four of the same
+ * resource tile forms a square shape on the board. If so, the player who formed the monument gets to choose
+ * which colors the monuments represent. At the end of each player's turn, every monument on the board, will
+ * check if there is any same color leaders in the kingdom (either of the monuments colors), if so, they get
+ * an associated color cube.
+ */
 public class Monument {
 
     Map map;
@@ -23,6 +30,12 @@ public class Monument {
         this.searchAlgorithms=new Search_Algorithms(map);
     }
 
+    /**
+     * Get the player who has a same color leader as one of the monument's colors in the kingdom. Then, add
+     * 1 to the associated cube color to that player's cube collection.
+     * @param faction of the player with a same color leader in that kingdom
+     * @param color of the leader
+     */
     public void incrementCubes(String faction, char color){
         Player player=players.get(faction);
         if (color==map.temple.charAt(0))
@@ -119,6 +132,8 @@ public class Monument {
      */
     public boolean sameTile(int[][] square, String tile){
         for (int[] location : square){
+            if (!searchAlgorithms.inBounds(location))
+                return false;
             String currentTile=helper.getTile(location);
             if (!searchAlgorithms.inBounds(location) || !currentTile.equals(tile))
                 return false;

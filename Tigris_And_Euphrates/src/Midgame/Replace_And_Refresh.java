@@ -3,6 +3,10 @@ package Midgame;
 import Helpers.Helper;
 import Setup.Player;
 
+/**
+ * A player may replace up to six tiles from their currently supply with new, randomly drawn ones. Also handles
+ * redrawing at the end of each players turn.
+ */
 public class Replace_And_Refresh {
 
     Helper helper;

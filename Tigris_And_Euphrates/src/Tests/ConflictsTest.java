@@ -1,6 +1,8 @@
-package Midgame;
+package Tests;
 
 import Helpers.Helper;
+import Midgame.Adjust_Map;
+import Midgame.Conflicts;
 import Setup.Bag;
 import Setup.Map;
 import Setup.Player;
@@ -24,22 +26,22 @@ public class ConflictsTest {
     /**
      * Simple implementation so Conflicts can be instantiated.
      */
-    private static class TestConflict extends Conflicts {
+    public static class TestConflict extends Conflicts {
 
         public TestConflict(Map map, HashMap<String, Player> players, Helper helper) {
             super(map, new Adjust_Map(map, players, helper), players, helper);
         }
 
         @Override
-        int getStrength(Player player, int[] location, char color) {
+        public int getStrength(Player player, int[] location, char color) {
             return 0;
         }
 
         @Override
-        void removeTilesFromKingdom(Player loser) {}
+        public void removeTilesFromKingdom(Player loser) {}
 
         @Override
-        void endConflict(Player winner, Player loser, char tile, int points) {
+        public void endConflict(Player winner, Player loser, char tile, int points) {
 
         }
     }
@@ -211,76 +213,5 @@ public class ConflictsTest {
         assertTrue(
                 conflict.leadersInKingdom.containsKey("BT")
         );
-    }
-
-    @Test
-    void testEndConflictTemplePoints() {
-
-        attacker.cubes.redCubes = 0;
-
-        attacker.redLocation = new int[]{2,2};
-        map.board[2][2] = "BT";
-
-        conflict.endConflict(attacker,
-                attacker,
-                'T',
-                3);
-
-        assertEquals(4,
-                attacker.cubes.redCubes);
-
-        assertEquals(map.empty,
-                map.board[2][2]);
-    }
-
-    @Test
-    void testEndConflictFarmPoints() {
-
-        attacker.cubes.blueCubes = 0;
-
-        attacker.blueLocation = new int[]{2,2};
-        map.board[2][2] = "BF";
-
-        conflict.endConflict(attacker,
-                attacker,
-                'F',
-                2);
-
-        assertEquals(3,
-                attacker.cubes.blueCubes);
-    }
-
-    @Test
-    void testEndConflictMarketPoints() {
-
-        attacker.cubes.greenCubes = 0;
-
-        attacker.greenLocation = new int[]{2,2};
-        map.board[2][2] = "BM";
-
-        conflict.endConflict(attacker,
-                attacker,
-                'M',
-                1);
-
-        assertEquals(2,
-                attacker.cubes.greenCubes);
-    }
-
-    @Test
-    void testEndConflictSettlementPoints() {
-
-        attacker.cubes.blackCubes = 0;
-
-        attacker.blackLocation = new int[]{2,2};
-        map.board[2][2] = "BS";
-
-        conflict.endConflict(attacker,
-                attacker,
-                'S',
-                5);
-
-        assertEquals(6,
-                attacker.cubes.blackCubes);
     }
 }

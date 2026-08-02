@@ -6,6 +6,10 @@ import Setup.Player;
 
 import java.util.HashMap;
 
+/**
+ * Adjusts the pieces on the board, does so by placing a string value on that tile. If it is a length of 1
+ * it is a resource tile, if it is a length of 2 it is a leader, if it is a length of 3 it is a monument.
+ */
 public class Adjust_Map {
 
     Helper helper;

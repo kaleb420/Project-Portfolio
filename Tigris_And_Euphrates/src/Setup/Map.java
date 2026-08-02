@@ -6,6 +6,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+/**
+ * The map of the board. It is stored as a 2d array and uses strings as a key. Strings with a length of 1
+ * are resources, strings with a length of 2 are leaders, and strings with a length of 3 are monuments.
+ * Also contains the function to print the current state of the map.
+ */
 public class Map {
 
     public int rowLength=11;

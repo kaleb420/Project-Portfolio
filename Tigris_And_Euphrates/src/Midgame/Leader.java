@@ -9,6 +9,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+/**
+ * This class handles placing a leader on a location. Leaders must be placed next to a temple (with or without
+ * treasure), cannot unite two kingdoms, and cannot be placed on a river. The injection point is the leader
+ * function, and all the others are the associated checks needed to be performed to ensure the placement
+ * follows the rules above.
+ */
 public class Leader {
 
     Map map;
@@ -47,7 +53,7 @@ public class Leader {
     public boolean kingdomDetector(ArrayList<int[]> kingdom){
         for (int[] space : kingdom){
             String tile=helper.getTile(space);
-            if (tile.length()==2)
+            if (helper.isLeader(tile))
                 return true;
         }
         return false;

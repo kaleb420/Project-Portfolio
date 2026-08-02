@@ -2,6 +2,10 @@ package Setup;
 
 import java.util.*;
 
+/**
+ * Acts as a shuffled bag, takes all the pieces of the game and puts them in a queue randomly. Also contains
+ * draw function used to give a player pieces after they use any.
+ */
 public class Bag {
 
     public int temples=57;

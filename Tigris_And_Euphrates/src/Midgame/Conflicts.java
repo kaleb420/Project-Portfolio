@@ -8,6 +8,14 @@ import Setup.Player;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * Superclass that deals with external and internal conflicts. The injection point for this class is within
+ * external and internal conflict respectively, then getSameColorLeaders determines if there are two leaders
+ * of the same color in the same kingdom. If so, the conflictManager function is called, gathering all the
+ * global variables. Then the player is asked if they would like to add any pieces to the conflict. Afterward,
+ * determine who won the conflict (who has a higher strength value), and call the endConflict function. All
+ * other details not mentioned are handled by internal conflicts and external conflicts respectively.
+ */
 public abstract class Conflicts {
 
     Map map;
@@ -31,6 +39,10 @@ public abstract class Conflicts {
         this.searchAlgorithms=new Search_Algorithms(map);
     }
 
+    /**
+     * From leadersFighting.keySet(), get the character at index 1.
+     * @return the character at index 1, which is the color of the leaders fighting
+     */
     public char getColorsFighting(){
         for (String leader : leadersFighting.keySet()){
             return leader.charAt(1);
@@ -45,15 +57,15 @@ public abstract class Conflicts {
      * @param color of the leaders fighting, irrelevant for internal conflicts
      * @return strength a player has at the start of a conflict
      */
-    abstract int getStrength(Player player, int[] location, char color);
+    public abstract int getStrength(Player player, int[] location, char color);
 
     /**
      * Override function that only external conflict uses, removes all tiles from the kingdom
      * @param loser player who lost
      */
-    abstract void removeTilesFromKingdom(Player loser);
+    public abstract void removeTilesFromKingdom(Player loser);
 
-    abstract void endConflict(Player winner, Player loser, char tile, int points);
+    public abstract void endConflict(Player winner, Player loser, char tile, int points);
 
     /**
      * Gathers all relevant conflict information and puts them into the appropriate global variables,
@@ -106,7 +118,7 @@ public abstract class Conflicts {
         ArrayList<int[]> kingdom=searchAlgorithms.BFSSearchKingdom(location);
         for (int[] space : kingdom){
             String tile=helper.getTile(space);
-            if (tile.length()==2)
+            if (helper.isLeader(tile))
                 leadersInKingdom.put(tile, space);
         }
     }

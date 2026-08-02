@@ -6,6 +6,17 @@ import Setup.Player;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * This acts as an injection point to the conflicts class, an external conflict can only be started by a
+ * tile placement, therefore, it only needs to be checked after a tile has been placed. externalConflictCheck
+ * is this injection point, if that is true a conflict has started and externalConflictManger is called. For
+ * external conflicts, strength is calculated by how many same color tiles are in the kingdom (excluding
+ * monuments), whoever has more strength wins. The losers original strength (same color tiles in their
+ * kingdom) gets added to the winners points in the form of the that amount of cubes, of the color of the
+ * conflict. Then, the loser removes his leader from the board, and removes all same color tiles. Then normal
+ * play resumes.
+ *
+ */
 public class ExternalConflicts extends Conflicts{
 
     public HashMap<Player, ArrayList<int[]>> tilesInvolved=new HashMap<>();
@@ -58,8 +69,10 @@ public class ExternalConflicts extends Conflicts{
     }
 
     /**
-     * Sets the tile location placed to a conflict tile, meaning it will not count in the upcoming conflict
-     * then call the checkWinner() function
+     * Store the original tile placed, sets the tile location placed to a conflict tile, meaning it will
+     * not count in the upcoming conflict. Set the tilesInvolved variable so it is initiated. Then call
+     * the conflictManager() function to determine who won the conflict. Set the tile back to the original
+     * one.
      * @param location the tile that started the conflict was placed
      */
     public void externalConflictManager(int[] location){
@@ -78,8 +91,8 @@ public class ExternalConflicts extends Conflicts{
 
     /**
      * Determines if an external conflict has started, an external conflict has started when a tile unites
-     * two kingdoms with leaders of the same color, regardless if there was a conflict or not, clear all
-     * global variables aside from the arrays
+     * two kingdoms with leaders of the same color. Regardless if there was a conflict or not, clear all
+     * global variables aside from the arrays.
      * @param location of the tile placed
      * @return true if a conflict started, false if one didn't start
      */
